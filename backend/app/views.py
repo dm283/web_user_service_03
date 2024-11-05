@@ -1,6 +1,6 @@
 import json, random
 from typing import List, Union
-from fastapi import APIRouter, HTTPException, status, Path, Form
+from fastapi import APIRouter, HTTPException, status, Path, Form, Depends
 from app.database import (select_dashboard_data, )
 from pathlib import Path
 
@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 users_file = BASE_DIR / 'data/users/users_list.json'
 TOKEN_LIST = list()
 
-
+# USERS_LIST from the json file
 try:
     #  при отсутствии файла с пользователями вход без страницы аутентификации
     with open(users_file, 'r') as jsonfile:
@@ -38,42 +38,43 @@ except FileNotFoundError:
     print('THE FILE HAS NOT FOUNDED, AUTH IS NOT REQUIRED!')
 
 
-@router.post('/signin', status_code=status.HTTP_202_ACCEPTED)
-async def user_sign_in(
-    login: Union[str, None] = None,
-    password: Union[str, None] = None,
-):
-    # user authentification
-    # global IS_AUTHORIZED
+# @router.post('/signin', status_code=status.HTTP_202_ACCEPTED)
+# async def user_sign_in(
+#     login: Union[str, None] = None,
+#     password: Union[str, None] = None,
+# ):
+#     # user authentification
+#     # global IS_AUTHORIZED
     
-    # print(f'!!!!!! post request = *{login}* *{password}*') ######
+#     # print(f'!!!!!! post request = *{login}* *{password}*') ######
 
-    if not IS_AUTH_REQUIRED:
-        return {'message': 'authorization is not required'}
+#     if not IS_AUTH_REQUIRED:
+#         return {'message': 'authorization is not required'}
     
-    # if IS_AUTH_REQUIRED and IS_AUTHORIZED:
-    #     return {'message': 'authorization has already done'}
+#     # if IS_AUTH_REQUIRED and IS_AUTHORIZED:
+#     #     return {'message': 'authorization has already done'}
 
-    if (not login) or (not password):
-        raise HTTPException(
-            status_code=401,
-            detail='Incorrect username or password',
-        )
+#     if (not login) or (not password):
+#         raise HTTPException(
+#             status_code=401,
+#             detail='Incorrect username or password',
+#         )
         
-    if login in USERS_LIST and USERS_LIST[login] == password:
-        # IS_AUTHORIZED = True
 
-        new_token = str(random.randint(1, 1000000))
-        TOKEN_LIST.append(new_token)
-        # print('new_token, TOKEN_LIST =', new_token, TOKEN_LIST) ##
+#     if login in USERS_LIST and USERS_LIST[login] == password:    # users from file option
+#         # IS_AUTHORIZED = True
 
-        # return {'user': login}
-        return {'your_new_token': new_token}
-    else:
-        raise HTTPException(
-            status_code=401,
-            detail='Incorrect username or password',
-        )
+#         new_token = str(random.randint(1, 1000000))
+#         TOKEN_LIST.append(new_token)
+#         # print('new_token, TOKEN_LIST =', new_token, TOKEN_LIST) ##
+
+#         # return {'user': login}
+#         return {'your_new_token': new_token}
+#     else:
+#         raise HTTPException(
+#             status_code=401,
+#             detail='Incorrect username or password',
+#         )
     
 
 @router.post('/signout', status_code=status.HTTP_200_OK)

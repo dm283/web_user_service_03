@@ -49,6 +49,7 @@ class Item(ItemBase):
 
 #####
 class UserBase(BaseModel):
+    login: str
     email: str
 
 

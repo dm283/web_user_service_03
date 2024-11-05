@@ -9,8 +9,7 @@ import { useToast } from 'vue-toastification';
 
 import Navbar from './components/Navbar.vue';
 import Dashboard from './components/Dashboard.vue';
-import BarChart from '@/components/BarChart.vue';
-import BarHorizont from '@/components/BarHorizont.vue';
+import Chat from './components/Chat.vue';
 
 
 // import from config.ini file in backend folder
@@ -60,6 +59,14 @@ async function getData() {
       state.accountBook.barRecTnvedQuantity.datay = [];
 
       state.reportVehicle = {};
+
+      state.users = [];
+
+      let query_users = `http://${backendIpAddress}:${backendPort}/users/`
+      const response_users = await axios.get(query_users)
+      for (let u of response_users.data) {
+        state.users.push(u['login'])
+      }
 
       let query = `http://${backendIpAddress}:${backendPort}/dashboard/` + '?token=' + token.value + filterSubstring.value
       //let query = 'http://localhost:8000/dashboard/' + '?token=' + token.value + filterSubstring.value
@@ -179,6 +186,8 @@ const filterReportVehicleDateExitTo = ref()
 const showFiltersBar = ref(false);
 const mouseOverFiltersBar = ref(false);
 
+const showMessengerBar = ref(false);
+
 // const formInputStyle2 = ref(
 //   (filterAccountBookDateDocFrom.value) ? 
 //   'border-b-2 border-blue-300 text-green-300 text-base font-medium w-36 py-1 px-1 mb-2 \
@@ -213,8 +222,8 @@ const authSubmit = async () => {
   try {
     const response = await axios.post(
       
-      `http://${backendIpAddress}:${backendPort}/dashboard/signin?` + 'login=' + login.value + '&password=' + password.value
-      // 'http://localhost:8000/dashboard/signin?' + 'login=' + login.value + '&password=' + password.value
+      `http://${backendIpAddress}:${backendPort}/signin?` + 'login=' + login.value + '&password=' + password.value
+      // `http://${backendIpAddress}:${backendPort}/dashboard/signin?` + 'login=' + login.value + '&password=' + password.value
     );
     // console.log('accepted!');
     // console.log('response data your_new_token =', response.data.your_new_token)
@@ -314,6 +323,31 @@ const changeTabValue = (n) => {
 
 
 <div v-if="isAuthorized" class="">
+
+  <!-- **************   MESSENGER BAR    ******************* -->
+  <div v-if="showMessengerBar" class="absolute z-10 w-screen h-full bg-black bg-opacity-50">
+    <div class="absolute z-20 top-0 right-0 w-96 h-full bg-white">
+      <div class="p-3 bg-green-400 overflow-auto">
+      <div class="float-left text-xl text-white">
+        <i class="pi pi-comment" style="font-size: 1.3rem"></i>
+        <span class="ml-5">Корпоративный чат</span>
+      </div>
+      <div class="float-right cursor-pointer text-white hover:text-gray-500" @click="showMessengerBar=false">
+        <i class="pi pi-times" style="font-size: 1.5rem"></i>
+      </div>
+      </div>
+
+      <div class="relative">
+      <Chat :username="login" :users="state.users" />
+    </div>
+
+    </div>
+
+</div>
+
+
+
+
 
   <!-- **************   FILTERS BAR    ******************* -->
   <div v-if="showFiltersBar" class="absolute z-10 w-screen h-full bg-black bg-opacity-50">
@@ -444,6 +478,8 @@ const changeTabValue = (n) => {
     <div class="header-btn"><i class="pi pi-refresh" style="font-size: 1.3rem" @click="updateData()"></i></div>
     <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div>
     <div class="header-btn"><i class="pi pi-sign-out" style="font-size: 1.3rem" @click="signOut()"></i></div>
+    <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
+      <i class="pi pi-comment" style="font-size: 1.3rem"></i></div>
     <div class="header-btn" @click="showFiltersBar=(showFiltersBar) ? false:true">
       <i class="pi pi-filter" style="font-size: 1.3rem"></i></div>
   </div>

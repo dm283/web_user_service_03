@@ -1,11 +1,17 @@
-import os
-from fastapi import FastAPI, status, UploadFile, Form
+import os, random, ast
+from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
 from typing import Annotated
+from typing import List, Union
 from urllib.parse import quote
 from app import views
+
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+from app import crud, models, schemas
+from app.database import SessionLocal, engine
 
 
 app = FastAPI()
@@ -36,12 +42,10 @@ async def index():
 app.include_router(views.router, prefix='/dashboard', tags=['dashboard'])
 
 
-######################
 
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
-from app import crud, models, schemas
-from app.database import SessionLocal, engine
+#############################
+
+######################
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -116,9 +120,9 @@ def read_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
 
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
+    db_user = crud.get_user_by_login(db, login=user.login)
     if db_user:
-        raise HTTPException(status_code=400, detail="Email alreay registered")
+        raise HTTPException(status_code=400, detail="Login alreay registered")
     return crud.create_user(db=db, user=user)
 
 
@@ -147,3 +151,98 @@ def create_item_for_user(
 def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
+
+
+
+####################### chat
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+        self.active_connections_mapping: dict = {}  ########
+
+    async def connect(self, websocket: WebSocket, client_id: str): ###########
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        self.active_connections_mapping[client_id] = websocket  ##########
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            print('connection =', connection)
+            await connection.send_text(message)
+
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: str):
+    await manager.connect(websocket, client_id)  #######
+    print('connection params = ', websocket, client_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            print('data = ', data)
+            data_dict = ast.literal_eval(data)
+            print('data_dict =', data_dict)
+            receiver = data_dict['receiver']      ###########
+            msg_text = data_dict['message']
+            await manager.send_personal_message(f"{msg_text}", websocket)
+            await manager.send_personal_message(f"[{client_id}] {msg_text}", manager.active_connections_mapping[receiver])   ################
+            # await manager.broadcast(f"Client #{client_id} says: {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        await manager.broadcast(f"Client #{client_id} left the chat")
+        
+
+##############################
+
+from app import views
+
+@app.post('/signin', status_code=status.HTTP_202_ACCEPTED)
+async def user_sign_in(
+    login: Union[str, None] = None,
+    password: Union[str, None] = None,
+    db: Session = Depends(get_db)
+):
+    # user authentification
+    # global IS_AUTHORIZED
+    
+    # print(f'!!!!!! post request = *{login}* *{password}*') ######
+
+    if not views.IS_AUTH_REQUIRED:
+        return {'message': 'authorization is not required'}
+    
+    # if IS_AUTH_REQUIRED and IS_AUTHORIZED:
+    #     return {'message': 'authorization has already done'}
+
+    if (not login) or (not password):
+        raise HTTPException(
+            status_code=401,
+            detail='Incorrect username or password',
+        )
+        
+
+    db_user = crud.get_user_by_login(db, login=login)
+    db_pass = db_user.hashed_password[:-len('notreallyhashed')]
+
+    #if login in views.USERS_LIST and USERS_LIST[login] == password:    # users from file option
+    if db_user and db_pass == password:
+        # IS_AUTHORIZED = True
+
+        new_token = str(random.randint(1, 1000000))
+        views.TOKEN_LIST.append(new_token)
+        # print('new_token, TOKEN_LIST =', new_token, TOKEN_LIST) ##
+
+        # return {'user': login}
+        return {'your_new_token': new_token}
+    else:
+        raise HTTPException(
+            status_code=401,
+            detail='Incorrect username or password',
+        )
+    
