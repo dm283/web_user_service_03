@@ -3,7 +3,7 @@ import { ref, defineProps, computed, reactive } from 'vue';
 import TabStorageState from '@/components/TabStorageState.vue';
 import TabAccountBook from '@/components/TabAccountBook.vue';
 import TabReportVehicle from '@/components/TabReportVehicle.vue';
-import TabTest from './TabTest.vue';
+import TabTest from './Documents.vue';
 
   
 const props = defineProps({

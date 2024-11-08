@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
+import DocumentsView from "@/views/DocumentsView.vue";
+import VehiclesView from "@/views/VehiclesView.vue";
 import DashboardView from "@/views/DashboardView.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
@@ -9,19 +11,19 @@ const router = createRouter({
   routes: [
     {
         path: '/',
-        name: 'dashboard',
-        component: DashboardView,
+        name: 'documents',
+        component: DocumentsView,
     },
-    // {
-    //   path: '/items/add',
-    //   name: 'add-item',
-    //   component: AddItemView,
-    // },
-    // {
-    //   path: '/items/edit/:id',
-    //   name: 'edit-item',
-    //   component: EditItemView,
-    // },
+    {
+      path: '/vehicles',
+      name: 'vehicles',
+      component: VehiclesView,
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
+    },
     // {
     //   path: '/items/:id',
     //   name: 'item',

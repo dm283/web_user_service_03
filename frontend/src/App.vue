@@ -3,7 +3,7 @@ import { defineProps, ref, reactive, onMounted, computed } from 'vue';
 import 'primeicons/primeicons.css';
 // import router from '@/router';
 import axios from 'axios';
-// import { RouterView } from 'vue-router';
+import { RouterView } from 'vue-router';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import { useToast } from 'vue-toastification';
 
@@ -493,9 +493,15 @@ const changeTabValue = (n) => {
 <!-- **************   MAIN MENU SIDEBAR    ******************* -->
 <div v-if="showMenuBar" class="w-60 h-full fixed bg-sky-700 text-white">
   <div class="">
-    <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"/>
-    <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"/>
-    <MenuSection :label="'Транспортные средства'" :icon="'truck'" :description="'Информация о ТС'"/>
+    <RouterLink to="/">
+      <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"/>
+    </RouterLink>
+    <RouterLink to="/dashboard">
+      <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"/>
+    </RouterLink>
+    <RouterLink to="/vehicles">
+      <MenuSection :label="'Транспортные средства'" :icon="'truck'" :description="'Информация о ТС'"/>
+    </RouterLink>
   </div>
 </div>
 
@@ -508,12 +514,14 @@ const changeTabValue = (n) => {
   <!-- Show loading spinner while loading is true -->
   <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
     <PulseLoader />
-      ЗАГРУЗКА ДАННЫХ...
+    ЗАГРУЗКА ДАННЫХ...
   </div>
 
   <!-- Show when loading is done -->
   <div v-else class="bg-gray-50 ">
-    <Dashboard 
+    <RouterView />
+
+    <!-- <Dashboard 
       @change-tab="changeTabValue"
       :tabNumberVar = "tabNumberVar"
 
@@ -536,7 +544,7 @@ const changeTabValue = (n) => {
       :reportVehicleListName="'Отчет ТС'" 
       :reportVehicleListAccountBook="state.reportVehicle.listreportVehicle" 
       :reportVehicleListTableColumns="reportVehicleListTableColumns"
-    /> 
+    />  -->
   </div>
 </div>
 </div>
