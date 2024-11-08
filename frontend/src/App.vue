@@ -10,6 +10,7 @@ import { useToast } from 'vue-toastification';
 import Navbar from './components/Navbar.vue';
 import Dashboard from './components/Dashboard.vue';
 import Chat from './components/Chat.vue';
+import MenuSection from './components/MenuSection.vue';
 
 
 // import from config.ini file in backend folder
@@ -187,6 +188,7 @@ const showFiltersBar = ref(false);
 const mouseOverFiltersBar = ref(false);
 
 const showMessengerBar = ref(false);
+const showMenuBar = ref(true);
 
 // const formInputStyle2 = ref(
 //   (filterAccountBookDateDocFrom.value) ? 
@@ -272,6 +274,7 @@ const changeTabValue = (n) => {
 
 <template>
 
+<!-- AUTHENTIFICATION PAGE -->
 <div v-if="!isAuthorized" class="flex">
     
   <div class="mt-40 mx-auto bg-gray-50 border rounded-lg overflow-hidden">
@@ -321,7 +324,7 @@ const changeTabValue = (n) => {
   </div>
 </div>
 
-
+<!-- CONTENT PAGE -->
 <div v-if="isAuthorized" class="">
 
   <!-- **************   MESSENGER BAR    ******************* -->
@@ -343,10 +346,7 @@ const changeTabValue = (n) => {
 
     </div>
 
-</div>
-
-
-
+  </div>
 
 
   <!-- **************   FILTERS BAR    ******************* -->
@@ -465,19 +465,23 @@ const changeTabValue = (n) => {
   </div>
 </div>
 
+
 <!-- **************   HEADER    ******************* -->
-<nav class="bg-gradient-to-r from-sky-600 to-sky-400 px-10 py-3 text-white overflow-auto">  
+<nav class="bg-gradient-to-r from-sky-600 to-sky-400 px-5 h-14 text-white overflow-auto">  
   <div class="text-center md:flex md:float-left text-xl">
-    <div class="inline-block px-4 border-r-2">{{ companyName }}</div>
+    <div class="inline-block border-2 border-cyan-50 w-10 h-10 rounded-full pt-1 mt-2 mr-5 cursor-pointer text-cyan-300 hover:border-cyan-300 active:text-cyan-100 active:border-cyan-100">
+      <i class="pi pi-bars" style="font-size: 1.3rem" @click="showMenuBar=(showMenuBar) ? false:true"></i>
+    </div>
+    <div class="inline-block mt-3 px-4 border-r-2">{{ companyName }}</div>
     <!-- <div class="inline-block px-4 border-r-2">Dashboard</div> -->
-    <div class="inline-block px-4">Личный кабинет [ dev ]</div>
+    <div class="inline-block mt-3 px-4">Личный кабинет [ dev ]</div>
   </div>
-  <div class="text-center md:flex md:float-right">
-    <div class="inline-block px-4 text-base">{{ state.updateDateTime }}</div>
-    <!-- 09-09-2024 17:30 -->
+  <div class="mt-3.5 text-center md:flex md:float-right">
+    <!-- <div class="inline-block px-4 text-base">{{ state.updateDateTime }}</div> -->
+    <div class="inline-block px-4 text-base">{{ login }}</div>
+    <div class="header-btn"><i class="pi pi-user" style="font-size: 1.3rem" @click="signOut()"></i></div>
     <div class="header-btn"><i class="pi pi-refresh" style="font-size: 1.3rem" @click="updateData()"></i></div>
     <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div>
-    <div class="header-btn"><i class="pi pi-sign-out" style="font-size: 1.3rem" @click="signOut()"></i></div>
     <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
       <i class="pi pi-comment" style="font-size: 1.3rem"></i></div>
     <div class="header-btn" @click="showFiltersBar=(showFiltersBar) ? false:true">
@@ -486,49 +490,63 @@ const changeTabValue = (n) => {
 </nav>
 
 
+<!-- **************   MAIN MENU SIDEBAR    ******************* -->
+<div v-if="showMenuBar" class="w-60 h-full fixed bg-sky-700 text-white">
+  <div class="">
+    <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"/>
+    <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"/>
+    <MenuSection :label="'Транспортные средства'" :icon="'truck'" :description="'Информация о ТС'"/>
+  </div>
+</div>
+
+<div class="flex">
+
+  <!-- PSEUDO-DIV BEHIND SIDEBAR FOR MARGINING OF CONTENT DIV -->
+  <div v-if="showMenuBar" class="w-60"></div>
+
+  <div class="flex-1">
   <!-- Show loading spinner while loading is true -->
   <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
     <PulseLoader />
-     LOADING DATA...
+      ЗАГРУЗКА ДАННЫХ...
   </div>
 
   <!-- Show when loading is done -->
   <div v-else class="bg-gray-50 ">
+    <Dashboard 
+      @change-tab="changeTabValue"
+      :tabNumberVar = "tabNumberVar"
 
+      :storageStateBarTnvedQuantityDatax = "state.storageState.barTnvedQuantity.datax" 
+      :storageStateBarTnvedQuantityDatay="state.storageState.barTnvedQuantity.datay" 
+      :storageStateCardProductQuantity="state.storageState.cardProductQuantity" 
+      :storageStateCardDtQuantity="state.storageState.cardDtQuantity" 
+      :storageStateListName="'Товары на складе'" 
+      :storageStateListProductsStorage="state.storageState.listProductsStorage" 
+      :storageStateListTableColumns="storageStateListTableColumns"
 
-  <Dashboard 
-    @change-tab="changeTabValue"
-    :tabNumberVar = "tabNumberVar"
+      :accountBookBarRecTnvedQuantityDatax = "state.accountBook.barRecTnvedQuantity.datax" 
+      :accountBookBarRecTnvedQuantityDatay="state.accountBook.barRecTnvedQuantity.datay" 
+      :accountBookCardRecProductQuantity="state.accountBook.cardRecProductQuantity" 
+      :accountBookCardRecDtQuantity="state.accountBook.cardRecDtQuantity" 
+      :accountBookListName="'Книга учета'" 
+      :accountBookListAccountBook="state.accountBook.listAccountBook" 
+      :accountBookListTableColumns="accountBookListTableColumns"
 
-    :storageStateBarTnvedQuantityDatax = "state.storageState.barTnvedQuantity.datax" 
-    :storageStateBarTnvedQuantityDatay="state.storageState.barTnvedQuantity.datay" 
-    :storageStateCardProductQuantity="state.storageState.cardProductQuantity" 
-    :storageStateCardDtQuantity="state.storageState.cardDtQuantity" 
-    :storageStateListName="'Товары на складе'" 
-    :storageStateListProductsStorage="state.storageState.listProductsStorage" 
-    :storageStateListTableColumns="storageStateListTableColumns"
-
-    :accountBookBarRecTnvedQuantityDatax = "state.accountBook.barRecTnvedQuantity.datax" 
-    :accountBookBarRecTnvedQuantityDatay="state.accountBook.barRecTnvedQuantity.datay" 
-    :accountBookCardRecProductQuantity="state.accountBook.cardRecProductQuantity" 
-    :accountBookCardRecDtQuantity="state.accountBook.cardRecDtQuantity" 
-    :accountBookListName="'Книга учета'" 
-    :accountBookListAccountBook="state.accountBook.listAccountBook" 
-    :accountBookListTableColumns="accountBookListTableColumns"
-
-    :reportVehicleListName="'Отчет ТС'" 
-    :reportVehicleListAccountBook="state.reportVehicle.listreportVehicle" 
-    :reportVehicleListTableColumns="reportVehicleListTableColumns"
-  /> 
-
+      :reportVehicleListName="'Отчет ТС'" 
+      :reportVehicleListAccountBook="state.reportVehicle.listreportVehicle" 
+      :reportVehicleListTableColumns="reportVehicleListTableColumns"
+    /> 
   </div>
+</div>
+</div>
 </div>
 </template>
 
 
 <style lang="postcss" scoped>
 .header-btn {
-  @apply inline-block mx-3 mt-1 text-yellow-100 cursor-pointer hover:text-yellow-300
+  @apply inline-block mx-3 mt-1 text-cyan-200 cursor-pointer hover:text-cyan-50
 }
 
 .formLabelStyle {
