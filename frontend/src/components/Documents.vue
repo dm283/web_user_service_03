@@ -81,21 +81,16 @@ async function downloadFile() {
 </script>
 
 <template>
-
   <!-- Show loading spinner while loading is true -->
   <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
     <PulseLoader />
-     LOADING DATA...
+    ЗАГРУЗКА ДАННЫХ...
   </div>
 
   <!-- Show when loading is done -->
-   
-  <div v-else class="flex flex-col md:flex-row m-2 gap-3 ">
-
+  <div v-else class="flex flex-col md:flex-row p-3 gap-3 ">
     <div class="flex-none w-fit md:w-auto">
-      
       <div class="flex flex-col gap-3">
-
         <!-- <div class="grid grid-cols-2 gap-3">
           <div class="">
             <Card :label="'Кол-во документов'" :value="state.documents.length" />
@@ -104,29 +99,22 @@ async function downloadFile() {
             <Card :label="'Добавлено сегодня'" :value="1" />
           </div>
         </div> -->
-
+        <div class="">
+          <FormAddDoc @doc-created="getData" />
+        </div>
         <div class="text-center">
           <button @click="downloadFile()" class="border rounded-full p-3 text-white bg-pink-400">
             DOWNLOAD FILE
           </button>
         </div>
-
-        <div class="">
-          <FormAddDoc @doc-created="getData" />
-        </div>
-
       </div>
-
     </div>
-
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <List :name="'Документы'" :data="state.documents" :listTableColumns="listTableColumns" />
       </div>
     </div>
-
   </div>
-  
 </template>
 
 <!-- #00E396  #FF69B4  #CD5C5C  #FFA07A  #7B68EE  #00FF7F  #00BFFF -->
