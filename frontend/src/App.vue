@@ -8,7 +8,7 @@ import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import { useToast } from 'vue-toastification';
 
 import Navbar from './components/Navbar.vue';
-import Dashboard from './components/Dashboard.vue';
+// import Dashboard from './components/Dashboard.vue';
 import Chat from './components/Chat.vue';
 import MenuSection from './components/MenuSection.vue';
 
@@ -33,226 +33,239 @@ const state = reactive({
 })
 
 const token = ref('')
-const filterSubstring = ref('')
-const isAuthorized = ref(true)
+// const filterSubstring = ref('')
+const isAuthorized = ref(false)
 const login = ref('');
 const password = ref('');
 const authFormMessage = ref('')
+const showFiltersBar = ref(false);
+const showMessengerBar = ref(false);
+const showMenuBar = ref(true);
 
-// TABS & WIDGETS
-// storageState - cardProductQuantity, cardDtQuantity, barTnvedQuantity, listProductsStorage
-// accountBook - cardRecProductQuantity, cardRecDtQuantity, barRecTnvedQuantity, listAccountBook
-// reportVehicle - listReportVehicle
 
 async function getData() {
   //
   try {
-      state.data = [];
+    state.users = [];
 
-      state.storageState = {};
-      state.storageState.barTnvedQuantity = {};
-      state.storageState.barTnvedQuantity.datax = [];
-      state.storageState.barTnvedQuantity.datay = [];
-
-      state.accountBook = {};
-      state.accountBook.barRecTnvedQuantity = {};
-      state.accountBook.barRecTnvedQuantity.datax = [];
-      state.accountBook.barRecTnvedQuantity.datay = [];
-
-      state.reportVehicle = {};
-
-      state.users = [];
-
-      let query_users = `http://${backendIpAddress}:${backendPort}/users/`
-      const response_users = await axios.get(query_users)
-      for (let u of response_users.data) {
-        state.users.push(u['login'])
-      }
-
-      let query = `http://${backendIpAddress}:${backendPort}/dashboard/` + '?token=' + token.value + filterSubstring.value
-      //let query = 'http://localhost:8000/dashboard/' + '?token=' + token.value + filterSubstring.value
-      // console.log('query =', query)
-      const response = await axios.get(query);
-      
-      // console.log('API RESPONSE =', response.status)
-      // if (response.status == 200) {
-      //   isAuthorized.value = true;
-      // };
-
-
-      state.data = response.data;
-
-      state.companyName = state.data['company_name']
-      state.updateDateTime = state.data['current_datetime']
-
-      state.storageState.cardProductQuantity = state.data['product_quantity'][0]['product_quantity'];
-      state.storageState.cardDtQuantity = state.data['dt_quantity'][0]['dt_quantity'];
-      for (let i of state.data['tnved_quantity']) {
-        state.storageState.barTnvedQuantity.datax.push(i['g33']);
-        state.storageState.barTnvedQuantity.datay.push(i['cnt'])
-      }   
-      state.storageState.listProductsStorage = state.data['products_on_storage']
-
-      state.accountBook.cardRecProductQuantity = state.data['received_product_quantity'][0]['received_product_quantity'];
-      state.accountBook.cardRecDtQuantity = state.data['received_dt_quantity'][0]['received_dt_quantity'];
-      for (let i of state.data['received_tnved_quantity']) {
-        state.accountBook.barRecTnvedQuantity.datax.push(i['g33']);
-        state.accountBook.barRecTnvedQuantity.datay.push(i['cnt'])
-      }   
-      state.accountBook.listAccountBook = state.data['account_book']
-
-      state.reportVehicle.listreportVehicle = state.data['report_vehicle']
-
-    } catch (error) {
-      console.error('Error fetching items', error.response.status);
-      if (error.response.status == 401) {
-        isAuthorized.value = false;
-      }
-    } finally {
-      state.isLoading = false;
+    let query_users = `http://${backendIpAddress}:${backendPort}/users/`
+    const response_users = await axios.get(query_users)
+    for (let u of response_users.data) {
+      state.users.push(u['login'])
     }
-};
-
-
-async function updateData() {
-  //
-  state.isLoading = true;
-  await getData();
-};
-
-const handleSubmit = async () => {
-  //
-  // console.log('handle submit!') 
-  const filters = {
-    'filterAccountBookDateDocFrom': filterAccountBookDateDocFrom, 
-    'filterAccountBookDateDocTo': filterAccountBookDateDocTo, 
-    'filterAccountBookDateEnterFrom': filterAccountBookDateEnterFrom, 
-    'filterAccountBookDateEnterTo': filterAccountBookDateEnterTo, 
-    'filterReportVehicleDateEnterFrom': filterReportVehicleDateEnterFrom, 
-    'filterReportVehicleDateExitTo': filterReportVehicleDateExitTo
-  }; 
-  filterSubstring.value = '&';
-  
-  for (let f in filters) {
-    // console.log('filters.values =', filters[f].value)
-    if (filters[f].value) {
-      filterSubstring.value += f + '=' + filters[f].value + '&'
+  } catch (error) {
+    console.error('Error fetching items', error.response.status);
+    if (error.response.status == 401) {
+      isAuthorized.value = false;
     }
+  } finally {
+    state.isLoading = false;
   }
-  
-  // console.log('filterSubstring = ', filterSubstring.value)
-
-  state.isLoading = true;
-  await getData();   
 };
 
 
-onMounted(async () => {
-    await getData()
-});
+// async function getData() {
+//   //
+//   try {
+//       state.data = [];
+
+//       state.storageState = {};
+//       state.storageState.barTnvedQuantity = {};
+//       state.storageState.barTnvedQuantity.datax = [];
+//       state.storageState.barTnvedQuantity.datay = [];
+
+//       state.accountBook = {};
+//       state.accountBook.barRecTnvedQuantity = {};
+//       state.accountBook.barRecTnvedQuantity.datax = [];
+//       state.accountBook.barRecTnvedQuantity.datay = [];
+
+//       state.reportVehicle = {};
+
+//       state.users = [];
+
+//       let query_users = `http://${backendIpAddress}:${backendPort}/users/`
+//       const response_users = await axios.get(query_users)
+//       for (let u of response_users.data) {
+//         state.users.push(u['login'])
+//       }
+
+//       let query = `http://${backendIpAddress}:${backendPort}/dashboard/` + '?token=' + token.value + filterSubstring.value
+//       //let query = 'http://localhost:8000/dashboard/' + '?token=' + token.value + filterSubstring.value
+//       // console.log('query =', query)
+//       const response = await axios.get(query);
+      
+//       // console.log('API RESPONSE =', response.status)
+//       // if (response.status == 200) {
+//       //   isAuthorized.value = true;
+//       // };
 
 
-const storageStateListTableColumns = {
-    'gtdnum':'Номер ДТ','name':'Владелец','date_in':'Дата прием','g32':'№ тов.',
-    'g31':'Наименование товара','g33_in':'Код ТНВЭД','g31_3':'Кол.доп.ед', 
-    'g31_3a':'Ед.изм.', 'g35':'Вес брутто', 'date_chk':'Дата ок.хр.'
-}
+//       state.data = response.data;
 
-const accountBookListTableColumns = {
-  'gtdnum': 'Номер ДТ', 'name': 'Владелец', 'date_in': 'Дата приема','time_in': 'Время приема',
-    'date_chk': 'Дата ок.хр.','g32': '№ тов.','g31': 'Наименование товара','g33_in': 'Код ТНВЭД',
-    'g35': 'Вес брутто', 'g31_3': 'Кол.доп.ед', 'g31_3a': 'Ед.изм.', 'doc_num_out': '№ ДТ выдачи',
-    'gtdregime_out': 'Режим выдачи', 'date_out': 'Дата выдачи', 'g35_out': 'Выдача брутто',
-    'g31_3_out': 'Выд.доп.ед'
-}
+//       state.companyName = state.data['company_name']
+//       state.updateDateTime = state.data['current_datetime']
 
-const reportVehicleListTableColumns = {
-  'id':'№ п/п', 'gtdnum':'Номер ДТ', 'g32':'№ тов.', 'g33_in':'Код ТНВЭД', 'g31':'Наименование товара', 'g35':'Вес брутто',
-    'g31_3':'Кол.доп.ед', 'g31_3a':'Ед.изм.', 'date_in':'Дата приема', 'place':'Скл.номер', 'date_chk':'Дата ок.хр.', 
-       'exp_date':'Срок годности', 'gtdregime_out':'Режим выдачи', 'doc_num_out':'№ ДТ выдачи', 'g33_out':'Код ТНВЭД выдачи',
-    'g35_out':'Выдача брутто', 'g31_3_out':'Выд.доп.ед', 'date_out':'Дата выдачи', 
-    'g35ost_':'Остаток брутто', 'g31_3ost_':'Остаток Доп.ед',
-}
+//       state.storageState.cardProductQuantity = state.data['product_quantity'][0]['product_quantity'];
+//       state.storageState.cardDtQuantity = state.data['dt_quantity'][0]['dt_quantity'];
+//       for (let i of state.data['tnved_quantity']) {
+//         state.storageState.barTnvedQuantity.datax.push(i['g33']);
+//         state.storageState.barTnvedQuantity.datay.push(i['cnt'])
+//       }   
+//       state.storageState.listProductsStorage = state.data['products_on_storage']
+
+//       state.accountBook.cardRecProductQuantity = state.data['received_product_quantity'][0]['received_product_quantity'];
+//       state.accountBook.cardRecDtQuantity = state.data['received_dt_quantity'][0]['received_dt_quantity'];
+//       for (let i of state.data['received_tnved_quantity']) {
+//         state.accountBook.barRecTnvedQuantity.datax.push(i['g33']);
+//         state.accountBook.barRecTnvedQuantity.datay.push(i['cnt'])
+//       }   
+//       state.accountBook.listAccountBook = state.data['account_book']
+
+//       state.reportVehicle.listreportVehicle = state.data['report_vehicle']
+
+//     } catch (error) {
+//       console.error('Error fetching items', error.response.status);
+//       if (error.response.status == 401) {
+//         isAuthorized.value = false;
+//       }
+//     } finally {
+//       state.isLoading = false;
+//     }
+// };
 
 
-const filterAccountBookDateDocFrom = ref();
-const filterAccountBookDateDocTo = ref();
+// async function updateData() {
+//   //
+//   state.isLoading = true;
+//   await getData();
+// };
 
-const filterAccountBookDateEnterFrom = ref()
-const filterAccountBookDateEnterTo = ref()
+// const handleSubmit = async () => {
+//   //
+//   // console.log('handle submit!') 
+//   const filters = {
+//     'filterAccountBookDateDocFrom': filterAccountBookDateDocFrom, 
+//     'filterAccountBookDateDocTo': filterAccountBookDateDocTo, 
+//     'filterAccountBookDateEnterFrom': filterAccountBookDateEnterFrom, 
+//     'filterAccountBookDateEnterTo': filterAccountBookDateEnterTo, 
+//     'filterReportVehicleDateEnterFrom': filterReportVehicleDateEnterFrom, 
+//     'filterReportVehicleDateExitTo': filterReportVehicleDateExitTo
+//   }; 
+//   filterSubstring.value = '&';
+  
+//   for (let f in filters) {
+//     // console.log('filters.values =', filters[f].value)
+//     if (filters[f].value) {
+//       filterSubstring.value += f + '=' + filters[f].value + '&'
+//     }
+//   }
+  
+//   // console.log('filterSubstring = ', filterSubstring.value)
 
-const filterReportVehicleDateEnterFrom = ref()
-const filterReportVehicleDateExitTo = ref()
+//   state.isLoading = true;
+//   await getData();   
+// };
 
-const showFiltersBar = ref(false);
-const mouseOverFiltersBar = ref(false);
 
-const showMessengerBar = ref(false);
-const showMenuBar = ref(true);
+// onMounted(async () => {
+//     await getData()
+// });
 
-// const formInputStyle2 = ref(
-//   (filterAccountBookDateDocFrom.value) ? 
-//   'border-b-2 border-blue-300 text-green-300 text-base font-medium w-36 py-1 px-1 mb-2 \
-//   hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer' :
-//   'border-b-2 border-blue-300 text-red-300 text-base font-medium w-36 py-1 px-1 mb-2 \
-//   hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-// );
 
-// const formInputStyle11 = ref('border-b-2 border-blue-300 text-green-300 text-base font-medium w-36 py-1 px-1 mb-2 \
-//   hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer')
-//   const formInputStyle12 = ref('border-b-2 border-blue-300 text-red-300 text-base font-medium w-36 py-1 px-1 mb-2 \
-//   hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer')
+// const storageStateListTableColumns = {
+//     'gtdnum':'Номер ДТ','name':'Владелец','date_in':'Дата прием','g32':'№ тов.',
+//     'g31':'Наименование товара','g33_in':'Код ТНВЭД','g31_3':'Кол.доп.ед', 
+//     'g31_3a':'Ед.изм.', 'g35':'Вес брутто', 'date_chk':'Дата ок.хр.'
+// }
 
-const testA = ref(true)
+// const accountBookListTableColumns = {
+//   'gtdnum': 'Номер ДТ', 'name': 'Владелец', 'date_in': 'Дата приема','time_in': 'Время приема',
+//     'date_chk': 'Дата ок.хр.','g32': '№ тов.','g31': 'Наименование товара','g33_in': 'Код ТНВЭД',
+//     'g35': 'Вес брутто', 'g31_3': 'Кол.доп.ед', 'g31_3a': 'Ед.изм.', 'doc_num_out': '№ ДТ выдачи',
+//     'gtdregime_out': 'Режим выдачи', 'date_out': 'Дата выдачи', 'g35_out': 'Выдача брутто',
+//     'g31_3_out': 'Выд.доп.ед'
+// }
 
-const clearFilters = async () => {
-  filterAccountBookDateDocFrom.value = '';
-  filterAccountBookDateDocTo.value = '';
+// const reportVehicleListTableColumns = {
+//   'id':'№ п/п', 'gtdnum':'Номер ДТ', 'g32':'№ тов.', 'g33_in':'Код ТНВЭД', 'g31':'Наименование товара', 'g35':'Вес брутто',
+//     'g31_3':'Кол.доп.ед', 'g31_3a':'Ед.изм.', 'date_in':'Дата приема', 'place':'Скл.номер', 'date_chk':'Дата ок.хр.', 
+//        'exp_date':'Срок годности', 'gtdregime_out':'Режим выдачи', 'doc_num_out':'№ ДТ выдачи', 'g33_out':'Код ТНВЭД выдачи',
+//     'g35_out':'Выдача брутто', 'g31_3_out':'Выд.доп.ед', 'date_out':'Дата выдачи', 
+//     'g35ost_':'Остаток брутто', 'g31_3ost_':'Остаток Доп.ед',
+// }
 
-  filterAccountBookDateEnterFrom.value = ''
-  filterAccountBookDateEnterTo.value = ''
 
-  filterReportVehicleDateEnterFrom.value = ''
-  filterReportVehicleDateExitTo.value = ''
+// const filterAccountBookDateDocFrom = ref();
+// const filterAccountBookDateDocTo = ref();
 
-  state.isLoading = true;
-  await handleSubmit();
-}
+// const filterAccountBookDateEnterFrom = ref()
+// const filterAccountBookDateEnterTo = ref()
+
+// const filterReportVehicleDateEnterFrom = ref()
+// const filterReportVehicleDateExitTo = ref()
+
+// const showFiltersBar = ref(false);
+// const mouseOverFiltersBar = ref(false);
+
+// const showMessengerBar = ref(false);
+// const showMenuBar = ref(true);
+
+// // const formInputStyle2 = ref(
+// //   (filterAccountBookDateDocFrom.value) ? 
+// //   'border-b-2 border-blue-300 text-green-300 text-base font-medium w-36 py-1 px-1 mb-2 \
+// //   hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer' :
+// //   'border-b-2 border-blue-300 text-red-300 text-base font-medium w-36 py-1 px-1 mb-2 \
+// //   hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+// // );
+
+// // const formInputStyle11 = ref('border-b-2 border-blue-300 text-green-300 text-base font-medium w-36 py-1 px-1 mb-2 \
+// //   hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer')
+// //   const formInputStyle12 = ref('border-b-2 border-blue-300 text-red-300 text-base font-medium w-36 py-1 px-1 mb-2 \
+// //   hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer')
+
+// const testA = ref(true)
+
+// const clearFilters = async () => {
+//   filterAccountBookDateDocFrom.value = '';
+//   filterAccountBookDateDocTo.value = '';
+
+//   filterAccountBookDateEnterFrom.value = ''
+//   filterAccountBookDateEnterTo.value = ''
+
+//   filterReportVehicleDateEnterFrom.value = ''
+//   filterReportVehicleDateExitTo.value = ''
+
+//   state.isLoading = true;
+//   await handleSubmit();
+// }
 
 const authSubmit = async () => {
   //
   try {
     const response = await axios.post(
-      
       `http://${backendIpAddress}:${backendPort}/signin?` + 'login=' + login.value + '&password=' + password.value
-      // `http://${backendIpAddress}:${backendPort}/dashboard/signin?` + 'login=' + login.value + '&password=' + password.value
     );
-    // console.log('accepted!');
-    // console.log('response data your_new_token =', response.data.your_new_token)
     token.value = response.data.your_new_token;
 
-    // console.log('API RESPONSE =', response.status)
     if (response.status == 202) {
       isAuthorized.value = true;
     };
 
     state.isLoading = true;
-    await getData()
+    await getData();
   } catch (error) {
     // console.error('unaccepted', error);
     authFormMessage.value = 'Некорректный логин или пароль.'
     isAuthorized.value = false;
   };
-}
+};
 
 const signOut = async () => {
   //
   try {
     let query = `http:///${backendIpAddress}:${backendPort}/dashboard/signout` + '?token=' + token.value
-    // let query = 'http://localhost:8000/dashboard/signout' + '?token=' + token.value
     const response = await axios.post(query);
-    // const response = await axios.post('http://localhost:8000/dashboard/signout');
-    // console.log('sign out response =' , response.data.message)
+  
     if (response.data.message == 'signed out') {
       login.value = '';
       password.value = '';
@@ -263,18 +276,18 @@ const signOut = async () => {
   }
 };
 
-const tabNumberVar = ref(4);  // initial tab number
-const changeTabValue = (n) => {
-  // rememberance of tab number from Dashboard component
-  tabNumberVar.value = n;
-};
+// const tabNumberVar = ref(4);  // initial tab number
+// const changeTabValue = (n) => {
+//   // rememberance of tab number from Dashboard component
+//   tabNumberVar.value = n;
+// };
 
 
 </script>
 
-<template>
 
-<!-- AUTHENTIFICATION PAGE -->
+<template>
+<!--    ===============================    AUTHENTIFICATION PAGE    ===============================    -->
 <div v-if="!isAuthorized" class="flex">
     
   <div class="mt-40 mx-auto bg-gray-50 border rounded-lg overflow-hidden">
@@ -324,10 +337,11 @@ const changeTabValue = (n) => {
   </div>
 </div>
 
-<!-- CONTENT PAGE -->
+
+<!--    ===============================    CONTENT PAGE    ===============================    -->
 <div v-if="isAuthorized" class="">
 
-  <!-- **************   MESSENGER BAR    ******************* -->
+  <!-- **************   MESSENGER SIDEBAR    ******************* -->
   <div v-if="showMessengerBar" class="absolute z-10 w-screen h-full bg-black bg-opacity-50">
     <div class="absolute z-20 top-0 right-0 w-96 h-full bg-white">
       <div class="p-3 bg-green-400 overflow-auto">
@@ -349,7 +363,7 @@ const changeTabValue = (n) => {
   </div>
 
 
-  <!-- **************   FILTERS BAR    ******************* -->
+  <!-- **************   FILTERS SIDEBAR    ******************* -->
   <div v-if="showFiltersBar" class="absolute z-10 w-screen h-full bg-black bg-opacity-50">
     <div  class="absolute z-20 top-0 right-0 border w-96 h-full bg-white">
     <div class="p-3 bg-gray-200 overflow-auto">

@@ -98,7 +98,7 @@ async def user_sign_out(
 
 @router.get('/', status_code=status.HTTP_200_OK)
 async def get_dashboard_data_filtered(
-        token: Union[str, None] = None,
+        # token: Union[str, None] = None,
         filterAccountBookDateDocFrom: Union[str, None] = None,
         filterAccountBookDateDocTo: Union[str, None] = None,
         filterAccountBookDateEnterFrom: Union[str, None] = None,
@@ -107,11 +107,11 @@ async def get_dashboard_data_filtered(
         filterReportVehicleDateExitTo: Union[str, None] = None,
         ):
     
-    if IS_AUTH_REQUIRED and (not token or token not in TOKEN_LIST):
-        raise HTTPException(
-            status_code=401,
-            detail='Unauthorized',
-        )
+    # if IS_AUTH_REQUIRED and (not token or token not in TOKEN_LIST):
+    #     raise HTTPException(
+    #         status_code=401,
+    #         detail='Unauthorized',
+    #     )
     
     # if IS_AUTH_REQUIRED and (not IS_AUTHORIZED):
     #     raise HTTPException(
