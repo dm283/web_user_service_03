@@ -41,7 +41,8 @@ const toggleTabs = (tabNumber) => {
 
 
 <template>
-  <nav class="flex bg-blue-50 text-indigo-500">
+<nav class="flex bg-blue-50">
+  <div class="border-b flex-1 flex text-indigo-500">
     <div :class="{'navTabsSelected': openTab == 1, 'navTabs': openTab != 1}" @click="toggleTabs(1)">
       Состояние склада
     </div>
@@ -51,7 +52,13 @@ const toggleTabs = (tabNumber) => {
     <div :class="{'navTabsSelected': openTab == 3, 'navTabs': openTab != 3}" @click="toggleTabs(3)">
       Отчет ТС
     </div>
-  </nav>
+  </div>
+  <div class="border-b flex space-x-1 px-3 py-1">
+    <div class="dashboardNavBtn text-teal-500 hover:text-teal-600"><i class="pi pi-refresh" style="font-size: 1rem" @click="updateData()"></i></div>
+    <div class="dashboardNavBtn text-blue-500 hover:text-blue-600" @click="showFiltersBar=(showFiltersBar) ? false:true">
+      <i class="pi pi-filter" style="font-size: 1rem"></i></div>
+  </div>
+</nav>
 
   <div id="dashboardContent" class="">
     <div v-if="openTab == 1">
@@ -89,10 +96,14 @@ const toggleTabs = (tabNumber) => {
 
 <style lang="postcss" scoped>
 .navTabs {
-  @apply rounded-t-lg px-5 py-2 cursor-pointer hover:text-indigo-600
+  @apply border rounded-t-lg h-10 px-5 py-1.5 cursor-pointer hover:text-indigo-600
 }
 
 .navTabsSelected {
-    @apply bg-white rounded-t-lg px-5 py-2 cursor-pointer hover:text-indigo-600
+    @apply border bg-white h-10 rounded-t-lg px-5 py-1.5 cursor-pointer hover:text-indigo-600
+  }
+
+.dashboardNavBtn {
+    @apply pt-1 w-8 h-8 border rounded-lg bg-white text-center cursor-pointer hover:ring-1
   }
 </style>

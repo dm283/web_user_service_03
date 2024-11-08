@@ -494,12 +494,12 @@ const signOut = async () => {
     <!-- <div class="inline-block px-4 text-base">{{ state.updateDateTime }}</div> -->
     <div class="inline-block px-4 text-base">{{ login }}</div>
     <div class="header-btn"><i class="pi pi-user" style="font-size: 1.3rem" @click="signOut()"></i></div>
-    <div class="header-btn"><i class="pi pi-refresh" style="font-size: 1.3rem" @click="updateData()"></i></div>
+    <!-- <div class="header-btn"><i class="pi pi-refresh" style="font-size: 1.3rem" @click="updateData()"></i></div> -->
     <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div>
     <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
       <i class="pi pi-comment" style="font-size: 1.3rem"></i></div>
-    <div class="header-btn" @click="showFiltersBar=(showFiltersBar) ? false:true">
-      <i class="pi pi-filter" style="font-size: 1.3rem"></i></div>
+    <!-- <div class="header-btn" @click="showFiltersBar=(showFiltersBar) ? false:true">
+      <i class="pi pi-filter" style="font-size: 1.3rem"></i></div> -->
   </div>
 </nav>
 
