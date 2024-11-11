@@ -516,8 +516,8 @@ const exportFile = (dataSet, fileName, fileType) => {
 </div>
 
 
-<div @click="checkState()" class="listArea max-w-max m-0 px-3 py-2 border border-gray-200 rounded-lg
-  bg-white drop-shadow-md hover:drop-shadow-lg ">
+<div @click="checkState()" class="listArea min-w-96 max-w-max m-0 px-3 py-2 border border-gray-200 rounded-lg
+  bg-white drop-shadow-md hover:drop-shadow-lg overflow-auto">
 
 <!-- {{ props.listTableColumns }} -->
 
@@ -648,7 +648,7 @@ const exportFile = (dataSet, fileName, fileType) => {
 </nav>
 
 <!-- table area ************************* --> 
-<section class="mt-2 border rounded-lg overflow-x-auto">
+<section class="mt-2 border rounded-lg overflow-auto">
 <table class="">
   <thead>
     <tr class="h-8 bg-blue-400 text-sm font-semibold text-white text-center">
