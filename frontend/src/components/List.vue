@@ -483,7 +483,7 @@ const exportFile = (dataSet, fileName, fileType) => {
 <div class="" > <!-- v-if="props.data[0]" necessary div for waiting data from root component!!! -->
 
 <!-- **********************   MODAL ITEM DETAILS   ************************** -->
-<div v-if="showItemCard" class="absolute z-10 top-0 left-0 w-screen h-screen bg-black bg-opacity-50
+<div v-if="showItemCard" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50
   flex items-center justify-center">
   <div class="flex-col w-3/5 h-4/5 bg-white rounded-lg">
 
@@ -700,27 +700,6 @@ const exportFile = (dataSet, fileName, fileType) => {
   </tbody>
 </table>
 </section>
-
-<!-- ***************   PAGINATION BLOCK   ********************* -->
-<!-- <div id="paginationBlock" class="absolute bottom-2 right-3 overflow-auto pt-3 pb-2">
-<div class="float-right space-x-1.5">
-  <div class="paginationBtn" @click="computeRenderData('first')">
-    <i class="pi pi-angle-double-left" style="font-size: 1rem"></i>
-  </div>
-  <div class="paginationBtn" @click="computeRenderData('left')">
-    <i class="pi pi-angle-left" style="font-size: 1rem"></i>
-  </div>
-  {{ state.limitRecords*(state.currentPage-1)+1 }}-{{ 
-    (state.limitRecords*state.currentPage < dataLengthRender()) 
-    ? state.limitRecords*state.currentPage : dataLengthRender() }} of {{ dataLengthRender() }}
-  <div class="paginationBtn" @click="computeRenderData('right')">
-    <i class="pi pi-angle-right" style="font-size: 1rem"></i>
-  </div>
-  <div class="paginationBtn" @click="computeRenderData('last')">
-    <i class="pi pi-angle-double-right" style="font-size: 1rem"></i>
-  </div>
-</div>
-</div> -->
 
 </div>
 </div>
