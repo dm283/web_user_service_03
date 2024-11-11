@@ -98,14 +98,14 @@ async def user_sign_out(
 
 @router.get('/', status_code=status.HTTP_200_OK)
 async def get_dashboard_data_filtered(
-        # token: Union[str, None] = None,
-        filterAccountBookDateDocFrom: Union[str, None] = None,
-        filterAccountBookDateDocTo: Union[str, None] = None,
-        filterAccountBookDateEnterFrom: Union[str, None] = None,
-        filterAccountBookDateEnterTo: Union[str, None] = None,
-        filterReportVehicleDateEnterFrom: Union[str, None] = None,
-        filterReportVehicleDateExitTo: Union[str, None] = None,
-        ):
+    token: Union[str, None] = None,
+    filterAccountBookDateDocFrom: Union[str, None] = None,
+    filterAccountBookDateDocTo: Union[str, None] = None,
+    filterAccountBookDateEnterFrom: Union[str, None] = None,
+    filterAccountBookDateEnterTo: Union[str, None] = None,
+    filterReportVehicleDateEnterFrom: Union[str, None] = None,
+    filterReportVehicleDateExitTo: Union[str, None] = None,
+    ):
     
     # if IS_AUTH_REQUIRED and (not token or token not in TOKEN_LIST):
     #     raise HTTPException(
@@ -129,7 +129,7 @@ async def get_dashboard_data_filtered(
             "filterAccountBookDateEnterTo": filterAccountBookDateEnterTo,
             "filterReportVehicleDateEnterFrom": filterReportVehicleDateEnterFrom,
             "filterReportVehicleDateExitTo": filterReportVehicleDateExitTo,
-                }
+            }
 
         return select_dashboard_data(
             #selects_keys_list=['received_product_quantity', 'received_dt_quantity', 'received_tnved_quantity', 'account_book', 'report_vehicle'], 
@@ -140,3 +140,4 @@ async def get_dashboard_data_filtered(
             detail=f'Error {e}'
         )
     #'received_product_quantity', 'received_dt_quantity', 'received_tnved_quantity', 
+    

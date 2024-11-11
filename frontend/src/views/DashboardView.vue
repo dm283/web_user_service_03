@@ -12,17 +12,54 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 var companyName = parser.get("content", "company_name");
-// console.log('backendIpAddress =', backendIpAddress)
-// console.log('backendPort =', backendPort)
+
 
 const state = reactive({
   data: [],
   isLoading: true,
 })
 
+const tabNumberVar = ref(1);  // initial tab number
 const filterSubstring = ref('')
+const storageStateListTableColumns = {
+    'gtdnum':'Номер ДТ','name':'Владелец','date_in':'Дата прием','g32':'№ тов.',
+    'g31':'Наименование товара','g33_in':'Код ТНВЭД','g31_3':'Кол.доп.ед', 
+    'g31_3a':'Ед.изм.', 'g35':'Вес брутто', 'date_chk':'Дата ок.хр.'
+}
 
-  async function getData() {
+const accountBookListTableColumns = {
+  'gtdnum': 'Номер ДТ', 'name': 'Владелец', 'date_in': 'Дата приема','time_in': 'Время приема',
+    'date_chk': 'Дата ок.хр.','g32': '№ тов.','g31': 'Наименование товара','g33_in': 'Код ТНВЭД',
+    'g35': 'Вес брутто', 'g31_3': 'Кол.доп.ед', 'g31_3a': 'Ед.изм.', 'doc_num_out': '№ ДТ выдачи',
+    'gtdregime_out': 'Режим выдачи', 'date_out': 'Дата выдачи', 'g35_out': 'Выдача брутто',
+    'g31_3_out': 'Выд.доп.ед'
+}
+
+const reportVehicleListTableColumns = {
+  'id':'№ п/п', 'gtdnum':'Номер ДТ', 'g32':'№ тов.', 'g33_in':'Код ТНВЭД', 'g31':'Наименование товара', 'g35':'Вес брутто',
+    'g31_3':'Кол.доп.ед', 'g31_3a':'Ед.изм.', 'date_in':'Дата приема', 'place':'Скл.номер', 'date_chk':'Дата ок.хр.', 
+       'exp_date':'Срок годности', 'gtdregime_out':'Режим выдачи', 'doc_num_out':'№ ДТ выдачи', 'g33_out':'Код ТНВЭД выдачи',
+    'g35_out':'Выдача брутто', 'g31_3_out':'Выд.доп.ед', 'date_out':'Дата выдачи', 
+    'g35ost_':'Остаток брутто', 'g31_3ost_':'Остаток Доп.ед',
+}
+
+
+const filterAccountBookDateDocFrom = ref();
+const filterAccountBookDateDocTo = ref();
+
+const filterAccountBookDateEnterFrom = ref()
+const filterAccountBookDateEnterTo = ref()
+
+const filterReportVehicleDateEnterFrom = ref()
+const filterReportVehicleDateExitTo = ref()
+
+const showFiltersBar = ref(false);
+const mouseOverFiltersBar = ref(false);
+
+const token = ref(null);
+
+
+async function getData() {
   // get data from API
   try {
       state.data = [];
@@ -39,9 +76,8 @@ const filterSubstring = ref('')
 
       state.reportVehicle = {};
 
-      let query = `http://${backendIpAddress}:${backendPort}/dashboard/` + filterSubstring.value
-      // let query = `http://${backendIpAddress}:${backendPort}/dashboard/` + '?token=' + props.token + filterSubstring.value
-      // console.log('query =', query)
+      let query = `http://${backendIpAddress}:${backendPort}/dashboard/` + '?token=' + token.value + filterSubstring.value
+      console.log('query =', query)
       const response = await axios.get(query);
       
       // console.log('API RESPONSE =', response.status)
@@ -85,14 +121,20 @@ const filterSubstring = ref('')
 
 
 async function updateData() {
-  //
+  // updates data from database
   state.isLoading = true;
   await getData();
 };
 
-const handleSubmit = async () => {
+
+const filterBarShow = () => {
   //
-  // console.log('handle submit!') 
+  showFiltersBar.value=(showFiltersBar.value) ? false:true;
+}
+
+
+const applyFilters = async () => {
+  // applies filters
   const filters = {
     'filterAccountBookDateDocFrom': filterAccountBookDateDocFrom, 
     'filterAccountBookDateDocTo': filterAccountBookDateDocTo, 
@@ -104,62 +146,18 @@ const handleSubmit = async () => {
   filterSubstring.value = '&';
   
   for (let f in filters) {
-    // console.log('filters.values =', filters[f].value)
     if (filters[f].value) {
       filterSubstring.value += f + '=' + filters[f].value + '&'
     }
   }
-  
-  // console.log('filterSubstring = ', filterSubstring.value)
 
   state.isLoading = true;
   await getData();   
 };
 
 
-onMounted(async () => {
-  // initial data getting
-  await getData()
-});
-
-
-const storageStateListTableColumns = {
-    'gtdnum':'Номер ДТ','name':'Владелец','date_in':'Дата прием','g32':'№ тов.',
-    'g31':'Наименование товара','g33_in':'Код ТНВЭД','g31_3':'Кол.доп.ед', 
-    'g31_3a':'Ед.изм.', 'g35':'Вес брутто', 'date_chk':'Дата ок.хр.'
-}
-
-const accountBookListTableColumns = {
-  'gtdnum': 'Номер ДТ', 'name': 'Владелец', 'date_in': 'Дата приема','time_in': 'Время приема',
-    'date_chk': 'Дата ок.хр.','g32': '№ тов.','g31': 'Наименование товара','g33_in': 'Код ТНВЭД',
-    'g35': 'Вес брутто', 'g31_3': 'Кол.доп.ед', 'g31_3a': 'Ед.изм.', 'doc_num_out': '№ ДТ выдачи',
-    'gtdregime_out': 'Режим выдачи', 'date_out': 'Дата выдачи', 'g35_out': 'Выдача брутто',
-    'g31_3_out': 'Выд.доп.ед'
-}
-
-const reportVehicleListTableColumns = {
-  'id':'№ п/п', 'gtdnum':'Номер ДТ', 'g32':'№ тов.', 'g33_in':'Код ТНВЭД', 'g31':'Наименование товара', 'g35':'Вес брутто',
-    'g31_3':'Кол.доп.ед', 'g31_3a':'Ед.изм.', 'date_in':'Дата приема', 'place':'Скл.номер', 'date_chk':'Дата ок.хр.', 
-       'exp_date':'Срок годности', 'gtdregime_out':'Режим выдачи', 'doc_num_out':'№ ДТ выдачи', 'g33_out':'Код ТНВЭД выдачи',
-    'g35_out':'Выдача брутто', 'g31_3_out':'Выд.доп.ед', 'date_out':'Дата выдачи', 
-    'g35ost_':'Остаток брутто', 'g31_3ost_':'Остаток Доп.ед',
-}
-
-
-const filterAccountBookDateDocFrom = ref();
-const filterAccountBookDateDocTo = ref();
-
-const filterAccountBookDateEnterFrom = ref()
-const filterAccountBookDateEnterTo = ref()
-
-const filterReportVehicleDateEnterFrom = ref()
-const filterReportVehicleDateExitTo = ref()
-
-const showFiltersBar = ref(false);
-const mouseOverFiltersBar = ref(false);
-
-
 const clearFilters = async () => {
+  // clears filters values
   filterAccountBookDateDocFrom.value = '';
   filterAccountBookDateDocTo.value = '';
 
@@ -170,19 +168,27 @@ const clearFilters = async () => {
   filterReportVehicleDateExitTo.value = ''
 
   state.isLoading = true;
-  await handleSubmit();
+  await applyFilters();
 }
 
-const tabNumberVar = ref(1);  // initial tab number
+
 const changeTabValue = (n) => {
   // rememberance of tab number from Dashboard component
   tabNumberVar.value = n;
 };
 
+
+onMounted(async () => {
+  // initial data getting
+  await getData()
+});
+
 </script>
 
 
 <template>
+  <div class="relative">
+
   <!-- Show loading spinner while loading is true -->
   <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
     <PulseLoader />
@@ -193,7 +199,10 @@ const changeTabValue = (n) => {
   <div v-else class="">
     <Dashboard 
       @change-tab="changeTabValue"
+      @update-dashboard="updateData"
+      @filters-show="filterBarShow"
       :tabNumberVar = "tabNumberVar"
+      :updateDateTime = "state.updateDateTime"
 
       :storageStateBarTnvedQuantityDatax = "state.storageState.barTnvedQuantity.datax" 
       :storageStateBarTnvedQuantityDatay="state.storageState.barTnvedQuantity.datay" 
@@ -216,4 +225,139 @@ const changeTabValue = (n) => {
       :reportVehicleListTableColumns="reportVehicleListTableColumns"
     /> 
   </div>
+
+  <!-- **************   FILTERS SIDEBAR    ******************* -->
+  <div v-if="showFiltersBar" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50">
+    <div  class="absolute z-20 top-0 right-0 border w-96 h-full bg-white">
+    <div class="p-3 bg-gray-200 overflow-auto">
+    <div class="float-left text-xl ">
+      Фильтры данных
+    </div>
+    <div class="float-right cursor-pointer hover:text-gray-500" @click="showFiltersBar=false">
+      <i class="pi pi-times" style="font-size: 1.5rem"></i>
+    </div>
+    </div>
+
+    <form @submit.prevent="applyFilters" class="mx-0 mt-3 ">
+
+      <div class="mt-5 mb-2 ml-3 font-semibold">КНИГА УЧЁТА</div>
+
+      <div class="mx-5 mb-2">
+        <label class="formLabelStyle">date_doc</label>
+        <div class="flex ">
+          <div class="pt-1">c</div>
+          <input
+            type="date"
+            v-model="filterAccountBookDateDocFrom"
+            id="filterAccountBookDateDocFrom"
+            name="filterAccountBookDateDocFrom"
+            :class="filterAccountBookDateDocFrom ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />
+          <div class="pt-1">по</div>
+          <input
+            type="date"
+            v-model="filterAccountBookDateDocTo"
+            id="filterAccountBookDateDocTo"
+            name="filterAccountBookDateDocTo"
+            :class="filterAccountBookDateDocTo ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />   
+        </div>
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class="formLabelStyle">Дата приёма</label>
+        <div class="flex ">
+          <div class="pt-1">c</div>
+          <input
+            type="date"
+            v-model="filterAccountBookDateEnterFrom"
+            id="filterAccountBookDateEnterFrom"
+            name="filterAccountBookDateEnterFrom"
+            :class="filterAccountBookDateEnterFrom ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />
+          <div class="pt-1">по</div>
+          <input
+            type="date"
+            v-model="filterAccountBookDateEnterTo"
+            id="filterAccountBookDateEnterTo"
+            name="filterAccountBookDateEnterTo"
+            :class="filterAccountBookDateEnterTo ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />   
+        </div>
+      </div>
+
+      <hr class="mt-7"> 
+
+      <div class="mt-5 mb-2 ml-3 font-semibold">ОТЧЁТ ТС</div>
+
+      <div class="mx-5 mb-2">
+        <label class="formLabelStyle">Дата выдачи - Дата приёма</label>
+        <div class="flex ">
+          <div class="pt-1">c</div>
+          <input
+            type="date"
+            v-model="filterReportVehicleDateEnterFrom"
+            id="filterDateDocFrom"
+            name="filterDateDocFrom"
+            :class="filterReportVehicleDateEnterFrom ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />
+          <div class="pt-1">по</div>
+          <input
+            type="date"
+            v-model="filterReportVehicleDateExitTo"
+            id="filterDateDocTo"
+            name="filterDateDocTo"
+            :class="filterReportVehicleDateExitTo ? 'formInputStyleFilled' : 'formInputStyle'"
+            placeholder=""
+          />   
+        </div>
+      </div>
+
+      <hr class="mt-7">
+
+      <div class="mt-7 flex justify-center space-x-5 py-3 px-5 text-center">
+        <button
+          class="bg-sky-400 text-white font-semibold rounded-full w-60
+            drop-shadow-md hover:shadow-lg hover:bg-sky-500"
+          type="submit"
+        >
+        Применить
+        </button>
+        <button
+          class="bg-rose-400 text-white font-semibold rounded-full px-3 py-2 w-60
+            drop-shadow-md hover:shadow-lg hover:bg-rose-500"
+          type="button"
+          @click="clearFilters()"
+        >
+        Сбросить
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+</div>
 </template>
+
+
+<style lang="postcss" scoped>
+.formLabelStyle {
+  @apply mx-1 block text-xs font-bold text-blue-500
+}
+
+.formInputStyle {
+  @apply border-b-2 border-blue-300 text-gray-300 text-base font-medium w-36 py-1 px-1 mb-2
+  hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer
+}
+
+.formInputStyleFilled {
+  @apply border-b-2 border-blue-300 text-gray-600 text-base font-medium w-36 py-1 px-1 mb-2
+  hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer
+}
+</style>

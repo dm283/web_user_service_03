@@ -7,6 +7,7 @@ import TabReportVehicle from '@/components/TabReportVehicle.vue';
   
 const props = defineProps({
   tabNumberVar: 1,
+  updateDateTime: '',
   storageStateBarTnvedQuantityDatax: Array,
   storageStateBarTnvedQuantityDatay: Array,
   storageStateCardProductQuantity: 0,
@@ -28,14 +29,27 @@ const props = defineProps({
   reportVehicleListTableColumns: Object,
 });
 
-const emit = defineEmits(['changeTab'])
+const emit = defineEmits(['changeTab', 'updateDashboard', 'filtersShow'])
 
 const openTab = ref(props.tabNumberVar);
 
 const toggleTabs = (tabNumber) => {
+  //
   openTab.value = tabNumber;
   emit('changeTab', tabNumber)
 };
+
+
+const updateData = () => {
+  //
+  emit('updateDashboard')
+}
+
+
+const filterBarShow = () => {
+  //
+  emit('filtersShow')
+}
 
 </script>
 
@@ -49,13 +63,16 @@ const toggleTabs = (tabNumber) => {
     <div :class="{'navTabsSelected': openTab == 2, 'navTabs': openTab != 2}" @click="toggleTabs(2)">
       Книга учета
     </div>
-    <div :class="{'navTabsSelected': openTab == 3, 'navTabs': openTab != 3}" @click="toggleTabs(3)">
+    <!-- <div :class="{'navTabsSelected': openTab == 3, 'navTabs': openTab != 3}" @click="toggleTabs(3)">
       Отчет ТС
-    </div>
+    </div> -->
   </div>
+
+  <div class="border-b pt-2.5 text-blue-600 text-sm font-semibold"> {{ props.updateDateTime }}</div>
+
   <div class="border-b flex space-x-1 px-3 py-1">
     <div class="dashboardNavBtn text-teal-500 hover:text-teal-600"><i class="pi pi-refresh" style="font-size: 1rem" @click="updateData()"></i></div>
-    <div class="dashboardNavBtn text-blue-500 hover:text-blue-600" @click="showFiltersBar=(showFiltersBar) ? false:true">
+    <div class="dashboardNavBtn text-blue-500 hover:text-blue-600" @click="filterBarShow()">
       <i class="pi pi-filter" style="font-size: 1rem"></i></div>
   </div>
 </nav>
