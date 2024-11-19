@@ -9,9 +9,14 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
+    uuid = Column(String)
+    name = Column(String)
+    type = Column(String)
     login = Column(String, unique=True, index=True)
     email = Column(String)
     hashed_password = Column(String)
+    created = Column(DateTime)
+    updated = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=True)
 
     items = relationship("Item", back_populates="owner")

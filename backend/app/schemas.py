@@ -51,6 +51,8 @@ class Item(ItemBase):
 class UserBase(BaseModel):
     login: str
     email: str
+    name: str
+    type: str
 
 
 class UserCreate(UserBase):
@@ -61,6 +63,9 @@ class User(UserBase):
     id: int
     is_active: bool
     items: list[Item] = []
+    uuid: str
+    created: datetime
+    updated: datetime | None
 
     class Config:
         # orm_mode = True

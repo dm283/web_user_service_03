@@ -1,16 +1,14 @@
 import os, random, ast
-from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect, Depends # HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
-from typing import Annotated
-from typing import List, Union
+from typing import Annotated, Union
 from urllib.parse import quote
-from app import views
-
-from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from app import crud, models, schemas
+from passlib.context import CryptContext
+from uuid import uuid4
+from app import crud, models, schemas, views
 from app.database import SessionLocal, engine
 
 
@@ -226,12 +224,12 @@ async def user_sign_in(
             detail='Incorrect username or password',
         )
         
-
     db_user = crud.get_user_by_login(db, login=login)
-    db_pass = db_user.hashed_password[:-len('notreallyhashed')]
+    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    if db_user:
+        check_password = password_context.verify(password, db_user.hashed_password)
 
-    #if login in views.USERS_LIST and USERS_LIST[login] == password:    # users from file option
-    if db_user and db_pass == password:
+    if db_user and check_password:
         # IS_AUTHORIZED = True
 
         new_token = str(random.randint(1, 1000000))

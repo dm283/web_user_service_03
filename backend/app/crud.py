@@ -1,6 +1,8 @@
 import datetime
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
+from passlib.context import CryptContext
+from uuid import uuid4
 from app import models, schemas
 
 
@@ -43,11 +45,19 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    fake_hashed_password = user.password + "notreallyhashed"
-    db_user = models.User(login=user.login, email=user.email, hashed_password=fake_hashed_password)
+    # creates a user in database
+    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    db_user = models.User(
+        **user.model_dump(exclude='password'),
+        uuid=str(uuid4()), 
+        hashed_password=password_context.hash(user.password), 
+        created=datetime.datetime.now()
+        )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
     return db_user
 
 
