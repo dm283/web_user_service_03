@@ -10,6 +10,7 @@ const props = defineProps({
   name: String,
   data: Array,
   listTableColumns: Object,
+  listItemFileds: Object,
 });
 
 const state = reactive({
@@ -499,9 +500,9 @@ const exportFile = (dataSet, fileName, fileType) => {
     
     <div class="h-4/5 m-7 text-sm overflow-auto">
       <table class="w-full">
-        <tr class="" v-for="field in Object.keys(props.listTableColumns)">
+        <tr class="" v-for="field in Object.keys(props.listItemFileds)">
           <td class="w-60 py-1 border-b font-semibold">
-            {{ props.listTableColumns[field] }}
+            {{ props.listItemFileds[field] }}
           </td>
           <td class="border-b">
             {{ selectedItem[field] }}

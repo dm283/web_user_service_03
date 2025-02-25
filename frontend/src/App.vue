@@ -198,14 +198,14 @@ const signOut = async () => {
 <!-- **************   MAIN MENU SIDEBAR    ******************* -->
 <div v-if="showMenuBar" class="w-60 h-full fixed bg-sky-700 text-white">
   <div class="">
+    <RouterLink to="/carpasses">
+      <MenuSection :label="'Пропуска'" :icon="'truck'" :description="'Информация о пропусках ТС'"/>
+    </RouterLink>
     <RouterLink to="/">
       <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"/>
     </RouterLink>
     <RouterLink to="/dashboard">
       <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"/>
-    </RouterLink>
-    <RouterLink to="/vehicles">
-      <MenuSection :label="'Транспортные средства'" :icon="'truck'" :description="'Информация о ТС'"/>
     </RouterLink>
   </div>
 </div>
