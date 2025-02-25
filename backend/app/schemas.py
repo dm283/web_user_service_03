@@ -1,6 +1,40 @@
-from datetime import datetime
+from datetime import date, datetime, time, timedelta
 from pydantic import BaseModel
 from fastapi import UploadFile
+
+
+class CarpassCreate(BaseModel):
+    ncar: str
+    dateen: date
+    timeen: time
+    ntir: str
+    nkont: str
+    driver: str
+    drv_man: str
+    dev_phone: str
+    contact: int
+    contact_name: str
+    contact_broker: int
+    broker_name: str
+    place_n: str
+    dateex: date
+    timeex: time
+
+
+
+class Carpass(CarpassCreate):
+    id: int
+    guid: str
+    id_enter: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
 
 
 class DocumentBase(BaseModel):

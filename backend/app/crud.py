@@ -32,6 +32,26 @@ def get_documents(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Document).order_by(models.Document.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
+def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Carpass).order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
+def create_carpass(db: Session, carpass: schemas.CarpassCreate):
+    #
+    guid='q1w2e3r4t5y6u'
+    id_enter='к4е5н6г7'
+    created_datetime = datetime.datetime.now()
+
+    db_carpass = models.Carpass(**carpass.model_dump(), guid=guid, id_enter=id_enter, created_datetime=created_datetime)
+    print(db_carpass)
+    db.add(db_carpass)
+    db.commit()
+    db.refresh(db_carpass)
+    
+    return db_carpass.id_enter
+
+
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
