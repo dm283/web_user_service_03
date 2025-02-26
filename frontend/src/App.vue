@@ -104,7 +104,7 @@ const signOut = async () => {
 <div v-if="!isAuthorized" class="flex">
     
   <div class="mt-40 mx-auto border rounded-lg overflow-hidden">
-    <div class="py-2 px-5 bg-gradient-to-r from-sky-600 to-sky-400 text-center text-white text-lg">
+    <div class="py-2 px-5 bg-gradient-to-r from-sky-800 to-sky-600 text-center text-white text-lg">
       Альта-Софт | Управление складом
     </div>
     <form @submit.prevent="authSubmit" class="mx-5 mt-5">
@@ -177,20 +177,23 @@ const signOut = async () => {
 
 
 <!-- **************   HEADER    ******************* -->
-<nav class="bg-gradient-to-r from-sky-600 to-sky-400 px-5 h-14 text-white overflow-auto">  
+<nav class="bg-gradient-to-r from-sky-800 to-sky-600 px-5 h-14 text-white overflow-auto">  
   <div class="text-center md:flex md:float-left text-xl">
-    <div class="inline-block border-2 border-cyan-50 w-10 h-10 rounded-full pt-1 mt-2 mr-5 cursor-pointer text-cyan-300 hover:border-cyan-300 active:text-cyan-100 active:border-cyan-100">
+    <div class="inline-block w-10 h-10 rounded-full pt-1.5 mt-2 mr-5 cursor-pointer 
+      text-cyan-300 hover:bg-sky-700 active:text-cyan-100">
       <i class="pi pi-bars" style="font-size: 1.3rem" @click="showMenuBar=(showMenuBar) ? false:true"></i>
     </div>
     <div class="inline-block mt-3 px-4 border-r-2">{{ companyName }}</div>
-    <div class="inline-block mt-3 px-4">Личный кабинет [ dev ]</div>
+    <div class="inline-block mt-3 px-4">Управление складом</div>
   </div>
   <div class="mt-3.5 text-center md:flex md:float-right">
     <div class="inline-block px-4 text-base">{{ login }}</div>
     <div class="header-btn"><i class="pi pi-user" style="font-size: 1.3rem" @click="signOut()"></i></div>
     <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div>
-    <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
-      <i class="pi pi-comment" style="font-size: 1.3rem"></i></div>
+    <div class="header-btn"><i class="pi pi-bell" style="font-size: 1.3rem"></i></div>
+    <!-- <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
+      <i class="pi pi-comment" style="font-size: 1.3rem"></i></div> -->
+    <div class="header-btn"><div class="-mt-0.5">RU</div></div>
   </div>
 </nav>
 
