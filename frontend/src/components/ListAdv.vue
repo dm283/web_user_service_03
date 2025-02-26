@@ -497,7 +497,6 @@ const exportFile = (dataSet, fileName, fileType) => {
       </div>
     </div>
     
-    
     <div class="h-4/5 m-7 text-sm overflow-auto">
       <table class="w-full">
         <tr class="" v-for="field in Object.keys(props.listItemFileds)">
@@ -511,8 +510,6 @@ const exportFile = (dataSet, fileName, fileType) => {
       </table>
     </div>
 
-
-
   </div>
 </div>
 
@@ -524,11 +521,45 @@ const exportFile = (dataSet, fileName, fileType) => {
 
 <!-- *******************************  NAV AREA  ************************* --> 
 <nav class="overflow-auto">
-  <div class="inline-block">
+
+  <div id="listTitle" class="">
     <div class="text-xl font-normal">{{ props.name }}</div>
   </div>
 
-  <div class="float-right">
+  <div class="inline-block mt-3 space-x-2">
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
+      @click="">
+      <i class="pi pi-plus" style="font-size: 1rem"></i>
+    </button>
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
+      @click="">
+      <i class="pi pi-file-edit" style="font-size: 1rem"></i>
+    </button>
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
+      @click="">
+      <i class="pi pi-trash" style="font-size: 1rem"></i>
+    </button>
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
+      @click="">
+      <i class="pi pi-refresh" style="font-size: 1rem"></i>
+    </button>
+    <!-- DOWNLOAD BUTTON DROPDOWN -->
+    <div class="inline-block mr-1">
+      <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
+        @click="toggleDropdown('download')">
+        <i class="pi pi-download" style="font-size: 1rem"></i>
+      </button>
+      <div v-show="isDropDownloadShow" class="mt-1 -ml-11 w-20 border rounded-md border-gray-300 
+        bg-white text-xs font-semilbold absolute z-10 overflow-hidden">
+        <ul @click="toggleDropdown('download')">
+          <li class="h-8 pl-3 py-1.5 uppercase cursor-pointer hover:bg-gray-100" 
+            @click="exportFile(dataSet=state.localData, fileName='dashboard_data', fileType=option)" v-for="option in ['xlsx', 'xls', 'csv']">{{ option }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="float-right mt-3">
   <!-- ***************   PAGINATION BLOCK   ********************* -->
   <div id="paginationBlock" class="inline-block mr-3">
   <div class="space-x-1.5">
@@ -540,7 +571,7 @@ const exportFile = (dataSet, fileName, fileType) => {
     </div>
     {{ state.limitRecords*(state.currentPage-1)+1 }}-{{ 
       (state.limitRecords*state.currentPage < dataLengthRender()) 
-      ? state.limitRecords*state.currentPage : dataLengthRender() }} of {{ dataLengthRender() }}
+      ? state.limitRecords*state.currentPage : dataLengthRender() }} из {{ dataLengthRender() }}
     <div class="paginationBtn" @click="computeRenderData('right')">
       <i class="pi pi-angle-right" style="font-size: 1rem"></i>
     </div>
@@ -550,101 +581,7 @@ const exportFile = (dataSet, fileName, fileType) => {
   </div>
   </div>
 
-  <!-- DOWNLOAD BUTTON DROPDOWN -->
-  <div class="inline-block mr-1">
-    <button class="w-8 h-8 rounded-lg bg-green-400 text-white hover:opacity-75" 
-      @click="toggleDropdown('download')">
-      <i class="pi pi-download" style="font-size: 1rem"></i>
-    </button>
-    <div v-show="isDropDownloadShow" class="mt-1 -ml-11 w-20 border rounded-md border-gray-300 
-      bg-white text-xs font-semilbold absolute z-10 overflow-hidden">
-      <ul @click="toggleDropdown('download')">
-        <li class="h-8 pl-3 py-1.5 uppercase cursor-pointer hover:bg-gray-100" 
-           @click="exportFile(dataSet=state.localData, fileName='dashboard_data', fileType=option)" v-for="option in ['xlsx', 'xls', 'csv']">{{ option }}</li>
-      </ul>
-    </div>
-  </div>
-
 </div>
-
-<!-- search area ************************* --> 
-<!-- <div class="inline-block">
-<div id="searchArea" class="flex mr-5 w-96 border border-gray-100 rounded-full shadow-md hover:shadow-lg">
-
-  <div class="flex-0 bg-gray-100 h-8 rounded-l-full" 
-    @mouseover="mouseOverSearchDropdown=true" @mouseleave="mouseOverSearchDropdown=false">
-    <button id="btn-6" @click="toggleDropdown('search')" class="border-l rounded-l-full px-3 h-8">
-      <div class="inline-block mr-1">{{ props.listTableColumns[searchBy] || 'Все столбцы' }}</div>
-      <i class="pi pi-angle-down" style="font-size: 0.7rem"></i>
-    </button>
-    <div v-show="isDropSearchShow" class="absolute z-10 bg-white text-sm font-semibold mt-1 ml-1 w-44
-       border-gray-500 rounded-md overflow-hidden backdrop-filter backdrop-grayscale drop-shadow-lg">
-      <ul @click="toggleDropdown('search')">
-        <li class="border-b border-gray-300 pl-3 py-1.5 cursor-pointer hover:bg-gray-100" @click="searchBy='all'">Все столбцы</li>
-        <li :class=dropdownLiStyle @click="searchBy=elem" v-for="elem in searchFieldsList">{{ props.listTableColumns[elem] }}</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="mt-1.5 flex-0 pl-2 text-gray-600"><i class="pi pi-search"></i></div>
-  <input class="flex-1 h-8 pl-3 border-r rounded-r-full focus:outline-none" type="text" id="searchInput" @keyup="searchRecord()" 
-    placeholder="Search" title="Type in a name">
-
-</div>
-</div> -->
-
-<!-- sort area ************************* --> 
-<!-- <div class="inline-block">
-<div id="sortArea" class="flex mr-5">
-
-  <div class="flex-0" @mouseover="mouseOverSortDropdown=true" @mouseleave="mouseOverSortDropdown=false">
-    <button id="btn-4" @click="toggleDropdown('sort')" class="bg-gray-100 rounded-full px-3 mr-1 h-8
-      backdrop-filter backdrop-grayscale drop-shadow-lg hover:shadow-lg">
-      <div class="inline-block mr-1" v-if="sortBy=='default'">Sort by</div>
-      <div class="inline-block mr-1 capitalize" v-else>{{ sortBy }}</div>
-      <i class="pi pi-angle-down" style="font-size: 0.7rem"></i>
-    </button>
-    <div v-show="isDropSortShow" class="absolute z-10 bg-white text-sm font-semibold mt-1 ml-1 w-40 
-       border-gray-500 rounded-md overflow-hidden backdrop-filter backdrop-grayscale drop-shadow-lg">
-      <ul @click="toggleDropdown('sort')">
-        <li class="border-b border-gray-300 pl-3 py-1.5 cursor-pointer hover:bg-gray-100" @click="clickSortField('default')">Default</li>
-        <li :class=dropdownLiStyle @click="clickSortField(field)" v-for="field in sortFieldsList">{{ field }}</li>
-      </ul>
-    </div>
-  </div>  
-
-  <button id="btn-5" class="flex-1 bg-gray-100 rounded-full w-8 h-8 backdrop-filter backdrop-grayscale drop-shadow-lg hover:shadow-lg" 
-    @click="clickSortArrow()">
-    <i :class=sortIcon style="font-size: 0.8rem; color: orange"></i>
-  </button>
-</div>
-</div> -->
-
-<!-- filters area *************************  -->
-<!-- <div id="filtersArea" class="inline-block mr-5">
-  <button id='btn-1' :class=btnStyle>
-    <i class="pi pi-filter" style="font-size: 0.8rem; color: blue"></i>
-    <span class="ml-2">Filter</span>
-  </button>
-</div> -->
-
-<!-- refresh area *************************  -->
-<!-- <div id="refreshArea" class="inline-block mr-5">
-  <button id='btn-2' :class=btnStyle>
-    <i class="pi pi-refresh" style="font-size: 0.8rem; color: magenta"></i>
-    <span class="ml-2">Refresh</span>
-  </button>
-</div> -->
-
-<!-- add element area ************************* --> 
-<!-- <div id="addElementArea" class="inline-block mr-5">
-  <RouterLink to="/items/add">
-    <button id='btn-3' :class=btnStyle @click="console.log('add element')">
-      <i class="pi pi-plus" style="font-size: 0.8rem; color: green"></i>
-      <span class="ml-2">Add</span>
-    </button>
-  </RouterLink>
-</div> -->
 
 </nav>
 

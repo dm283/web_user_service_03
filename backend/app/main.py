@@ -1,4 +1,5 @@
 import os, random, ast
+from datetime import date, datetime, time, timedelta
 from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect, Depends # HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
@@ -114,6 +115,58 @@ def read_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     documents = crud.get_documents(db, skip=skip, limit=limit)
     print('GET DOCS!!!')
     return documents
+
+
+@app.get('/carpasses/', response_model=list[schemas.Carpass])
+def read_carpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    carpasses = crud.get_carpasses(db, skip=skip, limit=limit)
+    print('GET CARPASSES!!!')
+    return carpasses
+
+
+@app.post("/carpasses/")
+def create_carpass(
+    ncar: Annotated[str, Form()], 
+    dateen: Annotated[date, Form()],
+    timeen: Annotated[time, Form()],
+    ntir: Annotated[str, Form()], 
+    nkont: Annotated[str, Form()], 
+    driver: Annotated[str, Form()], 
+    drv_man: Annotated[str, Form()], 
+    dev_phone: Annotated[str, Form()], 
+    contact: Annotated[int, Form()], 
+    contact_name: Annotated[str, Form()], 
+    contact_broker: Annotated[int, Form()], 
+    broker_name: Annotated[str, Form()], 
+    place_n: Annotated[str, Form()], 
+    dateex: Annotated[date, Form()],
+    timeex: Annotated[time, Form()],
+
+    db: Session = Depends(get_db)
+):
+    print('======start')
+
+    carpass = schemas.CarpassCreate(
+        ncar = ncar,
+        dateen = dateen,
+        timeen = timeen,
+        ntir = ntir,
+        nkont = nkont,
+        driver = driver,
+        drv_man = drv_man,
+        dev_phone = dev_phone,
+        contact = contact,
+        contact_name = contact_name,
+        contact_broker = contact_broker,
+        broker_name =  broker_name,
+        place_n = place_n,
+        dateex = dateex,
+        timeex = timeex
+    )
+
+    print('======stop')
+        
+    return crud.create_carpass(db=db, carpass=carpass)
 
 
 @app.post("/users/", response_model=schemas.User)

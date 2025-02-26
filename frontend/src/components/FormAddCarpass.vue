@@ -1,0 +1,384 @@
+<script setup>
+// import router from '@/router';
+import {ref, reactive} from 'vue';
+import { useToast } from 'vue-toastification';
+import axios from 'axios';
+
+import data from "../../../backend/config.ini?raw";
+import { ConfigIniParser } from "config-ini-parser";
+let parser = new ConfigIniParser(); //Use default delimiter
+parser.parse(data);
+var backendIpAddress = parser.get("main", "backend_ip_address");
+var backendPort = parser.get("main", "backend_port");
+
+
+const emit = defineEmits(['docCreated']) // emit
+
+const form = reactive({
+  ncar: '',
+  dateen: '',
+  timeen: '',
+  ntir: '',
+  nkont: '',
+  driver: '',
+  drv_man: '',
+  dev_phone: '',
+  contact: 111,
+  contact_name: '',
+  contact_broker: 222,
+  broker_name: '',
+  place_n: '',
+  dateex: '',
+  timeex: '',
+});
+
+const file = ref(null)
+
+const initEmptyForm = () => {
+    form.ncar = ''
+    form.dateen = ''
+    form.timeen = ''
+    form.ntir = ''
+    form.nkont = ''
+    form.driver = ''
+    form.drv_man = ''
+    form.dev_phone = ''
+    form.contact = 111
+    form.contact_name = ''
+    form.contact_broker = 222
+    form.broker_name = ''
+    form.place_n = ''
+    form.dateex = ''
+    form.timeex = ''
+}
+
+initEmptyForm();
+
+const toast = useToast();
+
+const handleSubmit = async () => {
+  // const newItem = {
+  //   doc_name: form.docName,
+  //   guid_consignment: form.guidConsignment,
+  //   customer_name: form.customerName,
+  //   file: file.value.files[0],
+  // };
+
+  let formData = new FormData();
+
+  formData.append('ncar', form.ncar);
+  formData.append('dateen', form.dateen);
+  formData.append('timeen', form.timeen);
+  formData.append('ntir', form.ntir);
+  formData.append('nkont', form.nkont);
+  formData.append('driver', form.driver);
+  formData.append('drv_man', form.drv_man);
+  formData.append('dev_phone', form.dev_phone);
+  formData.append('contact', form.contact);
+  formData.append('contact_name', form.contact_name);
+  formData.append('contact_broker', form.contact_broker);
+  formData.append('broker_name', form.broker_name);
+  formData.append('place_n', form.place_n);
+  formData.append('dateex', form.dateex);
+  formData.append('timeex', form.timeex);
+  // formData.append('file', file.value.files[0]);
+  // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/single-file/`, 
+  // formData, {headers: {'Content-Type': 'multipart/form-data'}});
+
+  try {
+    // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
+    const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
+      formData, {headers: {'Content-Type': 'multipart/form-data'}});
+
+    toast.success('Новый пропуск добавлен');
+    initEmptyForm();
+    emit('docCreated') // emit
+  } catch (error) {
+    console.error('Error adding item', error);
+    toast.error('Item has not added');
+  };
+};
+
+
+</script>
+
+<template>
+  
+  <div class="w-80 bg-white drop-shadow-md rounded-lg overflow-hidden hover:drop-shadow-lg">
+
+    <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
+      Новый пропуск
+      <!-- <div class="absolute top-2 right-4">
+        <RouterLink
+          to="/"
+          class="hover:text-lime-600">
+          <i class="pi pi-times" style="font-size: 1rem"></i>
+        </RouterLink>
+      </div> -->
+    </header>
+    
+    <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
+      
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Номер машины</label>
+        <input
+          type="text"
+          v-model="form.ncar"
+          id="ncar"
+          name="ncar"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Дата въезда</label>
+        <input
+          type="date"
+          v-model="form.dateen"
+          id="dateen"
+          name="dateen"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Время въезда</label>
+        <input
+          type="time"
+          v-model="form.timeen"
+          id="timeen"
+          name="timeen"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Номер документа доставки</label>
+        <input
+          type="text"
+          v-model="form.ntir"
+          id="ntir"
+          name="ntir"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Номер контейнера</label>
+        <input
+          type="text"
+          v-model="form.nkont"
+          id="nkont"
+          name="nkont"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Наименование перевозчика</label>
+        <input
+          type="text"
+          v-model="form.driver"
+          id="driver"
+          name="driver"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>ФИО водителя</label>
+        <input
+          type="text"
+          v-model="form.drv_man"
+          id="drv_man"
+          name="drv_man"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Телефон водителя для связи</label>
+        <input
+          type="text"
+          v-model="form.dev_phone"
+          id="dev_phone"
+          name="dev_phone"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Наименование клиента</label>
+        <input
+          type="text"
+          v-model="form.contact_name"
+          id="contact_name"
+          name="contact_name"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Наименование брокера</label>
+        <input
+          type="text"
+          v-model="form.broker_name"
+          id="broker_name"
+          name="broker_name"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Номер стоянки</label>
+        <input
+          type="text"
+          v-model="form.place_n"
+          id="place_n"
+          name="place_n"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Дата выезда</label>
+        <input
+          type="date"
+          v-model="form.dateex"
+          id="dateex"
+          name="dateex"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Время выезда</label>
+        <input
+          type="time"
+          v-model="form.timeex"
+          id="timeex"
+          name="timeex"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div>
+
+      <!-- <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Файл</label>
+        <input ref="file" name="file" type="file" 
+          class=formInputFile
+        />
+      </div> -->
+
+      <!-- <div class="mx-5 mb-2">
+        <label class=formLabelStyle>Дата документа</label>
+        <input
+          type="date"
+          v-model="form.established"
+          id="established"
+          name="established"
+          class=formInputStyle
+          placeholder=""
+          required
+        />
+      </div> -->
+
+      <!-- <div class="mx-5 mb-4">
+        <input
+          type="checkbox"
+          v-model='form.isCapital'
+          id="isCapital"
+          name="isCapital"
+          class=formInputCheckboxStyle
+        />
+        <label class=formLabelCheckboxStyle 
+          @click="form.isCapital=(form.isCapital==true) ? false : true ;">Capital</label>
+      </div> -->
+
+
+      <div class="my-3 flex justify-center space-x-5 py-3 px-5 text-center">
+        <button
+          class="formBtn bg-teal-400 hover:bg-teal-500"
+          type="submit"
+        >
+        Сохранить
+        </button>
+        <button
+          class="formBtn bg-orange-300 hover:bg-orange-400"
+          type="reset"
+          @click=""
+        >
+        Очистить
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</template>
+
+
+<style lang="postcss" scoped>
+
+.formInputFile {
+  @apply mt-2 block w-full text-sm text-slate-500 
+            file:my-0.5 file:ml-0.5 file:mr-4 file:py-2 file:px-4
+            file:ring-1 file:ring-gray-200 file:rounded-full file:border-0 file:text-sm file:font-normal
+            file:bg-gray-50 file:text-gray-600 hover:file:bg-gray-100 cursor-pointer
+}
+
+.formBtn {
+@apply text-white font-semibold rounded-full px-3 pt-1.5 pb-2 w-32
+  drop-shadow-md hover:shadow-lg 
+}
+
+.formLabelStyle {
+  @apply mx-1 block text-xs font-bold text-slate-400 
+}
+.formInputStyle {
+  @apply border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer
+}
+.formLabelCheckboxStyle {
+  @apply ml-3 text-base font-semibold text-gray-400 cursor-pointer
+}
+.formInputCheckboxStyle {
+    @apply ml-1 w-4 h-4 cursor-pointer
+}
+
+
+/* number formtype without arrows  -   Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* number formtype without arrows  -   Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>

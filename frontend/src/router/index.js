@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DocumentsView from "@/views/DocumentsView.vue";
-import VehiclesView from "@/views/VehiclesView.vue";
+import CarpassesView from "@/views/CarpassesView.vue";
 import DashboardView from "@/views/DashboardView.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
@@ -15,9 +15,9 @@ const router = createRouter({
         component: DocumentsView,
     },
     {
-      path: '/vehicles',
-      name: 'vehicles',
-      component: VehiclesView,
+      path: '/carpasses',
+      name: 'carpasses',
+      component: CarpassesView,
     },
     {
       path: '/dashboard',
