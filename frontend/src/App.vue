@@ -103,11 +103,11 @@ const signOut = async () => {
 <!--    ===============================    AUTHENTIFICATION PAGE    ===============================    -->
 <div v-if="!isAuthorized" class="flex">
     
-  <div class="mt-40 mx-auto  border rounded-lg overflow-hidden">
+  <div class="mt-40 mx-auto border rounded-lg overflow-hidden">
     <div class="py-2 px-5 bg-gradient-to-r from-sky-600 to-sky-400 text-center text-white text-lg">
       Альта-Софт | Управление складом
     </div>
-    <form @submit.prevent="authSubmit" class="mx-5 mt-2 ">
+    <form @submit.prevent="authSubmit" class="mx-5 mt-5">
       <div class="my-2">
         <label class=formLabelStyle>Логин</label>
         <input
@@ -134,7 +134,7 @@ const signOut = async () => {
             v-on:focus="authFormMessage=''"
           />
       </div>
-      <div class="my-5 text-center">
+      <div class="mt-5 mb-6 text-center">
         <button
           class="text-slate-400 text-sm font-semibold border border-slate-400 rounded-lg w-32 h-9 hover:text-slate-500 hover:border-slate-500"
           type="submit"
@@ -144,7 +144,7 @@ const signOut = async () => {
         <!-- bg-green-500 text-white font-semibold rounded-full px-3 py-2 w-60 shadow-md hover:shadow-lg hover:bg-green-600 -->
       </div>
     </form>
-    <div class="mb-3 text-red-500 text-center">
+    <div class="mb-5 text-red-500 text-center">
       {{ authFormMessage }}
     </div>
   </div>
