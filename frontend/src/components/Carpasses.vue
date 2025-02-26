@@ -21,6 +21,7 @@ const state = reactive({
   isLoading: true
 })
   
+const showAddItem = ref(false)
 
 async function getData() {
     state.isLoading = true;
@@ -91,9 +92,30 @@ async function downloadFile() {
   </div>
 
   <!-- Show when loading is done -->
-  <div v-else class="flex flex-col md:flex-row p-3 gap-3 ">
-    <div class="flex-none w-fit md:w-auto">
-      <!-- <div class="flex flex-col gap-3">
+  <div v-else>
+
+  <!-- **********************   MODAL ITEM DETAILS   ************************** -->
+  <div v-if="showAddItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddCarpass @close-modal="showAddItem=false" @doc-created="getData" />
+
+    <!-- <div class="flex-col w-3/5 h-4/5 bg-white rounded-lg">
+
+      <div class="py-3 pl-7 pr-3 bg-gray-200 rounded-t-lg overflow-auto">
+        <div class="float-left text-xl">
+          {{ props.name }}
+        </div>
+        <div class="float-right cursor-pointer hover:text-gray-500" @click="showAddItem=false">
+          <i class="pi pi-times" style="font-size: 1.5rem"></i>
+        </div>
+      </div>
+      
+    </div> -->
+  </div>
+
+  
+  <div class="flex flex-col md:flex-row p-3 gap-3 ">
+    <!-- <div class="flex-none w-fit md:w-auto">
+      <div class="flex flex-col gap-3">
         <div class="">
           <FormAddCarpass @doc-created="getData" />
         </div>
@@ -102,13 +124,17 @@ async function downloadFile() {
             DOWNLOAD FILE
           </button>
         </div>
-      </div> -->
-    </div>
+      </div>
+    </div> -->
     <div class="flex-auto w-auto md:w-64">
       <div class="">
-        <ListAdv :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
+        <ListAdv @btn-add="showAddItem=true" @btn-edit="console.log('btn edit!!!')" @btn-delete="console.log('btn delete!!!')"
+          @btn-refresh="console.log('btn refresh!!!')"
+          :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
     </div>
+  </div>
+
   </div>
 </template>
 

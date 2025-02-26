@@ -15,7 +15,7 @@ const props = defineProps({
     <div class="flex">
       <div class="mr-3"><i :class="`pi pi-${icon}`" style="font-size: 1.3rem"></i></div>
       <div class="flex-1 text-sm font-semibold">{{ label }}</div>
-      <div class=""><i class="pi pi-chevron-right"></i></div>
+      <!-- <div class=""><i class="pi pi-chevron-right"></i></div> -->
     </div>
     <div class="mt-1 text-xs text-slate-300">
       {{ description }}
