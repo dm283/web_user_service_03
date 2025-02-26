@@ -2,7 +2,7 @@
 import { defineProps, computed, reactive, onMounted, ref } from 'vue';
 import axios from 'axios';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
-import List from '@/components/List.vue';
+import ListAdv from '@/components/ListAdv.vue';
 import FormAddCarpass from './FormAddCarpass.vue';
 
 import data from "../../../backend/config.ini?raw";
@@ -93,15 +93,7 @@ async function downloadFile() {
   <!-- Show when loading is done -->
   <div v-else class="flex flex-col md:flex-row p-3 gap-3 ">
     <div class="flex-none w-fit md:w-auto">
-      <div class="flex flex-col gap-3">
-        <!-- <div class="grid grid-cols-2 gap-3">
-          <div class="">
-            <Card :label="'Кол-во документов'" :value="state.documents.length" />
-          </div>
-          <div class="">
-            <Card :label="'Добавлено сегодня'" :value="1" />
-          </div>
-        </div> -->
+      <!-- <div class="flex flex-col gap-3">
         <div class="">
           <FormAddCarpass @doc-created="getData" />
         </div>
@@ -110,11 +102,11 @@ async function downloadFile() {
             DOWNLOAD FILE
           </button>
         </div>
-      </div>
+      </div> -->
     </div>
     <div class="flex-auto w-auto md:w-64">
       <div class="">
-        <List :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
+        <ListAdv :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
     </div>
   </div>
