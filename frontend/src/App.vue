@@ -103,32 +103,32 @@ const signOut = async () => {
 <!--    ===============================    AUTHENTIFICATION PAGE    ===============================    -->
 <div v-if="!isAuthorized" class="flex">
     
-  <div class="mt-40 mx-auto bg-gray-50 border rounded-lg overflow-hidden">
-    <div class="py-2 px-5 bg-blue-400 text-center text-white text-lg">
-      Дашборд | Витрина таможенного склада
+  <div class="mt-40 mx-auto  border rounded-lg overflow-hidden">
+    <div class="py-2 px-5 bg-gradient-to-r from-sky-600 to-sky-400 text-center text-white text-lg">
+      Альта-Софт | Управление складом
     </div>
     <form @submit.prevent="authSubmit" class="mx-5 mt-2 ">
       <div class="my-2">
-        <label class="block mb-2">Логин</label>
+        <label class=formLabelStyle>Логин</label>
         <input
             type="text"
             v-model="login"
             id="login"
             name="login"
-            class="border rounded-lg w-full h-8 p-3"
+            class=formInputStyle
             placeholder=""
             required
             v-on:focus="authFormMessage=''"
           />
       </div>
       <div class="my-2">
-        <label class="block mb-2">Пароль</label>
+        <label class=formLabelStyle>Пароль</label>
         <input
             type="password"
             v-model="password"
             id="password"
             name="password"
-            class="border rounded-lg w-full h-8 p-3"
+            class=formInputStyle
             placeholder=""
             required
             v-on:focus="authFormMessage=''"
@@ -136,12 +136,12 @@ const signOut = async () => {
       </div>
       <div class="my-5 text-center">
         <button
-          class="bg-green-500 text-white font-semibold rounded-full px-3 py-2 w-60
-            shadow-md hover:shadow-lg hover:bg-green-600"
+          class="text-slate-400 text-sm font-semibold border border-slate-400 rounded-lg w-32 h-9 hover:text-slate-500 hover:border-slate-500"
           type="submit"
         >
-        Вход
+        ВХОД
         </button>
+        <!-- bg-green-500 text-white font-semibold rounded-full px-3 py-2 w-60 shadow-md hover:shadow-lg hover:bg-green-600 -->
       </div>
     </form>
     <div class="mb-3 text-red-500 text-center">
@@ -233,6 +233,12 @@ const signOut = async () => {
 
 
 <style lang="postcss" scoped>
+.formLabelStyle {
+  @apply mx-1 block text-xs font-bold text-slate-400 
+}
+.formInputStyle {
+  @apply border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer
+}
 .header-btn {
   @apply inline-block mx-3 mt-1 text-cyan-200 cursor-pointer hover:text-cyan-50
 }
