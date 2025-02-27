@@ -22,6 +22,8 @@ const state = reactive({
 })
   
 const showAddItem = ref(false)
+const showUpdateItem = ref(false)
+const selectedItem = ref('')
 
 async function getData() {
     state.isLoading = true;
@@ -82,6 +84,12 @@ async function downloadFile() {
   window.URL.revokeObjectURL(url);
 }
 
+const editItem = (item) => {
+  //
+  showUpdateItem.value = true;
+  selectedItem.value = item;
+};
+
 </script>
 
 <template>
@@ -96,20 +104,13 @@ async function downloadFile() {
 
   <!-- **********************   MODAL ADD CARPASS   ************************** -->
   <div v-if="showAddItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormAddCarpass @close-modal="showAddItem=false" @doc-created="getData" />
+    <FormAddCarpass @close-modal="showAddItem=false" @doc-created="getData"/>
+  </div>
 
-    <!-- <div class="flex-col w-3/5 h-4/5 bg-white rounded-lg">
 
-      <div class="py-3 pl-7 pr-3 bg-gray-200 rounded-t-lg overflow-auto">
-        <div class="float-left text-xl">
-          {{ props.name }}
-        </div>
-        <div class="float-right cursor-pointer hover:text-gray-500" @click="showAddItem=false">
-          <i class="pi pi-times" style="font-size: 1.5rem"></i>
-        </div>
-      </div>
-      
-    </div> -->
+  <!-- **********************   MODAL EDIT CARPASS   ************************** -->
+  <div v-if="showUpdateItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddCarpass @close-modal="showUpdateItem=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
   
@@ -128,7 +129,7 @@ async function downloadFile() {
     </div> -->
     <div class="flex-auto w-auto md:w-64">
       <div class="">
-        <ListAdv @btn-add="showAddItem=true" @btn-edit="console.log('btn edit!!!')" @btn-delete="console.log('btn delete!!!')"
+        <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="console.log('btn delete!!!')"
           @btn-refresh="console.log('btn refresh!!!')"
           :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>

@@ -1,5 +1,5 @@
 import datetime
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from uuid import uuid4
@@ -50,6 +50,19 @@ def create_carpass(db: Session, carpass: schemas.CarpassCreate):
     db.refresh(db_carpass)
     
     return db_carpass.id_enter
+
+
+def update_carpass(db: Session, carpass_id: int, carpass: schemas.CarpassUpdate):
+    #
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in carpass.model_dump(exclude_unset=True).items():
+        setattr(carpass_from_db, field, value)
+    db.commit()
+
+    return carpass_from_db.id_enter
 
 
 def get_user(db: Session, user_id: int):
