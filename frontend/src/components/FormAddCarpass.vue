@@ -87,10 +87,16 @@ const handleSubmit = async () => {
 
   try {
     // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
-    const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
-      formData, {headers: {'Content-Type': 'multipart/form-data'}});
+    if (!props.itemData) {
+      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
+        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+      toast.success('Новый пропуск добавлен');
+    } else {
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`, 
+        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+      toast.success('Пропуск обновлён');      
+    }
 
-    toast.success('Новый пропуск добавлен');
 
     emit('docCreated'); // emit
     emit('closeModal')
@@ -104,9 +110,8 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
-
+  
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Пропуск
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">

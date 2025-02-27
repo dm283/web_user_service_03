@@ -86,12 +86,9 @@ async function downloadFile() {
 
 const editItem = (item) => {
   //
-  console.log('btn edit');
-  // console.log(item);
   showUpdateItem.value = true;
   selectedItem.value = item;
-  console.log(selectedItem)
-}
+};
 
 </script>
 

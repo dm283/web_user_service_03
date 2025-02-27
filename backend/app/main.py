@@ -124,7 +124,7 @@ def read_carpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     return carpasses
 
 
-@app.put('/carpasses/{id}')
+@app.put('/carpasses/{carpass_id}')
 def update_carpass(
     carpass_id: int,
 
