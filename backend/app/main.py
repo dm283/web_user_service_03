@@ -124,6 +124,52 @@ def read_carpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     return carpasses
 
 
+@app.put('/carpasses/{id}')
+def update_carpass(
+    carpass_id: int,
+
+    ncar: Annotated[str, Form()], 
+    dateen: Annotated[date, Form()],
+    timeen: Annotated[time, Form()],
+    ntir: Annotated[str, Form()], 
+    nkont: Annotated[str, Form()], 
+    driver: Annotated[str, Form()], 
+    drv_man: Annotated[str, Form()], 
+    dev_phone: Annotated[str, Form()], 
+    contact: Annotated[int, Form()], 
+    contact_name: Annotated[str, Form()], 
+    contact_broker: Annotated[int, Form()], 
+    broker_name: Annotated[str, Form()], 
+    place_n: Annotated[str, Form()], 
+    dateex: Annotated[date, Form()],
+    timeex: Annotated[time, Form()],
+
+    db: Session = Depends(get_db)
+):
+    updated_datetime = datetime.now()
+
+    carpass = schemas.CarpassUpdate(
+        ncar = ncar,
+        dateen = dateen,
+        timeen = timeen,
+        ntir = ntir,
+        nkont = nkont,
+        driver = driver,
+        drv_man = drv_man,
+        dev_phone = dev_phone,
+        contact = contact,
+        contact_name = contact_name,
+        contact_broker = contact_broker,
+        broker_name =  broker_name,
+        place_n = place_n,
+        dateex = dateex,
+        timeex = timeex,
+        updated_datetime = updated_datetime
+    )
+        
+    return crud.update_carpass(db=db, carpass_id=carpass_id, carpass=carpass)
+
+
 @app.post("/carpasses/")
 def create_carpass(
     ncar: Annotated[str, Form()], 
@@ -144,8 +190,6 @@ def create_carpass(
 
     db: Session = Depends(get_db)
 ):
-    print('======start')
-
     carpass = schemas.CarpassCreate(
         ncar = ncar,
         dateen = dateen,
@@ -163,8 +207,6 @@ def create_carpass(
         dateex = dateex,
         timeex = timeex
     )
-
-    print('======stop')
         
     return crud.create_carpass(db=db, carpass=carpass)
 

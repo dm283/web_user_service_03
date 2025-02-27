@@ -21,6 +21,9 @@ class CarpassCreate(BaseModel):
     timeex: time
 
 
+class CarpassUpdate(CarpassCreate):
+    updated_datetime: datetime
+    
 
 class Carpass(CarpassCreate):
     id: int
