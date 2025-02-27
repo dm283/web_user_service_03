@@ -5,6 +5,7 @@ import 'primeicons/primeicons.css';
 import axios from 'axios';
 import { utils, writeFileXLSX, writeFile } from 'xlsx';
 
+const emit = defineEmits(['btnAdd', 'btnEdit', 'btnDelete', 'btnRefresh']) // emit
 
 const props = defineProps({
   name: String,
@@ -22,33 +23,6 @@ const state = reactive({
   limitRecords: 14,
   initRender: true,
 })
-
-// state.tableFields = Object.keys(props.data[0]); //
-// for (let xobj of props.data) {  //
-//   let clonedObj = {...xobj};
-//   state.localData.push(clonedObj);
-// };
-
-// const loadAPIData = () => {
-//   //
-//   onMounted(async () => {
-//     try {
-//       const response = await axios.get('http://localhost:5000/cities');
-//       state.data = response.data;
-//       state.tableFields = Object.keys(props.data[0]); //
-
-//       for (let xobj of props.data) {  //
-//         let clonedObj = {...xobj};
-//         state.localData.push(clonedObj);
-//       };
-
-//     } catch (error) {
-//       console.error('Error fetching books', error);
-//     }
-//   });
-// }
-
-// loadAPIData();
 
 const isDropDownloadShow = ref(false);
 
@@ -514,8 +488,10 @@ const exportFile = (dataSet, fileName, fileType) => {
 </div>
 
 
-<div @click="checkState()" class="listArea min-w-96 max-w-max m-0 px-3 py-2 border border-gray-200 rounded-lg
+<div @click="checkState()" class="listArea m-0 px-3 py-2 border border-gray-200 rounded-lg
   bg-white drop-shadow-md hover:drop-shadow-lg overflow-auto">
+<!-- <div @click="checkState()" class="listArea min-w-96 max-w-max m-0 px-3 py-2 border border-gray-200 rounded-lg
+  bg-white drop-shadow-md hover:drop-shadow-lg overflow-auto"> -->
 
 <!-- {{ props.listTableColumns }} -->
 
@@ -528,19 +504,19 @@ const exportFile = (dataSet, fileName, fileType) => {
 
   <div class="inline-block mt-3 space-x-2">
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="">
+      @click="emit('btnAdd')">
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="">
+      @click="emit('btnEdit')">
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="">
+      @click="emit('btnDelete')">
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="">
+      @click="emit('btnRefresh')">
       <i class="pi pi-refresh" style="font-size: 1rem"></i>
     </button>
     <!-- DOWNLOAD BUTTON DROPDOWN -->
@@ -587,7 +563,7 @@ const exportFile = (dataSet, fileName, fileType) => {
 
 <!-- table area ************************* --> 
 <section class="mt-2 border rounded-lg overflow-auto">
-<table class="">
+<table class="w-full">
   <thead>
     <tr class="h-8 bg-blue-400 text-sm font-semibold text-white text-center">
       <td class="border" v-for="(field, index) in Object.keys(props.listTableColumns)">
