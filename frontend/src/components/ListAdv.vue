@@ -33,6 +33,7 @@ const mouseOverSearchDropdown = ref(false);
 const searchFieldsList = Object.keys(props.listTableColumns);
 
 // const isDropSortShow = ref(false);
+const listRowStyle = reactive({});
 const sortBy = ref('default');
 const sortDirection = reactive({});
 const sortIcon = reactive({});
@@ -395,7 +396,9 @@ const dataRender = () => {
     loadLocalData();
   }
 
-  return state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
+  let renderedData = state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
+
+  return renderedData
 
   // if (state.localData.length > 0) {
   //   return state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
@@ -448,6 +451,14 @@ const exportFile = (dataSet, fileName, fileType) => {
     writeFile(wb, fileName.trim() + ".csv", { FS: ";" });
   }    
 };
+
+const rowClick = (index, item) => {
+  for (let i = 0; i < dataRender().length; i++) {
+    listRowStyle[i] = '';
+  };
+  listRowStyle[index] = 'bg-slate-200 hover:bg-slate-300';
+  selectedItem.value = item;
+}
 
 </script>
 
@@ -508,7 +519,7 @@ const exportFile = (dataSet, fileName, fileType) => {
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="emit('btnEdit')">
+      @click="emit('btnEdit', selectedItem)">
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
@@ -564,8 +575,11 @@ const exportFile = (dataSet, fileName, fileType) => {
 <!-- table area ************************* --> 
 <section class="mt-2 border rounded-lg overflow-auto">
 <table class="w-full">
+
   <thead>
     <tr class="h-8 bg-blue-400 text-sm font-semibold text-white text-center">
+      <td class="border"><div class="w-8">#</div></td>
+
       <td class="border" v-for="(field, index) in Object.keys(props.listTableColumns)">
       
         <div class="relative">
@@ -585,10 +599,19 @@ const exportFile = (dataSet, fileName, fileType) => {
       </td>
     </tr>
   </thead>
+
   <tbody>
     <tr v-if="dataLengthRender()==0"><td><div class="h-11"></div></td></tr>
-    <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
-        @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()">
+    <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100"
+      :class=listRowStyle[index]
+      @click="rowClick(index, item)" v-for="(item, index) in dataRender()">
+    <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
+        @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()"> -->
+      
+      <td class="text-blue-500" @click="selectedItem=item; showItemCard=true">
+        <i class="pi pi-file" style="font-size: 0.7rem"></i>
+      </td>
+
       <td class="" v-for="field in Object.keys(props.listTableColumns)">
         <!-- boolean columns -->
         <div class="" v-if="typeof(item[field])=='boolean' & item[field]==true"><i class="pi pi-check-square"></i></div>
@@ -612,6 +635,7 @@ const exportFile = (dataSet, fileName, fileType) => {
       </td>
     </tr>
   </tbody>
+
 </table>
 </section>
 

@@ -1,6 +1,6 @@
 <script setup>
 // import router from '@/router';
-import {ref, reactive} from 'vue';
+import {ref, reactive, computed} from 'vue';
 import { useToast } from 'vue-toastification';
 import axios from 'axios';
 
@@ -14,25 +14,11 @@ var backendPort = parser.get("main", "backend_port");
 
 const emit = defineEmits(['docCreated', 'closeModal']) // emit
 
-const form = reactive({
-  ncar: '',
-  dateen: '',
-  timeen: '',
-  ntir: '',
-  nkont: '',
-  driver: '',
-  drv_man: '',
-  dev_phone: '',
-  contact: 111,
-  contact_name: '',
-  contact_broker: 222,
-  broker_name: '',
-  place_n: '',
-  dateex: '',
-  timeex: '',
+const props = defineProps({
+  itemData: Object,
 });
 
-const file = ref(null)
+const form = reactive({});
 
 const initEmptyForm = () => {
     form.ncar = ''
@@ -52,7 +38,27 @@ const initEmptyForm = () => {
     form.timeex = ''
 }
 
-initEmptyForm();
+if (props.itemData) {
+  form.ncar = props.itemData.ncar;
+  form.dateen = props.itemData.dateen
+  form.timeen = props.itemData.timeen
+  form.ntir = props.itemData.ntir
+  form.nkont = props.itemData.nkont
+  form.driver = props.itemData.driver
+  form.drv_man = props.itemData.drv_man
+  form.dev_phone = props.itemData.dev_phone
+  form.contact = props.itemData.contact
+  form.contact_name = props.itemData.contact_name
+  form.contact_broker = props.itemData.contact_broker
+  form.broker_name = props.itemData.broker_name
+  form.place_n = props.itemData.place_n
+  form.dateex = props.itemData.dateex
+  form.timeex = props.itemData.timeex
+} else {
+  initEmptyForm();
+};
+
+const file = ref(null)
 
 const toast = useToast();
 
@@ -85,7 +91,7 @@ const handleSubmit = async () => {
       formData, {headers: {'Content-Type': 'multipart/form-data'}});
 
     toast.success('Новый пропуск добавлен');
-    initEmptyForm();
+
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
