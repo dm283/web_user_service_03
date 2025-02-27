@@ -94,7 +94,7 @@ async function downloadFile() {
   <!-- Show when loading is done -->
   <div v-else>
 
-  <!-- **********************   MODAL ITEM DETAILS   ************************** -->
+  <!-- **********************   MODAL ADD CARPASS   ************************** -->
   <div v-if="showAddItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormAddCarpass @close-modal="showAddItem=false" @doc-created="getData" />
 
@@ -137,5 +137,3 @@ async function downloadFile() {
 
   </div>
 </template>
-
-<!-- #00E396  #FF69B4  #CD5C5C  #FFA07A  #7B68EE  #00FF7F  #00BFFF -->
