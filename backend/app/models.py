@@ -51,8 +51,8 @@ class Carpass(Base):
     __tablename__ = 'carpasses'
 
     id = Column(Integer, primary_key=True)
-    guid = Column(String(length=36))
-    id_enter = Column(String(length=8))
+    guid = Column(String(length=36), unique=True)
+    id_enter = Column(String(length=8), unique=True)
     ncar = Column(String(length=255))
     dateen = Column(Date)
     timeen = Column(Time)
@@ -74,3 +74,4 @@ class Carpass(Base):
     post_user_id = Column(String(length=36), nullable=True, default=None)
     posted = Column(Boolean, default=False)
     was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)

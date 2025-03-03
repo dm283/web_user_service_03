@@ -4,6 +4,7 @@ import axios from 'axios';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import ListAdv from '@/components/ListAdv.vue';
 import FormAddCarpass from './FormAddCarpass.vue';
+import FormDeleteCarpass from './FormDeleteCarpass.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -23,6 +24,7 @@ const state = reactive({
   
 const showAddItem = ref(false)
 const showUpdateItem = ref(false)
+const showDeleteItem = ref(false)
 const selectedItem = ref('')
 
 async function getData() {
@@ -90,6 +92,12 @@ const editItem = (item) => {
   selectedItem.value = item;
 };
 
+const deleteItem = (item) => {
+  //
+  showDeleteItem.value = true;
+  selectedItem.value = item;
+}
+
 </script>
 
 <template>
@@ -114,6 +122,12 @@ const editItem = (item) => {
   </div>
 
   
+  <!-- **********************   MODAL DELETE CARPASS   ************************** -->
+  <div v-if="showDeleteItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
   <div class="flex flex-col md:flex-row p-3 gap-3 ">
     <!-- <div class="flex-none w-fit md:w-auto">
       <div class="flex flex-col gap-3">
@@ -129,7 +143,7 @@ const editItem = (item) => {
     </div> -->
     <div class="flex-auto w-auto md:w-64">
       <div class="">
-        <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="console.log('btn delete!!!')"
+        <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem"
           @btn-refresh="console.log('btn refresh!!!')"
           :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
