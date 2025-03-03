@@ -5,7 +5,7 @@ import 'primeicons/primeicons.css';
 import axios from 'axios';
 import { utils, writeFileXLSX, writeFile } from 'xlsx';
 
-const emit = defineEmits(['btnAdd', 'btnEdit', 'btnDelete', 'btnRefresh']) // emit
+const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnDelete', 'btnRefresh']) // emit
 
 const props = defineProps({
   name: String,
@@ -607,8 +607,9 @@ const rowClick = (index, item) => {
       @click="rowClick(index, item)" v-for="(item, index) in dataRender()">
     <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
         @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()"> -->
-      
-      <td class="text-blue-500" @click="selectedItem=item; showItemCard=true">
+        
+      <td class="text-blue-500" @click="selectedItem=item; emit('btnItemcard', selectedItem)">
+      <!-- <td class="text-blue-500" @click="selectedItem=item; showItemCard=true"> -->
         <i class="pi pi-file" style="font-size: 0.7rem"></i>
       </td>
 

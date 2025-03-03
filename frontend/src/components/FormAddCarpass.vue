@@ -16,7 +16,12 @@ const emit = defineEmits(['docCreated', 'closeModal']) // emit
 
 const props = defineProps({
   itemData: Object,
+  isCard: Boolean,
 });
+
+const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
+const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
 
 const form = reactive({});
 
@@ -111,7 +116,6 @@ const handleSubmit = async () => {
 
 <template>
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
-  
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Пропуск
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
@@ -129,9 +133,10 @@ const handleSubmit = async () => {
             v-model="form.ncar"
             id="ncar"
             name="ncar"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
         <div class=formInputDiv>
@@ -141,9 +146,10 @@ const handleSubmit = async () => {
             v-model="form.dateen"
             id="dateen"
             name="dateen"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
         <div class=formInputDiv>
@@ -153,9 +159,10 @@ const handleSubmit = async () => {
             v-model="form.timeen"
             id="timeen"
             name="timeen"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
       </div>
@@ -168,9 +175,10 @@ const handleSubmit = async () => {
             v-model="form.ntir"
             id="ntir"
             name="ntir"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
         <div class=formInputDiv>
@@ -180,9 +188,10 @@ const handleSubmit = async () => {
             v-model="form.nkont"
             id="nkont"
             name="nkont"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
         <div class=formInputDiv>
@@ -192,9 +201,10 @@ const handleSubmit = async () => {
             v-model="form.driver"
             id="driver"
             name="driver"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
       </div>
@@ -207,9 +217,10 @@ const handleSubmit = async () => {
             v-model="form.drv_man"
             id="drv_man"
             name="drv_man"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
         <div class=formInputDiv>
@@ -219,9 +230,10 @@ const handleSubmit = async () => {
             v-model="form.dev_phone"
             id="dev_phone"
             name="dev_phone"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
         <div class=formInputDiv>
@@ -231,9 +243,10 @@ const handleSubmit = async () => {
             v-model="form.contact_name"
             id="contact_name"
             name="contact_name"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
       </div>
@@ -246,9 +259,10 @@ const handleSubmit = async () => {
             v-model="form.broker_name"
             id="broker_name"
             name="broker_name"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
         <div class=formInputDiv>
@@ -258,9 +272,10 @@ const handleSubmit = async () => {
             v-model="form.place_n"
             id="place_n"
             name="place_n"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
       </div>
@@ -273,9 +288,10 @@ const handleSubmit = async () => {
             v-model="form.dateex"
             id="dateex"
             name="dateex"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
         <div class=formInputDiv>
@@ -285,9 +301,10 @@ const handleSubmit = async () => {
             v-model="form.timeex"
             id="timeex"
             name="timeex"
-            class=formInputStyle
+            :class=formInputStyle2
             placeholder=""
             required
+            :disabled="isCard"
           />
         </div>
       </div>
@@ -325,7 +342,7 @@ const handleSubmit = async () => {
       </div> -->
 
 
-      <div class="my-3 flex justify-left space-x-5 py-3 px-5 text-center">
+      <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center">
         <button
           class="formBtn"
           type="submit"
@@ -340,6 +357,8 @@ const handleSubmit = async () => {
         ОЧИСТИТЬ
         </button>
       </div>
+
+      <div v-else class="mb-5"></div>
 
     </form>
   </div>

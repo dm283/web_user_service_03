@@ -22,6 +22,7 @@ const state = reactive({
   isLoading: true
 })
   
+const showItemCard = ref(false)
 const showAddItem = ref(false)
 const showUpdateItem = ref(false)
 const showDeleteItem = ref(false)
@@ -98,6 +99,11 @@ const deleteItem = (item) => {
   selectedItem.value = item;
 }
 
+const itemCard = (item) => {
+  showItemCard.value = true;
+  selectedItem.value = item;
+}
+
 </script>
 
 <template>
@@ -109,6 +115,12 @@ const deleteItem = (item) => {
 
   <!-- Show when loading is done -->
   <div v-else>
+
+  <!-- **********************   MODAL CARPASS CARD   ************************** -->
+  <div v-if="showItemCard" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddCarpass @close-modal="showItemCard=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+
 
   <!-- **********************   MODAL ADD CARPASS   ************************** -->
   <div v-if="showAddItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -144,7 +156,7 @@ const deleteItem = (item) => {
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem"
-          @btn-refresh="getData"
+          @btn-refresh="getData" @btn-itemcard="itemCard"
           :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
     </div>

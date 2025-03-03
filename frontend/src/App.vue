@@ -105,7 +105,7 @@ const signOut = async () => {
     
   <div class="mt-40 mx-auto border rounded-lg overflow-hidden">
     <div class="py-2 px-5 bg-gradient-to-r from-sky-800 to-sky-600 text-center text-white text-lg">
-      Альта-Софт | Управление складом
+      Альта-Софт | Управление терминалом
     </div>
     <form @submit.prevent="authSubmit" class="mx-5 mt-5">
       <div class="my-2">
@@ -184,7 +184,7 @@ const signOut = async () => {
       <i class="pi pi-bars" style="font-size: 1.3rem" @click="showMenuBar=(showMenuBar) ? false:true"></i>
     </div>
     <div class="inline-block mt-3 px-4 border-r-2">{{ companyName }}</div>
-    <div class="inline-block mt-3 px-4">Управление складом</div>
+    <div class="inline-block mt-3 px-4">Управление терминалом</div>
   </div>
   <div class="mt-3.5 text-center md:flex md:float-right">
     <div class="inline-block px-4 text-base">{{ login }}</div>
