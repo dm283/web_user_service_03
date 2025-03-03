@@ -523,7 +523,7 @@ const rowClick = (index, item) => {
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="emit('btnDelete', selectedItem['id'])">
+      @click="emit('btnDelete', selectedItem)">
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 

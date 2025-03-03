@@ -34,13 +34,18 @@ def get_documents(db: Session, skip: int = 0, limit: int = 100):
 
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.Carpass).order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
+    return db.query(models.Carpass).filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def create_carpass(db: Session, carpass: schemas.CarpassCreate):
     #
-    guid='q1w2e3r4t5y6u'
-    id_enter='к4е5н6г7'
+    last_created_carpass_from_db =  db.query(models.Carpass).order_by(models.Carpass.id.desc()).first()
+    if last_created_carpass_from_db is None:
+        guid = '1'
+        id_enter = '1'
+    else:
+        guid=str(int(last_created_carpass_from_db.id_enter) + 1)
+        id_enter=str(int(last_created_carpass_from_db.id_enter) + 1)
     created_datetime = datetime.datetime.now()
 
     db_carpass = models.Carpass(**carpass.model_dump(), guid=guid, id_enter=id_enter, created_datetime=created_datetime)

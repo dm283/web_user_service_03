@@ -26,7 +26,6 @@ const showAddItem = ref(false)
 const showUpdateItem = ref(false)
 const showDeleteItem = ref(false)
 const selectedItem = ref('')
-const selectedItemId = ref('')
 
 async function getData() {
     state.isLoading = true;
@@ -93,10 +92,10 @@ const editItem = (item) => {
   selectedItem.value = item;
 };
 
-const deleteItem = (itemId) => {
+const deleteItem = (item) => {
   //
   showDeleteItem.value = true;
-  selectedItemId.value = itemId;
+  selectedItem.value = item;
 }
 
 </script>
@@ -125,7 +124,7 @@ const deleteItem = (itemId) => {
   
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
   <div v-if="showDeleteItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemId="Number(selectedItemId)"/>
+    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
 
