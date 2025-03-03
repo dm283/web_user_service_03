@@ -144,7 +144,7 @@ const deleteItem = (item) => {
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem"
-          @btn-refresh="console.log('btn refresh!!!')"
+          @btn-refresh="getData"
           :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
     </div>
