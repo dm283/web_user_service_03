@@ -74,3 +74,4 @@ class Carpass(Base):
     post_user_id = Column(String(length=36), nullable=True, default=None)
     posted = Column(Boolean, default=False)
     was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)

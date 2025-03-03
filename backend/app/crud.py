@@ -65,6 +65,32 @@ def update_carpass(db: Session, carpass_id: int, carpass: schemas.CarpassUpdate)
     return carpass_from_db.id_enter
 
 
+def delete_carpass(db: Session, carpass_id: int):
+    #
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    db.delete(carpass_from_db)
+    db.commit()
+
+    return {"message": f"Carpass id {carpass_id} deleted successfully"}
+
+
+def deactivate_carpass(db: Session, carpass_id: int):
+    #
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    setattr(carpass_from_db, 'is_active', False)
+
+    db.commit()
+
+    return carpass_from_db.id_enter
+
+
+
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
