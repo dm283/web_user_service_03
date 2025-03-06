@@ -398,6 +398,10 @@ const dataRender = () => {
 
   let renderedData = state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
 
+  for (let i = 0; i < renderedData.length; i++) {
+    listRowStyle[i] = renderedData[i].posted ? 'bg-pink-100' : '';
+  };
+
   return renderedData
 
   // if (state.localData.length > 0) {
@@ -453,9 +457,9 @@ const exportFile = (dataSet, fileName, fileType) => {
 };
 
 const rowClick = (index, item) => {
-  for (let i = 0; i < dataRender().length; i++) {
-    listRowStyle[i] = '';
-  };
+  // for (let i = 0; i < dataRender().length; i++) {
+  //   listRowStyle[i] = '';
+  // };
   listRowStyle[index] = 'bg-slate-200 hover:bg-slate-300';
   selectedItem.value = item;
 }

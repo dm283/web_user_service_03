@@ -25,7 +25,7 @@ const handleSubmit = async () => {
   try {
     const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_rollback/${props.itemData.id}`);
     // const response = await axios.delete(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`);
-    toast.success('Откат проводки пропуска');      
+    toast.success('Проводка отменена');      
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
