@@ -400,6 +400,7 @@ const dataRender = () => {
 
   for (let i = 0; i < renderedData.length; i++) {
     listRowStyle[i] = renderedData[i].posted ? 'bg-pink-100' : '';
+    listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
 
   return renderedData
@@ -457,10 +458,6 @@ const exportFile = (dataSet, fileName, fileType) => {
 };
 
 const rowClick = (index, item) => {
-  // for (let i = 0; i < dataRender().length; i++) {
-  //   listRowStyle[i] = '';
-  // };
-  listRowStyle[index] = 'bg-slate-200 hover:bg-slate-300';
   selectedItem.value = item;
 }
 
