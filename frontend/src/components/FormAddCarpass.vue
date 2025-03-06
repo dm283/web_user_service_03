@@ -67,8 +67,27 @@ const file = ref(null)
 
 const toast = useToast();
 
-const handleSubmit = async () => {
+const postingItem = async () => {
+  //
+  try {
+    // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
+    if (props.itemData) {
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`);
+      toast.success('Пропуск проведён');
+    } else {
+      return;
+    }
 
+    emit('docCreated'); // emit
+    emit('closeModal')
+  } catch (error) {
+    console.error('Error posting item', error);
+    toast.error('Ошибка при проводке');
+  };
+};
+
+const handleSubmit = async () => {
+  //
   let formData = new FormData();
 
   formData.append('ncar', form.ncar);
@@ -342,20 +361,32 @@ const handleSubmit = async () => {
       </div> -->
 
 
-      <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center">
-        <button
-          class="formBtn"
-          type="submit"
-        >
-        СОХРАНИТЬ
-        </button>
-        <button
-          class="formBtn"
-          type="reset"
-          @click=""
-        >
-        ОЧИСТИТЬ
-        </button>
+      <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
+      <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
+        <div class="float-left space-x-5">
+          <button
+            class="formBtn"
+            type="submit"
+          >
+          СОХРАНИТЬ
+          </button>
+          <button
+            class="formBtn"
+            type="reset"
+            @click=""
+          >
+          ОЧИСТИТЬ
+          </button>
+        </div>
+        <div class="float-right">
+          <button
+            class="formBtn "
+            type="button"  
+            @click="postingItem"
+          >
+          ПРОВОДКА
+          </button>
+        </div>
       </div>
 
       <div v-else class="mb-5"></div>

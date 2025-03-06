@@ -89,11 +89,44 @@ def deactivate_carpass(db: Session, carpass_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
     setattr(carpass_from_db, 'is_active', False)
+    db.commit()
+
+    return carpass_from_db.id_enter
+
+
+def posting_carpass(db: Session, carpass_id: int):
+    #
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if carpass_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was posted already")
+    
+    
+    setattr(carpass_from_db, 'posted', True)
+    setattr(carpass_from_db, 'was_posted', True)
+    setattr(carpass_from_db, 'post_date', datetime.datetime.now())
+    setattr(carpass_from_db, 'post_user_id', '1')
 
     db.commit()
 
     return carpass_from_db.id_enter
 
+
+def rollback_carpass(db: Session, carpass_id: int):
+    #
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not carpass_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(carpass_from_db, 'posted', False)
+    setattr(carpass_from_db, 'post_date', None)
+    setattr(carpass_from_db, 'post_user_id', None)
+    db.commit()
+
+    return carpass_from_db.id_enter
 
 
 def get_user(db: Session, user_id: int):

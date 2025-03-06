@@ -5,6 +5,7 @@ import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import ListAdv from '@/components/ListAdv.vue';
 import FormAddCarpass from './FormAddCarpass.vue';
 import FormDeleteCarpass from './FormDeleteCarpass.vue';
+import FormRollbackCarpass from './FormRollbackCarpass.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -26,6 +27,7 @@ const showItemCard = ref(false)
 const showAddItem = ref(false)
 const showUpdateItem = ref(false)
 const showDeleteItem = ref(false)
+const showRollbackItem = ref(false)
 const selectedItem = ref('')
 
 async function getData() {
@@ -104,6 +106,12 @@ const itemCard = (item) => {
   selectedItem.value = item;
 }
 
+const rollbackItem = (item) => {
+  //
+  showRollbackItem.value = true;
+  selectedItem.value = item;
+}
+
 </script>
 
 <template>
@@ -140,6 +148,12 @@ const itemCard = (item) => {
   </div>
 
 
+  <!-- **********************   MODAL ROLLBACK CARPASS   ************************** -->
+  <div v-if="showRollbackItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormRollbackCarpass @close-modal="showRollbackItem=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
   <div class="flex flex-col md:flex-row p-3 gap-3 ">
     <!-- <div class="flex-none w-fit md:w-auto">
       <div class="flex flex-col gap-3">
@@ -156,7 +170,7 @@ const itemCard = (item) => {
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem"
-          @btn-refresh="getData" @btn-itemcard="itemCard"
+          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem"
           :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
     </div>
