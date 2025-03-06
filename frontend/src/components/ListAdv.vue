@@ -399,7 +399,8 @@ const dataRender = () => {
   let renderedData = state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
 
   for (let i = 0; i < renderedData.length; i++) {
-    listRowStyle[i] = renderedData[i].posted ? 'bg-pink-100' : '';
+    // listRowStyle[i] = renderedData[i].posted ? 'bg-green-50' : '';
+    listRowStyle[i] = '';
     listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
 
@@ -615,9 +616,9 @@ const rowClick = (index, item) => {
     <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
         @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()"> -->
         
-      <td class="text-blue-500" @click="selectedItem=item; emit('btnItemcard', selectedItem)">
+      <td :class="[item.posted ? 'text-green-600': 'text-blue-500']" @click="selectedItem=item; emit('btnItemcard', selectedItem)">
       <!-- <td class="text-blue-500" @click="selectedItem=item; showItemCard=true"> -->
-        <i class="pi pi-file" style="font-size: 0.7rem"></i>
+        <i class="pi pi-file" style="font-size: 0.8rem"></i>
       </td>
 
       <td class="" v-for="field in Object.keys(props.listTableColumns)">

@@ -141,6 +141,12 @@ const handleSubmit = async () => {
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
     </header>
+
+    <div class="ml-6 mt-3" v-if="props.isCard">
+      <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
+      <div class="inline-block text-sm font-semibold text-green-600" v-if="props.itemData.posted">ПРОВЕДЁН</div>
+      <div class="inline-block text-sm font-semibold text-blue-500" v-else="props.itemData.posted">НЕ ПРОВЕДЁН</div>
+    </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       
@@ -378,7 +384,7 @@ const handleSubmit = async () => {
           ОЧИСТИТЬ
           </button>
         </div>
-        <div class="float-right">
+        <div class="float-right" v-if="props.itemData">
           <button
             class="formBtn "
             type="button"  
