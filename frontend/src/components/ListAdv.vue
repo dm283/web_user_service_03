@@ -616,10 +616,11 @@ const rowClick = (index, item) => {
     <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
         @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()"> -->
         
-      <td class="text-blue-500 hover:text-blue-700" @click="selectedItem=item; emit('btnItemcard', selectedItem)">
+      <td class="" @click="selectedItem=item; emit('btnItemcard', selectedItem)">
       <!-- <td :class="[item.posted ? 'text-green-600': 'text-blue-500']" @click="selectedItem=item; emit('btnItemcard', selectedItem)"> -->
       <!-- <td class="text-blue-500" @click="selectedItem=item; showItemCard=true"> -->
-        <div class="inline-block border-b-2 border-blue-500 max-w-min"><i class="pi pi-file" style="font-size: 0.8rem"></i></div>
+        <div class="inline-block text-blue-500 border-b-2 border-blue-400 hover:text-cyan-300 hover:border-cyan-300 max-w-min">
+          <i class="pi pi-file" style="font-size: 0.8rem"></i></div>
       </td>
 
       <td class="" v-for="field in Object.keys(props.listTableColumns)">
