@@ -5,7 +5,7 @@ import 'primeicons/primeicons.css';
 import axios from 'axios';
 import { utils, writeFileXLSX, writeFile } from 'xlsx';
 
-const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnDelete', 'btnRefresh']) // emit
+const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnDelete', 'btnRefresh', 'btnRollback']) // emit
 
 const props = defineProps({
   name: String,
@@ -398,6 +398,12 @@ const dataRender = () => {
 
   let renderedData = state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
 
+  for (let i = 0; i < renderedData.length; i++) {
+    listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
+    // listRowStyle[i] = '';
+    listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
+  };
+
   return renderedData
 
   // if (state.localData.length > 0) {
@@ -453,10 +459,6 @@ const exportFile = (dataSet, fileName, fileType) => {
 };
 
 const rowClick = (index, item) => {
-  for (let i = 0; i < dataRender().length; i++) {
-    listRowStyle[i] = '';
-  };
-  listRowStyle[index] = 'bg-slate-200 hover:bg-slate-300';
   selectedItem.value = item;
 }
 
@@ -519,13 +521,19 @@ const rowClick = (index, item) => {
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400" 
-      @click="emit('btnEdit', selectedItem)" :disabled="!selectedItem">
+      @click="emit('btnEdit', selectedItem)" :disabled="!selectedItem | selectedItem.posted">
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400" 
-      @click="emit('btnDelete', selectedItem)" :disabled="!selectedItem">
+      @click="emit('btnDelete', selectedItem)" :disabled="!selectedItem | selectedItem.posted">
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>
+
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400" 
+      @click="emit('btnRollback', selectedItem)" :disabled="!selectedItem | !selectedItem.posted">
+      <i class="pi pi-caret-left" style="font-size: 1rem"></i>
+    </button>
+
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
       @click="emit('btnRefresh')">
       <i class="pi pi-refresh" style="font-size: 1rem"></i>
@@ -608,9 +616,10 @@ const rowClick = (index, item) => {
     <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
         @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()"> -->
         
-      <td class="text-blue-500" @click="selectedItem=item; emit('btnItemcard', selectedItem)">
+      <td class="text-blue-500 hover:text-blue-700" @click="selectedItem=item; emit('btnItemcard', selectedItem)">
+      <!-- <td :class="[item.posted ? 'text-green-600': 'text-blue-500']" @click="selectedItem=item; emit('btnItemcard', selectedItem)"> -->
       <!-- <td class="text-blue-500" @click="selectedItem=item; showItemCard=true"> -->
-        <i class="pi pi-file" style="font-size: 0.7rem"></i>
+        <div class="inline-block border-b-2 border-blue-500 max-w-min"><i class="pi pi-file" style="font-size: 0.8rem"></i></div>
       </td>
 
       <td class="" v-for="field in Object.keys(props.listTableColumns)">

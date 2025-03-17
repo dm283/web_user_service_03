@@ -223,6 +223,18 @@ def deactivate_carpass(carpass_id: int, db: Session = Depends(get_db)):
     return crud.deactivate_carpass(db=db, carpass_id=carpass_id)
 
 
+@app.put('/carpasses_posting/{carpass_id}')
+def posting_carpass(carpass_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_carpass(db=db, carpass_id=carpass_id)
+
+
+@app.put('/carpasses_rollback/{carpass_id}')
+def rollback_carpass(carpass_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.rollback_carpass(db=db, carpass_id=carpass_id)
+
+
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_login(db, login=user.login)
