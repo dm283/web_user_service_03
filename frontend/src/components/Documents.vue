@@ -79,6 +79,22 @@ async function downloadFile() {
   window.URL.revokeObjectURL(url);
 }
 
+
+// const printFiles = (event) => {
+//   if (event.target.files?.length) {
+//     //const receivedFile = event.target.files[0]
+//     const fileDataUrl = `http://${backendIpAddress}:${backendPort}/download_carpass/16`
+//     //const fileDataUrl = window.URL.createObjectURL(receivedFile)
+//     const pdfFileWindow = window.open(fileDataUrl)
+//     console.log('receivedFile=', receivedFile)
+//     console.log('fileDataUrl=', fileDataUrl)
+//     console.log('pdfFileWindow=', pdfFileWindow)
+//     pdfFileWindow.print()
+//   } else {
+//     alert('No files selected!')
+//   }
+// }
+
 </script>
 
 <template>
@@ -107,6 +123,13 @@ async function downloadFile() {
           <button @click="downloadFile()" class="border rounded-full p-3 text-white bg-pink-400">
             DOWNLOAD FILE
           </button>
+
+          <!-- <div>
+            <div id="np-container">
+              <input type="file" @change="printFiles" accept="application/pdf" />
+            </div>
+          </div> -->
+
         </div>
       </div>
     </div>

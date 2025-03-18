@@ -89,6 +89,16 @@ async function downloadFile(document_id) {
   window.URL.revokeObjectURL(url);
 };
 
+
+// async function downloadFile(document_id) {
+//   //
+//   const fileDataUrl = `http://${backendIpAddress}:${backendPort}/download_carpass/16`
+//   const pdfFileWindow = window.open(fileDataUrl)
+//   pdfFileWindow.print()
+// };
+
+
+
 const editItem = (item) => {
   //
   showUpdateItem.value = true;
