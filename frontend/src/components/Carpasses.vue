@@ -112,6 +112,11 @@ const rollbackItem = (item) => {
   selectedItem.value = item;
 }
 
+const printItem = (item) => {
+  //
+  console.log('printing!')
+};
+
 </script>
 
 <template>
@@ -170,7 +175,7 @@ const rollbackItem = (item) => {
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem"
-          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem"
+          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem"
           :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
     </div>

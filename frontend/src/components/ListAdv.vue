@@ -5,7 +5,7 @@ import 'primeicons/primeicons.css';
 import axios from 'axios';
 import { utils, writeFileXLSX, writeFile } from 'xlsx';
 
-const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnDelete', 'btnRefresh', 'btnRollback']) // emit
+const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback']) // emit
 
 const props = defineProps({
   name: String,
@@ -520,16 +520,19 @@ const rowClick = (index, item) => {
       @click="emit('btnAdd')">
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
-    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400" 
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnEdit', selectedItem)" :disabled="!selectedItem | selectedItem.posted">
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
-    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400" 
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnDelete', selectedItem)" :disabled="!selectedItem | selectedItem.posted">
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>
-
-    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400" 
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
+      @click="emit('btnPrint', selectedItem)" :disabled="!selectedItem | !selectedItem.posted">
+      <i class="pi pi-print" style="font-size: 1rem"></i>
+    </button>
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnRollback', selectedItem)" :disabled="!selectedItem | !selectedItem.posted">
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>
     </button>
