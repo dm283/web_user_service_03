@@ -12,6 +12,11 @@ from uuid import uuid4
 from app import crud, models, schemas, views
 from app.database import SessionLocal, engine
 
+from reportlab.pdfgen import canvas 
+from reportlab.pdfbase.ttfonts import TTFont 
+from reportlab.pdfbase import pdfmetrics 
+from reportlab.lib import colors
+
 
 app = FastAPI()
 
@@ -94,6 +99,88 @@ def document_download(document_id: int,  db: Session = Depends(get_db)):
     document = db.query(models.Document).filter(models.Document.id == document_id).first()
     filepath = document.filepath
     filename = document.filename
+    
+    response = FileResponse(path=filepath,
+                            # filename=filename, 
+                            headers={
+                                "Access-Control-Expose-Headers": "Content-Disposition, File-Name",
+                                "File-Name": quote(os.path.basename(filename), encoding='utf-8'),
+                                "Content-Disposition": f"attachment; filename*=utf-8''{quote(os.path.basename(filename))}"
+
+                                    }
+                            # media_type="text/plain",
+                            # content_disposition_type="attachment; filename*=utf-8''{}".format(quote(os.path.basename(filename)))
+    )
+
+    return response
+
+
+@app.get('/download_carpass/{carpass_id}')
+def carpass_download(carpass_id: int,  db: Session = Depends(get_db)):
+    # create and download carpass pdf file
+
+    print('downloading file!')
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+
+    #######
+    # initializing variables with values 
+    fileName = 'saved_files/sample.pdf'
+    documentTitle = 'sample'
+    title = 'Пропуск'
+    subTitle = f'id {carpass_from_db.id_enter}'
+    textLines = [ 
+        f'№ ТС:  {carpass_from_db.ncar}', 
+        f'Телефон водителя:  {carpass_from_db.drv_man}', 
+    ] 
+    image = 'saved_files/image.png'
+
+    # creating a pdf object 
+    pdf = canvas.Canvas(fileName) 
+
+    # setting the title of the document 
+    pdf.setTitle(documentTitle) 
+
+    # registering a external font in python 
+    pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf')) 
+    pdfmetrics.registerFont(TTFont('Vera', 'vera.ttf'))
+
+    # creating the title by setting it's font 
+    # and putting it on the canvas 
+    pdf.setFont('Arial', 36) 
+    pdf.drawCentredString(300, 770, title) 
+
+    # creating the subtitle by setting it's font, 
+    # colour and putting it on the canvas 
+    pdf.setFillColorRGB(0, 0, 255) 
+    pdf.setFont("Arial", 24) 
+    pdf.drawCentredString(290, 720, subTitle) 
+
+    # drawing a line 
+    pdf.line(30, 710, 550, 710) 
+
+    # creating a multiline text using 
+    # textline and for loop 
+    text = pdf.beginText(40, 680) 
+    text.setFont("Arial", 18) 
+    text.setFillColor(colors.red) 
+    for line in textLines: 
+        text.textLine(line) 
+    pdf.drawText(text) 
+
+    # drawing a image at the 
+    # specified (x.y) position 
+    pdf.drawInlineImage(image, 130, 400) 
+
+    # saving the pdf 
+    pdf.save() 
+
+    #######
+
+    # document = db.query(models.Document).filter(models.Document.id == document_id).first()
+    filepath = 'saved_files/sample.pdf'
+    filename = 'sample.pdf'
     
     response = FileResponse(path=filepath,
                             # filename=filename, 

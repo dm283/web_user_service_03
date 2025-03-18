@@ -72,11 +72,11 @@ const file = ref(null)
 // }
 
 
-async function downloadFile() {
+async function downloadFile(document_id) {
   //
-  const document_id = 28;  
+  // const document_id = 28;  
   
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${document_id}`, {responseType: "blob"});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -87,7 +87,7 @@ async function downloadFile() {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
-}
+};
 
 const editItem = (item) => {
   //
@@ -114,7 +114,8 @@ const rollbackItem = (item) => {
 
 const printItem = (item) => {
   //
-  console.log('printing!')
+  downloadFile(item.id);
+
 };
 
 </script>
