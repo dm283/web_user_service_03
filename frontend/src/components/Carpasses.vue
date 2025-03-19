@@ -72,11 +72,11 @@ const file = ref(null)
 // }
 
 
-async function downloadFile() {
+async function downloadFile(document_id) {
   //
-  const document_id = 28;  
+  // const document_id = 28;  
   
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${document_id}`, {responseType: "blob"});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -87,7 +87,17 @@ async function downloadFile() {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
-}
+};
+
+
+// async function downloadFile(document_id) {
+//   //
+//   const fileDataUrl = `http://${backendIpAddress}:${backendPort}/download_carpass/16`
+//   const pdfFileWindow = window.open(fileDataUrl)
+//   pdfFileWindow.print()
+// };
+
+
 
 const editItem = (item) => {
   //
@@ -111,6 +121,12 @@ const rollbackItem = (item) => {
   showRollbackItem.value = true;
   selectedItem.value = item;
 }
+
+const printItem = (item) => {
+  //
+  downloadFile(item.id);
+
+};
 
 </script>
 
@@ -170,7 +186,7 @@ const rollbackItem = (item) => {
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem"
-          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem"
+          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem"
           :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
     </div>

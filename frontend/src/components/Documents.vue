@@ -63,9 +63,10 @@ const file = ref(null)
 
 async function downloadFile() {
   //
-  const document_id = 28;  
+  const document_id = 15;  
   
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${document_id}`, {responseType: "blob"});
+  // const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, {responseType: "blob"});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -77,6 +78,22 @@ async function downloadFile() {
   link.remove();
   window.URL.revokeObjectURL(url);
 }
+
+
+// const printFiles = (event) => {
+//   if (event.target.files?.length) {
+//     //const receivedFile = event.target.files[0]
+//     const fileDataUrl = `http://${backendIpAddress}:${backendPort}/download_carpass/16`
+//     //const fileDataUrl = window.URL.createObjectURL(receivedFile)
+//     const pdfFileWindow = window.open(fileDataUrl)
+//     console.log('receivedFile=', receivedFile)
+//     console.log('fileDataUrl=', fileDataUrl)
+//     console.log('pdfFileWindow=', pdfFileWindow)
+//     pdfFileWindow.print()
+//   } else {
+//     alert('No files selected!')
+//   }
+// }
 
 </script>
 
@@ -106,6 +123,13 @@ async function downloadFile() {
           <button @click="downloadFile()" class="border rounded-full p-3 text-white bg-pink-400">
             DOWNLOAD FILE
           </button>
+
+          <!-- <div>
+            <div id="np-container">
+              <input type="file" @change="printFiles" accept="application/pdf" />
+            </div>
+          </div> -->
+
         </div>
       </div>
     </div>
