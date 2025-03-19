@@ -17,6 +17,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics 
 from reportlab.lib import colors
 
+import qrcode
+
 
 app = FastAPI()
 
@@ -117,8 +119,7 @@ def document_download(document_id: int,  db: Session = Depends(get_db)):
 
 
 def create_document_carpass(carpass, filepath, filename):
-    #
-    # initializing variables with values
+    # creates carpass pdf file for printing
     title = 'Пропуск ТС'
     subTitle = f'Рег. № ТС:  {carpass.ncar}'
     textLines = [ 
@@ -127,47 +128,33 @@ def create_document_carpass(carpass, filepath, filename):
         f'Телефон водителя:  {carpass.dev_phone}', 
         f'Номер стоянки:  {carpass.place_n}', 
     ] 
-    image = 'saved_files/image.png'
 
-    # creating a pdf object 
+    # QR code creating
+    qrcode_data = f'GUID: {carpass.guid}\n' \
+        f'Регистрационный № ТС: {carpass.ncar}\n' \
+        f'ФИО водителя: {carpass.drv_man}\n' \
+        f'Телефон водителя: {carpass.dev_phone}\n'
+    qr = qrcode.QRCode(box_size=5)
+    qr.add_data(qrcode_data)
+    qr.make()
+    image = qr.make_image()
+
     pdf = canvas.Canvas(filepath) 
-
-    # setting the title of the document 
     pdf.setTitle(filename) 
-
-    # registering a external font in python 
     pdfmetrics.registerFont(TTFont('Arial', 'verdana.ttf')) 
-
-    # creating the title by setting it's font 
-    # and putting it on the canvas 
     pdf.setFont('Arial', 30) 
     pdf.drawCentredString(300, 770, title) 
-
-    # creating the subtitle by setting it's font, 
-    # colour and putting it on the canvas 
     # pdf.setFillColorRGB(0, 0, 255) 
     pdf.setFont("Arial", 24) 
     pdf.drawCentredString(290, 720, subTitle) 
-
-    # drawing a line 
     pdf.line(30, 710, 550, 710) 
-
-    # creating a multiline text using 
-    # textline and for loop 
     text = pdf.beginText(40, 680) 
     text.setFont("Arial", 18) 
-    # text.setFillColor(colors.red) 
     for line in textLines: 
         text.textLine(line) 
     pdf.drawText(text) 
-
-    # drawing a image at the 
-    # specified (x.y) position 
-    pdf.drawInlineImage(image, 200, 400) 
-
-    # saving the pdf 
+    pdf.drawInlineImage(image, 155, 200) #x.y
     pdf.save() 
-
 
 
 @app.get('/download_carpass/{carpass_id}')
