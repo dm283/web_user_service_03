@@ -33,5 +33,6 @@ backend/app/__pycache__/
 backend/venv/
 backend/logs/
 backend/config.ini
+backend/saved_files
 
 todo.txt
