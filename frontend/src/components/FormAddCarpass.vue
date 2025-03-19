@@ -25,6 +25,8 @@ const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
 
 const form = reactive({});
 
+const files = ref(null)
+
 const initEmptyForm = () => {
     form.ncar = ''
     form.dateen = ''
@@ -90,6 +92,7 @@ const handleSubmit = async () => {
   //
   let formData = new FormData();
 
+  formData.append('files', files.value.files[0]);
   formData.append('ncar', form.ncar);
   formData.append('dateen', form.dateen);
   formData.append('timeen', form.timeen);
@@ -110,6 +113,7 @@ const handleSubmit = async () => {
   // formData, {headers: {'Content-Type': 'multipart/form-data'}});
 
   try {
+    console.log('FORM FILES=', formData)
     // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (!props.itemData) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
@@ -370,28 +374,12 @@ const handleSubmit = async () => {
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
-          <button
-            class="formBtn"
-            type="submit"
-          >
-          СОХРАНИТЬ
-          </button>
-          <button
-            class="formBtn"
-            type="reset"
-            @click=""
-          >
-          ОЧИСТИТЬ
-          </button>
+          <button class="formBtn" type="submit">СОХРАНИТЬ</button>
+          <button class="formBtn" type="reset">ОЧИСТИТЬ</button>
+          <input id="files" ref="files" name="files" type="file" class="formInputFile"/>
         </div>
         <div class="float-right" v-if="props.itemData">
-          <button
-            class="formBtn "
-            type="button"  
-            @click="postingItem"
-          >
-          ПРОВОДКА
-          </button>
+          <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
         </div>
       </div>
 
@@ -410,10 +398,8 @@ const handleSubmit = async () => {
 }
 
 .formInputFile {
-  @apply mt-2 block w-full text-sm text-slate-500 
-            file:my-0.5 file:ml-0.5 file:mr-4 file:py-2 file:px-4
-            file:ring-1 file:ring-gray-200 file:rounded-full file:border-0 file:text-sm file:font-normal
-            file:bg-gray-50 file:text-gray-600 hover:file:bg-gray-100 cursor-pointer
+  @apply text-sm text-slate-400 file:py-2 file:px-4 file:bg-white file:rounded-lg file:border-slate-300 file:text-sm file:font-normal
+    file:text-slate-400 hover:file:bg-gray-100 cursor-pointer
 }
 
 .formBtn {

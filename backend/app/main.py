@@ -218,6 +218,8 @@ def update_carpass(
     dateex: Annotated[date, Form()],
     timeex: Annotated[time, Form()],
 
+    files: UploadFile|Annotated[str, Form()],
+
     db: Session = Depends(get_db)
 ):
     updated_datetime = datetime.now()
@@ -240,6 +242,19 @@ def update_carpass(
         timeex = timeex,
         updated_datetime = updated_datetime
     )
+
+    print('!!!!!!!!FILES=', files)
+
+    if files != 'undefined':
+        document = schemas.DocumentCreate(
+            doc_name = 'тест_пропуск',
+            guid_consignment = carpass_id,
+            customer_name = contact_name,
+            filename = files.filename,
+            filepath = f"saved_files/{files.filename}",
+            filecontent = None
+        )
+        crud.create_n_save_document(db=db, file=files, document=document)
         
     return crud.update_carpass(db=db, carpass_id=carpass_id, carpass=carpass)
 
