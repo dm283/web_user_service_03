@@ -89,10 +89,26 @@ const postingItem = async () => {
 };
 
 const handleSubmit = async () => {
-  //
+  // form submit handling (carpass create or update)
   let formData = new FormData();
 
-  formData.append('files', files.value.files[0]);
+  // files uploading
+  if (files.value) {
+    for (let file of files.value.files) {
+    formData.append('file', file);
+    formData.append('contact_name', form.contact_name);
+    try {
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.id}`, 
+        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+    } catch (error) {
+      console.error('Error uploading file', error);
+      toast.error('File has not been uploaded');
+    };
+  };
+  };
+            
+  // carpass upgrading
+  // formData.append('files', files.value.files);
   formData.append('ncar', form.ncar);
   formData.append('dateen', form.dateen);
   formData.append('timeen', form.timeen);
@@ -113,7 +129,6 @@ const handleSubmit = async () => {
   // formData, {headers: {'Content-Type': 'multipart/form-data'}});
 
   try {
-    console.log('FORM FILES=', formData)
     // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (!props.itemData) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
@@ -124,8 +139,6 @@ const handleSubmit = async () => {
         formData, {headers: {'Content-Type': 'multipart/form-data'}});
       toast.success('Пропуск обновлён');      
     }
-
-
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
@@ -134,8 +147,8 @@ const handleSubmit = async () => {
   };
 };
 
-
 </script>
+
 
 <template>
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
@@ -376,7 +389,7 @@ const handleSubmit = async () => {
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="reset">ОЧИСТИТЬ</button>
-          <input id="files" ref="files" name="files" type="file" class="formInputFile"/>
+          <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="props.itemData">
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
