@@ -1,7 +1,8 @@
 <script setup>
 // import router from '@/router';
-import {ref, reactive, computed} from 'vue';
+import {ref, reactive, computed, onMounted} from 'vue';
 import { useToast } from 'vue-toastification';
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
 
 import data from "../../../backend/config.ini?raw";
@@ -18,6 +19,23 @@ const props = defineProps({
   itemData: Object,
   isCard: Boolean,
 });
+
+const state = reactive({
+  documents: [],
+  isLoading: true
+})
+
+onMounted(async () => {
+    try {
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.id}`);
+      state.documents = response.data;
+    } catch (error) {
+      console.error('Error fetching docs', error);
+    } finally {
+      state.isLoading = false;
+    }
+});
+
 
 const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
 const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
@@ -382,6 +400,24 @@ const handleSubmit = async () => {
         <label class=formLabelCheckboxStyle 
           @click="form.isCapital=(form.isCapital==true) ? false : true ;">Capital</label>
       </div> -->
+
+
+      <div v-if="props.isCard || props.itemData">
+      <!-- Show loading spinner while loading is true -->
+      <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
+        <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
+      </div>
+      <!-- Show when loading is done -->
+      <div class="ml-6" v-if="!state.isLoading && state.documents.length>0">
+        <label class=formLabelStyle>Документы</label>
+        <div class="flex space-x-3 mt-3">
+        <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
+          <div class=""><i class="pi pi-file" style="font-size: 1rem"></i></div>
+          <div class="">{{ document.filename }}</div>
+        </div>
+        </div>
+        </div>
+      </div>
 
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">

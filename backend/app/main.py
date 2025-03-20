@@ -198,6 +198,13 @@ def read_carpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     return carpasses
 
 
+@app.get('/entity_documents/{entity_id}', response_model=list[schemas.Document])
+def get_entity_documents(entity_id: int, db: Session = Depends(get_db)):
+    # get entity documents from db table documents
+    documents =  db.query(models.Document).filter(models.Document.guid_consignment == entity_id).order_by(models.Document.created_datetime.desc()).all()
+    return documents
+
+
 @app.put("/upload_file_for_carpass/{carpass_id}")
 async def upload_file_for_carpass(
     carpass_id: int,
