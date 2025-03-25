@@ -28,7 +28,7 @@ def create_n_save_document(db: Session, file: UploadFile, document: schemas.Docu
 
 
 def get_documents(db: Session, skip: int = 0, limit: int = 100):
-    #
+    # retrives all documents from database
     return db.query(models.Document).order_by(models.Document.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
