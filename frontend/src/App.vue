@@ -201,13 +201,14 @@ const signOut = async () => {
 <!-- **************   MAIN MENU SIDEBAR    ******************* -->
 <div v-if="showMenuBar" class="w-60 h-full fixed bg-sky-700 text-white">
   <div class="">
-    <RouterLink to="/carpasses">
-      <MenuSection :label="'Пропуска'" :icon="'truck'" :description="'Информация о пропусках ТС'"/>
-    </RouterLink>
     <RouterLink to="/">
+      <MenuSection :label="'Пропуска ТС'" :icon="'truck'" :description="'Информация о пропусках ТС'"/>
+    </RouterLink>
+    <RouterLink to="/documents">
       <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"/>
     </RouterLink>
-    <RouterLink to="/dashboard">
+    <RouterLink to="/dashboard">  
+    <!-- <RouterLink to="/dashboard"> -->
       <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"/>
     </RouterLink>
   </div>
