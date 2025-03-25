@@ -1,7 +1,8 @@
 <script setup>
 // import router from '@/router';
-import {ref, reactive, computed} from 'vue';
+import {ref, reactive, computed, onMounted} from 'vue';
 import { useToast } from 'vue-toastification';
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
 
 import data from "../../../backend/config.ini?raw";
@@ -19,11 +20,30 @@ const props = defineProps({
   isCard: Boolean,
 });
 
+const state = reactive({
+  documents: [],
+  isLoading: true
+})
+
+onMounted(async () => {
+    try {
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.id}`);
+      state.documents = response.data;
+    } catch (error) {
+      console.error('Error fetching docs', error);
+    } finally {
+      state.isLoading = false;
+    }
+});
+
+
 const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
 const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
 
 const form = reactive({});
+
+const files = ref(null)
 
 const initEmptyForm = () => {
     form.ncar = ''
@@ -87,9 +107,26 @@ const postingItem = async () => {
 };
 
 const handleSubmit = async () => {
-  //
+  // form submit handling (carpass create or update)
   let formData = new FormData();
 
+  // files uploading
+  if (files.value) {
+    for (let file of files.value.files) {
+    formData.append('file', file);
+    formData.append('contact_name', form.contact_name);
+    try {
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.id}`, 
+        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+    } catch (error) {
+      console.error('Error uploading file', error);
+      toast.error('File has not been uploaded');
+    };
+  };
+  };
+            
+  // carpass upgrading
+  // formData.append('files', files.value.files);
   formData.append('ncar', form.ncar);
   formData.append('dateen', form.dateen);
   formData.append('timeen', form.timeen);
@@ -120,8 +157,6 @@ const handleSubmit = async () => {
         formData, {headers: {'Content-Type': 'multipart/form-data'}});
       toast.success('Пропуск обновлён');      
     }
-
-
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
@@ -130,8 +165,8 @@ const handleSubmit = async () => {
   };
 };
 
-
 </script>
+
 
 <template>
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
@@ -367,31 +402,33 @@ const handleSubmit = async () => {
       </div> -->
 
 
+      <div v-if="props.isCard || props.itemData">
+      <!-- Show loading spinner while loading is true -->
+      <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
+        <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
+      </div>
+      <!-- Show when loading is done -->
+      <div class="ml-6" v-if="!state.isLoading && state.documents.length>0">
+        <label class=formLabelStyle>Документы</label>
+        <div class="flex space-x-3 mt-3">
+        <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
+          <div class=""><i class="pi pi-file" style="font-size: 1rem"></i></div>
+          <div class="">{{ document.filename }}</div>
+        </div>
+        </div>
+        </div>
+      </div>
+
+
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
-          <button
-            class="formBtn"
-            type="submit"
-          >
-          СОХРАНИТЬ
-          </button>
-          <button
-            class="formBtn"
-            type="reset"
-            @click=""
-          >
-          ОЧИСТИТЬ
-          </button>
+          <button class="formBtn" type="submit">СОХРАНИТЬ</button>
+          <button class="formBtn" type="reset">ОЧИСТИТЬ</button>
+          <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="props.itemData">
-          <button
-            class="formBtn "
-            type="button"  
-            @click="postingItem"
-          >
-          ПРОВОДКА
-          </button>
+          <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
         </div>
       </div>
 
@@ -410,10 +447,8 @@ const handleSubmit = async () => {
 }
 
 .formInputFile {
-  @apply mt-2 block w-full text-sm text-slate-500 
-            file:my-0.5 file:ml-0.5 file:mr-4 file:py-2 file:px-4
-            file:ring-1 file:ring-gray-200 file:rounded-full file:border-0 file:text-sm file:font-normal
-            file:bg-gray-50 file:text-gray-600 hover:file:bg-gray-100 cursor-pointer
+  @apply text-sm text-slate-400 file:py-2 file:px-4 file:bg-white file:rounded-lg file:border-slate-300 file:text-sm file:font-normal
+    file:text-slate-400 hover:file:bg-gray-100 cursor-pointer
 }
 
 .formBtn {

@@ -1,6 +1,6 @@
 import os, random, ast
 from datetime import date, datetime, time, timedelta
-from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect, Depends # HTTPException
+from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect, Depends, File # HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
@@ -198,6 +198,33 @@ def read_carpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     return carpasses
 
 
+@app.get('/entity_documents/{entity_id}', response_model=list[schemas.Document])
+def get_entity_documents(entity_id: int, db: Session = Depends(get_db)):
+    # get entity documents from db table documents
+    documents =  db.query(models.Document).filter(models.Document.guid_consignment == entity_id).order_by(models.Document.created_datetime.desc()).all()
+    return documents
+
+
+@app.put("/upload_file_for_carpass/{carpass_id}")
+async def upload_file_for_carpass(
+    carpass_id: int,
+    contact_name: Annotated[str, Form()], 
+    file: UploadFile,
+    db: Session = Depends(get_db)
+    ):
+    # file upload for carpass
+    document = schemas.DocumentCreate(
+        doc_name = 'тест_пропуск',
+        guid_consignment = carpass_id,
+        customer_name = contact_name,
+        filename = file.filename,
+        filepath = f"saved_files/{file.filename}",
+        filecontent = None
+    )
+
+    return crud.create_n_save_document(db=db, file=file, document=document)
+
+
 @app.put('/carpasses/{carpass_id}')
 def update_carpass(
     carpass_id: int,
@@ -217,6 +244,9 @@ def update_carpass(
     place_n: Annotated[str, Form()], 
     dateex: Annotated[date, Form()],
     timeex: Annotated[time, Form()],
+
+    # # files: list[UploadFile]|Annotated[str, Form()] = None,
+    # files: list[UploadFile] | None = None,
 
     db: Session = Depends(get_db)
 ):
@@ -240,6 +270,21 @@ def update_carpass(
         timeex = timeex,
         updated_datetime = updated_datetime
     )
+
+    # print('!!!!!!!!FILES=', files)
+    # print('len =', len(files))
+
+    # if files != 'undefined':
+    #     for file in files:
+    #         document = schemas.DocumentCreate(
+    #             doc_name = 'тест_пропуск',
+    #             guid_consignment = carpass_id,
+    #             customer_name = contact_name,
+    #             filename = file.filename,
+    #             filepath = f"saved_files/{file.filename}",
+    #             filecontent = None
+    #         )
+    #         crud.create_n_save_document(db=db, file=file, document=document)
         
     return crud.update_carpass(db=db, carpass_id=carpass_id, carpass=carpass)
 
