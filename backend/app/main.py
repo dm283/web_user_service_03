@@ -187,15 +187,19 @@ def carpass_download(carpass_id: int,  db: Session = Depends(get_db)):
 @app.get('/documents/', response_model=list[schemas.Document])
 def read_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     documents = crud.get_documents(db, skip=skip, limit=limit)
-    print('GET DOCS!!!')
     return documents
 
 
 @app.get('/carpasses/', response_model=list[schemas.Carpass])
 def read_carpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     carpasses = crud.get_carpasses(db, skip=skip, limit=limit)
-    print('GET CARPASSES!!!')
     return carpasses
+
+
+@app.get('/car_terminal/', response_model=list[schemas.Carpass])
+def read_car_at_terminal(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    cars = crud.get_cars_at_terminal(db, skip=skip, limit=limit)
+    return cars
 
 
 @app.get('/entity_documents/{entity_id}', response_model=list[schemas.Document])
@@ -242,8 +246,8 @@ def update_carpass(
     contact_broker: Annotated[int, Form()], 
     broker_name: Annotated[str, Form()], 
     place_n: Annotated[str, Form()], 
-    dateex: Annotated[date, Form()],
-    timeex: Annotated[time, Form()],
+    # dateex: Annotated[date, Form()],
+    # timeex: Annotated[time, Form()],
 
     # # files: list[UploadFile]|Annotated[str, Form()] = None,
     # files: list[UploadFile] | None = None,
@@ -266,8 +270,9 @@ def update_carpass(
         contact_broker = contact_broker,
         broker_name =  broker_name,
         place_n = place_n,
-        dateex = dateex,
-        timeex = timeex,
+        status = 'parking',
+        dateex = None,
+        timeex = None,
         updated_datetime = updated_datetime
     )
 
@@ -304,8 +309,8 @@ def create_carpass(
     contact_broker: Annotated[int, Form()], 
     broker_name: Annotated[str, Form()], 
     place_n: Annotated[str, Form()], 
-    dateex: Annotated[date, Form()],
-    timeex: Annotated[time, Form()],
+    # dateex: Annotated[date, Form()],
+    # timeex: Annotated[time, Form()],
 
     db: Session = Depends(get_db)
 ):
@@ -323,8 +328,9 @@ def create_carpass(
         contact_broker = contact_broker,
         broker_name =  broker_name,
         place_n = place_n,
-        dateex = dateex,
-        timeex = timeex
+        status = 'parking',
+        dateex = None,
+        timeex = None
     )
         
     return crud.create_carpass(db=db, carpass=carpass)
@@ -352,6 +358,12 @@ def posting_carpass(carpass_id: int, db: Session = Depends(get_db)):
 def rollback_carpass(carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.rollback_carpass(db=db, carpass_id=carpass_id)
+
+
+@app.put('/car_exit_permit/{carpass_id}')
+def car_exit_permit(carpass_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.car_exit_permit(db=db, carpass_id=carpass_id)
 
 
 @app.post("/users/", response_model=schemas.User)

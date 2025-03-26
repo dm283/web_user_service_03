@@ -17,8 +17,9 @@ class CarpassCreate(BaseModel):
     contact_broker: int
     broker_name: str
     place_n: str
-    dateex: date
-    timeex: time
+    dateex: date | None
+    timeex: time | None
+    status: str
 
 
 class CarpassUpdate(CarpassCreate):

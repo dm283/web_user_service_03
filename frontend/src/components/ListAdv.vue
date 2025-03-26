@@ -5,7 +5,7 @@ import 'primeicons/primeicons.css';
 import axios from 'axios';
 import { utils, writeFileXLSX, writeFile } from 'xlsx';
 
-const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback']) // emit
+const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit']) // emit
 
 const props = defineProps({
   name: String,
@@ -400,6 +400,9 @@ const dataRender = () => {
 
   for (let i = 0; i < renderedData.length; i++) {
     listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
+    if (props.name=='ТС на терминале') {
+      listRowStyle[i] = renderedData[i].status=='exit_permitted' ? 'bg-green-50' : '';
+    };
     // listRowStyle[i] = '';
     listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
@@ -516,24 +519,30 @@ const rowClick = (index, item) => {
   </div>
 
   <div class="inline-block mt-3 space-x-2">
+
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
+      @click="emit('btnSetstatusexit', selectedItem)" :disabled="!selectedItem"  v-if="props.name=='ТС на терминале'">
+      <i class="pi pi-palette" style="font-size: 1rem"></i>
+    </button>
+
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="emit('btnAdd')">
+      @click="emit('btnAdd')" v-if="props.name=='Пропуска ТС на въезд'">
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnEdit', selectedItem)" :disabled="!selectedItem | selectedItem.posted">
+      @click="emit('btnEdit', selectedItem)" :disabled="!selectedItem | selectedItem.posted" v-if="props.name=='Пропуска ТС на въезд'">
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnDelete', selectedItem)" :disabled="!selectedItem | selectedItem.posted">
+      @click="emit('btnDelete', selectedItem)" :disabled="!selectedItem | selectedItem.posted" v-if="props.name=='Пропуска ТС на въезд'">
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnPrint', selectedItem)" :disabled="!selectedItem | !selectedItem.posted">
+      @click="emit('btnPrint', selectedItem)" :disabled="!selectedItem | !selectedItem.posted" v-if="props.name=='Пропуска ТС на въезд'">
       <i class="pi pi-print" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnRollback', selectedItem)" :disabled="!selectedItem | !selectedItem.posted">
+      @click="emit('btnRollback', selectedItem)" :disabled="!selectedItem | !selectedItem.posted" v-if="props.name=='Пропуска ТС на въезд'">
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>
     </button>
 

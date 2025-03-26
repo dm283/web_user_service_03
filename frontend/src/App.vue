@@ -202,7 +202,13 @@ const signOut = async () => {
 <div v-if="showMenuBar" class="w-60 h-full fixed bg-sky-700 text-white">
   <div class="">
     <RouterLink to="/">
-      <MenuSection :label="'Пропуска ТС'" :icon="'truck'" :description="'Информация о пропусках ТС'"/>
+      <MenuSection :label="'Пропуска ТС на въезд'" :icon="'truck'" :description="'Информация о пропусках ТС на въезд'"/>
+    </RouterLink>
+    <RouterLink to="/car_terminal">
+      <MenuSection :label="'ТС на терминале'" :icon="'warehouse'" :description="'Информация о ТС на терминале'"/>
+    </RouterLink>
+    <RouterLink to="">
+      <MenuSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'"/>
     </RouterLink>
     <RouterLink to="/documents">
       <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"/>

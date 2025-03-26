@@ -195,8 +195,12 @@ async function downloadFile(document_id) {
 
     <div class="ml-6 mt-3" v-if="props.isCard">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
-      <div class="inline-block text-sm font-semibold text-green-600" v-if="props.itemData.posted">ПРОВЕДЁН</div>
-      <div class="inline-block text-sm font-semibold text-blue-500" v-else="props.itemData.posted">НЕ ПРОВЕДЁН</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="props.itemData.status=='exit_permitted'">
+        ВЫЕЗД РАЗРЕШЁН</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else="props.itemData.posted">
+        СТОЯНКА</div>     
+      <!-- <div class="inline-block text-sm font-semibold text-green-600" v-if="props.itemData.posted">ПРОВЕДЁН</div> -->
+      <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ДОКУМЕНТ НЕ ПРОВЕДЁН</div>
     </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
@@ -356,7 +360,7 @@ async function downloadFile(document_id) {
         </div>
       </div>
 
-      <div class="flex">
+      <!-- <div class="flex">
         <div class=formInputDiv>
           <label class=formLabelStyle>Дата выезда</label>
           <input
@@ -366,7 +370,6 @@ async function downloadFile(document_id) {
             name="dateex"
             :class=formInputStyle2
             placeholder=""
-            required
             :disabled="isCard"
           />
         </div>
@@ -379,11 +382,10 @@ async function downloadFile(document_id) {
             name="timeex"
             :class=formInputStyle2
             placeholder=""
-            required
             :disabled="isCard"
           />
         </div>
-      </div>
+      </div> -->
 
       <!-- <div class="mx-5 mb-2">
         <label class=formLabelStyle>Файл</label>
