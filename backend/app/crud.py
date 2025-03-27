@@ -37,6 +37,13 @@ def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Carpass).filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
+def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Carpass).filter(models.Carpass.is_active==True, models.Carpass.posted==True, models.Carpass.dateex==None).\
+        order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
+
 def create_carpass(db: Session, carpass: schemas.CarpassCreate):
     #
     last_created_carpass_from_db =  db.query(models.Carpass).order_by(models.Carpass.id.desc()).first()
@@ -124,6 +131,20 @@ def rollback_carpass(db: Session, carpass_id: int):
     setattr(carpass_from_db, 'posted', False)
     setattr(carpass_from_db, 'post_date', None)
     setattr(carpass_from_db, 'post_user_id', None)
+    db.commit()
+
+    return carpass_from_db.id_enter
+
+
+def car_exit_permit(db: Session, carpass_id: int):
+    #
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not carpass_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(carpass_from_db, 'status', 'exit_permitted')
     db.commit()
 
     return carpass_from_db.id_enter

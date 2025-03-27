@@ -6,7 +6,6 @@ import ListAdv from '@/components/ListAdv.vue';
 import FormAddCarpass from './FormAddCarpass.vue';
 import FormDeleteCarpass from './FormDeleteCarpass.vue';
 import FormRollbackCarpass from './FormRollbackCarpass.vue';
-import FormCarExitPermit from './FormCarExitPermit.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -17,14 +16,11 @@ var backendPort = parser.get("main", "backend_port");
 
   
 const props = defineProps({
-  view_type: String,
-  list_title: String,
 });
 
 const state = reactive({
   records: [],
-  isLoading: true,
-  query: '',
+  isLoading: true
 })
   
 const showItemCard = ref(false)
@@ -32,20 +28,12 @@ const showAddItem = ref(false)
 const showUpdateItem = ref(false)
 const showDeleteItem = ref(false)
 const showRollbackItem = ref(false)
-const showCarExitPermit = ref(false)
 const selectedItem = ref('')
 
 async function getData() {
     state.isLoading = true;
     try {
-
-      if (props.view_type == 'enter') {
-        state.query = `http://${backendIpAddress}:${backendPort}/carpasses/`;
-      } else if (props.view_type == 'terminal') {
-        state.query = `http://${backendIpAddress}:${backendPort}/car_terminal/`;
-      };
-      
-      const response = await axios.get(state.query);
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/car_terminal/`);
       state.records = response.data;
     } catch (error) {
       console.error('Error fetching', error);
@@ -137,13 +125,7 @@ const rollbackItem = (item) => {
 const printItem = (item) => {
   //
   downloadFile(item.id);
-};
 
-const setStatusExit = (item) => {
-  //
-  console.log('set status')
-  showCarExitPermit.value = true;
-  selectedItem.value = item;
 };
 
 </script>
@@ -188,11 +170,6 @@ const setStatusExit = (item) => {
   </div>
 
 
-  <!-- **********************   MODAL CAR EXIT PERMIT   ************************** -->
-  <div v-if="showCarExitPermit" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormCarExitPermit @close-modal="showCarExitPermit=false" @doc-created="getData" :itemData="selectedItem"/>
-  </div>
-
   <div class="flex flex-col md:flex-row p-3 gap-3 ">
     <!-- <div class="flex-none w-fit md:w-auto">
       <div class="flex flex-col gap-3">
@@ -209,8 +186,8 @@ const setStatusExit = (item) => {
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem"
-          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem" @btn-setstatusexit="setStatusExit"
-          :name="props.list_title" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
+          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem"
+          :name="'Пропуска'" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>
     </div>
   </div>

@@ -3,5 +3,5 @@
 </script>
 
 <template>
-  <Carpasses :view_type="'enter'" :list_title="'Пропуска ТС на въезд'"/>
+  <Carpasses :view_type="'terminal'" :list_title="'ТС на терминале'"/>
 </template>

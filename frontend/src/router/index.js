@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DocumentsView from "@/views/DocumentsView.vue";
 import CarpassesView from "@/views/CarpassesView.vue";
+import CarTerminalView from "@/views/CarTerminalView.vue";
 import DashboardView from "@/views/DashboardView.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
@@ -18,6 +19,11 @@ const router = createRouter({
       path: '/',
       name: 'carpasses',
       component: CarpassesView,
+    },
+    {
+      path: '/car_terminal',
+      name: 'car_terminal',
+      component: CarTerminalView,
     },
     {
       path: '/dashboard',
