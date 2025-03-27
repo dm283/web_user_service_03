@@ -294,6 +294,32 @@ def update_carpass(
     return crud.update_carpass(db=db, carpass_id=carpass_id, carpass=carpass)
 
 
+@app.post("/exitcarpasses/")
+def create_exitcarpass(
+    id_enter: Annotated[str, Form()], 
+    ncar: Annotated[str, Form()], 
+    drv_man: Annotated[str, Form()], 
+    dev_phone: Annotated[str, Form()], 
+    ndexit: Annotated[int, Form()], 
+    comment: Annotated[str, Form()], 
+
+    db: Session = Depends(get_db)
+):
+    carpass = schemas.ExitcarpassCreate(
+        id_enter = id_enter,
+        ncar = ncar,
+        drv_man = drv_man,
+        dev_phone = dev_phone,
+        ndexit = ndexit,
+        comment = comment,
+        status = '',
+        dateex = None,
+        timeex = None
+    )
+        
+    return crud.create_exitcarpass(db=db, item=carpass)
+
+
 @app.post("/carpasses/")
 def create_carpass(
     ncar: Annotated[str, Form()], 
