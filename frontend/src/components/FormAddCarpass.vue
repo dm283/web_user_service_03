@@ -25,6 +25,7 @@ const state = reactive({
   isLoading: true
 })
 
+if (props.itemData) {
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.id}`);
@@ -35,7 +36,7 @@ onMounted(async () => {
       state.isLoading = false;
     }
 });
-
+};
 
 const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
 const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
@@ -46,19 +47,19 @@ const form = reactive({});
 const files = ref(null)
 
 const initEmptyForm = () => {
-    form.ncar = ''
+    form.ncar = 'Х234РА23'
     form.dateen = ''
     form.timeen = ''
-    form.ntir = ''
-    form.nkont = ''
-    form.driver = ''
-    form.drv_man = ''
-    form.dev_phone = ''
+    form.ntir = '14'
+    form.nkont = '16'
+    form.driver = 'ООО Перевозчик'
+    form.drv_man = 'Иванов Сидор'
+    form.dev_phone = '322-223-322'
     form.contact = 111
-    form.contact_name = ''
+    form.contact_name = 'ООО Контакт'
     form.contact_broker = 222
-    form.broker_name = ''
-    form.place_n = ''
+    form.broker_name = 'ООО Брокер'
+    form.place_n = '13'
     form.dateex = ''
     form.timeex = ''
 }
