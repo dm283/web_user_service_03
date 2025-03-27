@@ -217,17 +217,16 @@ const signOut = async () => {
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
       />
     </RouterLink>
-    <RouterLink to="/documents">
+    <!-- <RouterLink to="/documents">
       <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"
       :selected="state.selectedMenu=='docsSec' ? '1' : '0'" @click="state.selectedMenu='docsSec'"
       />
     </RouterLink>
     <RouterLink to="/dashboard">  
-    <!-- <RouterLink to="/dashboard"> -->
       <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"
       :selected="state.selectedMenu=='dashSec' ? '1' : '0'" @click="state.selectedMenu='dashSec'"
       />
-    </RouterLink>
+    </RouterLink> -->
   </div>
 </div>
 
