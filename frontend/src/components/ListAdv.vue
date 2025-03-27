@@ -522,7 +522,7 @@ const rowClick = (index, item) => {
 
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnSetstatusexit', selectedItem)" :disabled="!selectedItem"  v-if="props.name=='ТС на терминале'">
-      <i class="pi pi-palette" style="font-size: 1rem"></i>
+      <i class="pi pi-unlock" style="font-size: 1rem"></i>
     </button>
 
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 

@@ -27,6 +27,7 @@ const toast = useToast();
 const state = reactive({
   data: [],
   isLoading: true,
+  selectedMenu: 'carEnter',
 })
 
 const token = ref('')
@@ -202,20 +203,30 @@ const signOut = async () => {
 <div v-if="showMenuBar" class="w-60 h-full fixed bg-sky-700 text-white">
   <div class="">
     <RouterLink to="/">
-      <MenuSection :label="'Пропуска ТС на въезд'" :icon="'truck'" :description="'Информация о пропусках ТС на въезд'"/>
+      <MenuSection :label="'Пропуска ТС на въезд'" :icon="'truck'" :description="'Информация о пропусках ТС на въезд'"
+      :selected="state.selectedMenu=='carEnter' ? '1' : '0'" @click="state.selectedMenu='carEnter'"
+      />
     </RouterLink>
     <RouterLink to="/car_terminal">
-      <MenuSection :label="'ТС на терминале'" :icon="'warehouse'" :description="'Информация о ТС на терминале'"/>
+      <MenuSection :label="'ТС на терминале'" :icon="'car'" :description="'Информация о ТС на терминале'"
+      :selected="state.selectedMenu=='carTerminal' ? '1' : '0'" @click="state.selectedMenu='carTerminal'"
+      />
     </RouterLink>
     <RouterLink to="">
-      <MenuSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'"/>
+      <MenuSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'"
+      :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
+      />
     </RouterLink>
     <RouterLink to="/documents">
-      <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"/>
+      <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"
+      :selected="state.selectedMenu=='docsSec' ? '1' : '0'" @click="state.selectedMenu='docsSec'"
+      />
     </RouterLink>
     <RouterLink to="/dashboard">  
     <!-- <RouterLink to="/dashboard"> -->
-      <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"/>
+      <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"
+      :selected="state.selectedMenu=='dashSec' ? '1' : '0'" @click="state.selectedMenu='dashSec'"
+      />
     </RouterLink>
   </div>
 </div>
