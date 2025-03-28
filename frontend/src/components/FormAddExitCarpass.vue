@@ -326,12 +326,12 @@ async function downloadFile(document_id) {
       </div> -->
 
 
-      <div v-if="props.isCard || props.itemData">
-      <!-- Show loading spinner while loading is true -->
+      <!--<div v-if="props.isCard || props.itemData">
+      Show loading spinner while loading is true
       <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
         <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
       </div>
-      <!-- Show when loading is done -->
+      Show when loading is done
       <div class="ml-6" v-if="!state.isLoading && state.documents.length>0">
         <label class=formLabelStyle>Документы</label>
         <div class="flex space-x-3 mt-3">
@@ -341,7 +341,7 @@ async function downloadFile(document_id) {
         </div>
         </div>
         </div>
-      </div>
+      </div>-->
 
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
