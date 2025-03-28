@@ -7,6 +7,7 @@ import FormAddCarpass from './FormAddCarpass.vue';
 import FormDeleteCarpass from './FormDeleteCarpass.vue';
 import FormRollbackCarpass from './FormRollbackCarpass.vue';
 import FormCarExitPermit from './FormCarExitPermit.vue';
+import FormAddExitCarpass from './FormAddExitCarpass.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -33,6 +34,7 @@ const showUpdateItem = ref(false)
 const showDeleteItem = ref(false)
 const showRollbackItem = ref(false)
 const showCarExitPermit = ref(false)
+const showCreateExitCarpass = ref(false)
 const selectedItem = ref('')
 
 async function getData() {
@@ -141,8 +143,14 @@ const printItem = (item) => {
 
 const setStatusExit = (item) => {
   //
-  console.log('set status')
   showCarExitPermit.value = true;
+  selectedItem.value = item;
+};
+
+const createExitCarpass = (item) => {
+  //
+  console.log('create exit');
+  showCreateExitCarpass.value = true;
   selectedItem.value = item;
 };
 
@@ -193,6 +201,13 @@ const setStatusExit = (item) => {
     <FormCarExitPermit @close-modal="showCarExitPermit=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
+
+  <!-- **********************   MODAL CREATE EXIT CARPASS   ************************** -->
+  <div v-if="showCreateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showCreateExitCarpass=false" @doc-created="getData" :isCreate=true :itemData="selectedItem"/>
+  </div>
+
+
   <div class="flex flex-col md:flex-row p-3 gap-3 ">
     <!-- <div class="flex-none w-fit md:w-auto">
       <div class="flex flex-col gap-3">
@@ -208,7 +223,7 @@ const setStatusExit = (item) => {
     </div> -->
     <div class="flex-auto w-auto md:w-64">
       <div class="">
-        <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem"
+        <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem" @btn-createexitcarpass="createExitCarpass"
           @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem" @btn-setstatusexit="setStatusExit"
           :name="props.list_title" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
       </div>

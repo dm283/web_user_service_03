@@ -43,6 +43,25 @@ def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
         order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
+def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
+    #
+    last_created_item_from_db =  db.query(models.Exitcarpass).order_by(models.Exitcarpass.id.desc()).first()
+    if last_created_item_from_db is None:
+        uuid = '1'
+        id_exit = '1'
+    else:
+        uuid=str(int(last_created_item_from_db.id_exit) + 1)
+        id_exit=str(int(last_created_item_from_db.id_exit) + 1)
+    created_datetime = datetime.datetime.now()
+
+    db_item = models.Exitcarpass(**item.model_dump(), uuid=uuid, id_exit=id_exit, created_datetime=created_datetime)
+    print(db_item)
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    
+    return db_item.id_exit
+
 
 def create_carpass(db: Session, carpass: schemas.CarpassCreate):
     #

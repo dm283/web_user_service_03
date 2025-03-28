@@ -41,6 +41,37 @@ class Carpass(CarpassCreate):
         from_attributes = True
 
 
+class ExitcarpassCreate(BaseModel):
+    id_enter: str
+    ncar: str
+    drv_man: str
+    dev_phone: str
+    ndexit: int
+    comment: str
+    dateex: date | None
+    timeex: time | None
+    status: str
+
+
+class ExitcarpassUpdate(ExitcarpassCreate):
+    updated_datetime: datetime
+    
+
+class Exitcarpass(ExitcarpassCreate):
+    id: int
+    uuid: str
+    id_exit: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
+
+
 class DocumentBase(BaseModel):
     doc_name: str
     guid_consignment: int
