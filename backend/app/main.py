@@ -192,14 +192,20 @@ def read_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
 
 @app.get('/carpasses/', response_model=list[schemas.Carpass])
 def read_carpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    carpasses = crud.get_carpasses(db, skip=skip, limit=limit)
-    return carpasses
+    items = crud.get_carpasses(db, skip=skip, limit=limit)
+    return items
 
 
 @app.get('/car_terminal/', response_model=list[schemas.Carpass])
 def read_car_at_terminal(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    cars = crud.get_cars_at_terminal(db, skip=skip, limit=limit)
-    return cars
+    items = crud.get_cars_at_terminal(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
+def read_exitcarpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
+    return items
 
 
 @app.get('/entity_documents/{entity_id}', response_model=list[schemas.Document])
@@ -294,6 +300,54 @@ def update_carpass(
     return crud.update_carpass(db=db, carpass_id=carpass_id, carpass=carpass)
 
 
+@app.put('/exitcarpasses/{carpass_id}')
+def update_exitcarpass(
+    carpass_id: int,
+
+    id_enter: Annotated[str, Form()], 
+    ncar: Annotated[str, Form()], 
+    drv_man: Annotated[str, Form()], 
+    dev_phone: Annotated[str, Form()], 
+    ndexit: Annotated[int, Form()], 
+    comment: Annotated[str, Form()],  
+    # dateex: Annotated[date, Form()],
+    # timeex: Annotated[time, Form()],
+
+    db: Session = Depends(get_db)
+):
+    updated_datetime = datetime.now()
+
+    carpass = schemas.ExitcarpassUpdate(
+        id_enter = id_enter,
+        ncar = ncar,
+        drv_man = drv_man,
+        dev_phone = dev_phone,
+        ndexit = ndexit,
+        comment = comment,
+        status = '',
+        dateex = None,
+        timeex = None,
+        updated_datetime = updated_datetime
+    )
+
+    # print('!!!!!!!!FILES=', files)
+    # print('len =', len(files))
+
+    # if files != 'undefined':
+    #     for file in files:
+    #         document = schemas.DocumentCreate(
+    #             doc_name = 'тест_пропуск',
+    #             guid_consignment = carpass_id,
+    #             customer_name = contact_name,
+    #             filename = file.filename,
+    #             filepath = f"saved_files/{file.filename}",
+    #             filecontent = None
+    #         )
+    #         crud.create_n_save_document(db=db, file=file, document=document)
+        
+    return crud.update_exitcarpass(db=db, carpass_id=carpass_id, carpass=carpass)
+
+
 @app.post("/exitcarpasses/")
 def create_exitcarpass(
     id_enter: Annotated[str, Form()], 
@@ -374,16 +428,34 @@ def deactivate_carpass(carpass_id: int, db: Session = Depends(get_db)):
     return crud.deactivate_carpass(db=db, carpass_id=carpass_id)
 
 
+@app.put('/exitcarpasses_deactivate/{carpass_id}')
+def deactivate_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.deactivate_exitcarpass(db=db, carpass_id=carpass_id)
+
+
 @app.put('/carpasses_posting/{carpass_id}')
 def posting_carpass(carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.posting_carpass(db=db, carpass_id=carpass_id)
 
 
+@app.put('/exitcarpasses_posting/{carpass_id}')
+def posting_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_exitcarpass(db=db, carpass_id=carpass_id)
+
+
 @app.put('/carpasses_rollback/{carpass_id}')
 def rollback_carpass(carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.rollback_carpass(db=db, carpass_id=carpass_id)
+
+
+@app.put('/exitcarpasses_rollback/{carpass_id}')
+def rollback_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id)
 
 
 @app.put('/car_exit_permit/{carpass_id}')

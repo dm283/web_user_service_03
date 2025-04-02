@@ -66,7 +66,7 @@ const initEmptyForm = () => {
     form.timeex = ''
 }
 
-if (props.itemData) {
+if (props.isCreate && props.itemData) {
   form.id_enter = props.itemData.id_enter;
   form.ncar = props.itemData.ncar;
   form.drv_man = props.itemData.drv_man
@@ -75,7 +75,17 @@ if (props.itemData) {
   form.comment = 'тест'
   form.dateex = ''
   form.timeex = ''
-} else {
+} else if (!props.isCreate && props.itemData) {
+  form.id_enter = props.itemData.id_enter;
+  form.ncar = props.itemData.ncar;
+  form.drv_man = props.itemData.drv_man
+  form.dev_phone = props.itemData.dev_phone
+  form.ndexit = props.itemData.ndexit
+  form.comment = props.itemData.comment
+  form.dateex = props.itemData.dateex
+  form.timeex = props.itemData.timeex
+} 
+else {
   initEmptyForm();
 };
 
@@ -88,7 +98,7 @@ const postingItem = async () => {
   try {
     // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (props.itemData) {
-      //const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`);
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses_posting/${props.itemData.id}`);
       toast.success('Пропуск проведён');
     } else {
       return;

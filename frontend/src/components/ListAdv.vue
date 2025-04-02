@@ -535,23 +535,27 @@ const rowClick = (index, item) => {
     </button>
 
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="emit('btnAdd')" v-if="props.name=='Пропуска ТС на въезд'">
+      @click="emit('btnAdd')" v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnEdit', selectedItem)" :disabled="!selectedItem | selectedItem.posted" v-if="props.name=='Пропуска ТС на въезд'">
+      @click="emit('btnEdit', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnDelete', selectedItem)" :disabled="!selectedItem | selectedItem.posted" v-if="props.name=='Пропуска ТС на въезд'">
+      @click="emit('btnDelete', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnPrint', selectedItem)" :disabled="!selectedItem | !selectedItem.posted" v-if="props.name=='Пропуска ТС на въезд'">
+      @click="emit('btnPrint', selectedItem)" :disabled="!selectedItem | !selectedItem.posted" 
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
       <i class="pi pi-print" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnRollback', selectedItem)" :disabled="!selectedItem | !selectedItem.posted" v-if="props.name=='Пропуска ТС на въезд'">
+      @click="emit('btnRollback', selectedItem, props.name)" :disabled="!selectedItem | !selectedItem.posted" 
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>
     </button>
 
@@ -637,7 +641,7 @@ const rowClick = (index, item) => {
     <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
         @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()"> -->
         
-      <td class="" @click="selectedItem=item; emit('btnItemcard', selectedItem)">
+      <td class="" @click="selectedItem=item; emit('btnItemcard', selectedItem, props.name)">
       <!-- <td :class="[item.posted ? 'text-green-600': 'text-blue-500']" @click="selectedItem=item; emit('btnItemcard', selectedItem)"> -->
       <!-- <td class="text-blue-500" @click="selectedItem=item; showItemCard=true"> -->
         <div class="inline-block text-blue-500 border-b-2 border-blue-400 hover:text-cyan-300 hover:border-cyan-300 max-w-min">
