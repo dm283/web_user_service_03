@@ -202,6 +202,19 @@ def read_car_at_terminal(skip: int = 0, limit: int = 100, db: Session = Depends(
     return items
 
 
+@app.get('/car_terminal_for_exit/')
+def read_car_at_terminal_for_exit(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_cars_at_terminal_for_exit(db, skip=skip, limit=limit)
+
+    # for record in items_with_exitcarpass:
+    #     print(record[0])
+
+    # ncar_list_excluded = list(items_with_exitcarpass)
+    # print('ncar_list_excluded =', ncar_list_excluded)
+    # items_at_terminal_without_exitcarpasses = crud.get_cars_at_terminal_for_exit(db, ncar_list_excluded, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
 def read_exitcarpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
@@ -252,11 +265,6 @@ def update_carpass(
     contact_broker: Annotated[int, Form()], 
     broker_name: Annotated[str, Form()], 
     place_n: Annotated[str, Form()], 
-    # dateex: Annotated[date, Form()],
-    # timeex: Annotated[time, Form()],
-
-    # # files: list[UploadFile]|Annotated[str, Form()] = None,
-    # files: list[UploadFile] | None = None,
 
     db: Session = Depends(get_db)
 ):
@@ -276,26 +284,8 @@ def update_carpass(
         contact_broker = contact_broker,
         broker_name =  broker_name,
         place_n = place_n,
-        status = 'parking',
-        dateex = None,
-        timeex = None,
         updated_datetime = updated_datetime
     )
-
-    # print('!!!!!!!!FILES=', files)
-    # print('len =', len(files))
-
-    # if files != 'undefined':
-    #     for file in files:
-    #         document = schemas.DocumentCreate(
-    #             doc_name = 'тест_пропуск',
-    #             guid_consignment = carpass_id,
-    #             customer_name = contact_name,
-    #             filename = file.filename,
-    #             filepath = f"saved_files/{file.filename}",
-    #             filecontent = None
-    #         )
-    #         crud.create_n_save_document(db=db, file=file, document=document)
         
     return crud.update_carpass(db=db, carpass_id=carpass_id, carpass=carpass)
 
@@ -310,8 +300,6 @@ def update_exitcarpass(
     dev_phone: Annotated[str, Form()], 
     ndexit: Annotated[int, Form()], 
     comment: Annotated[str, Form()],  
-    # dateex: Annotated[date, Form()],
-    # timeex: Annotated[time, Form()],
 
     db: Session = Depends(get_db)
 ):
@@ -324,26 +312,8 @@ def update_exitcarpass(
         dev_phone = dev_phone,
         ndexit = ndexit,
         comment = comment,
-        status = '',
-        dateex = None,
-        timeex = None,
         updated_datetime = updated_datetime
     )
-
-    # print('!!!!!!!!FILES=', files)
-    # print('len =', len(files))
-
-    # if files != 'undefined':
-    #     for file in files:
-    #         document = schemas.DocumentCreate(
-    #             doc_name = 'тест_пропуск',
-    #             guid_consignment = carpass_id,
-    #             customer_name = contact_name,
-    #             filename = file.filename,
-    #             filepath = f"saved_files/{file.filename}",
-    #             filecontent = None
-    #         )
-    #         crud.create_n_save_document(db=db, file=file, document=document)
         
     return crud.update_exitcarpass(db=db, carpass_id=carpass_id, carpass=carpass)
 
@@ -366,9 +336,6 @@ def create_exitcarpass(
         dev_phone = dev_phone,
         ndexit = ndexit,
         comment = comment,
-        status = '',
-        dateex = None,
-        timeex = None
     )
         
     return crud.create_exitcarpass(db=db, item=carpass)
@@ -389,8 +356,6 @@ def create_carpass(
     contact_broker: Annotated[int, Form()], 
     broker_name: Annotated[str, Form()], 
     place_n: Annotated[str, Form()], 
-    # dateex: Annotated[date, Form()],
-    # timeex: Annotated[time, Form()],
 
     db: Session = Depends(get_db)
 ):
@@ -408,18 +373,21 @@ def create_carpass(
         contact_broker = contact_broker,
         broker_name =  broker_name,
         place_n = place_n,
-        status = 'parking',
-        dateex = None,
-        timeex = None
     )
         
     return crud.create_carpass(db=db, carpass=carpass)
 
 
-@app.delete('/carpasses/{carpass_id}')
-def delete_carpass(carpass_id: int, db: Session = Depends(get_db)):
+@app.delete('/carpasses/{id}')
+def delete_carpass(id: int, db: Session = Depends(get_db)):
     #
-    return crud.delete_carpass(db=db, carpass_id=carpass_id)
+    return crud.delete_carpass(db=db, carpass_id=id)
+
+
+@app.delete('/exitcarpasses/{id}')
+def delete_carpass(id: int, db: Session = Depends(get_db)):
+    #
+    return crud.delete_exitcarpass(db=db, carpass_id=id)
 
 
 @app.put('/carpasses_deactivate/{carpass_id}')

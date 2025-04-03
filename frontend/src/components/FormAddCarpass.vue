@@ -47,7 +47,7 @@ const form = reactive({});
 const files = ref(null)
 
 const initEmptyForm = () => {
-    form.ncar = 'Х234РА23'
+    form.ncar = '_234РА23'
     form.dateen = ''
     form.timeen = ''
     form.ntir = '14'

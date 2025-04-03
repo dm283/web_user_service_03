@@ -26,7 +26,7 @@ const state = reactive({
   isLoading: true
 })
 
-if (props.itemData) {
+if (!props.isCreate && props.itemData) {
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.id}`);
@@ -67,6 +67,7 @@ const initEmptyForm = () => {
 }
 
 if (props.isCreate && props.itemData) {
+  console.log('999creating !!!!!!', props.itemData)
   form.id_enter = props.itemData.id_enter;
   form.ncar = props.itemData.ncar;
   form.drv_man = props.itemData.drv_man

@@ -44,9 +44,22 @@ def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
         order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
+def get_cars_at_terminal_for_exit(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Carpass).filter(models.Carpass.is_active==True, models.Carpass.posted==True, models.Carpass.dateex==None, \
+                                           models.Carpass.exitcarpass_created==False).\
+        order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
 def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Exitcarpass).filter(models.Exitcarpass.is_active == True).order_by(models.Exitcarpass.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
+def get_ncars_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
+    # get ncar fields from exitcarpasses
+    return db.query(models.Exitcarpass.ncar).filter(models.Exitcarpass.is_active == True).order_by(models.Exitcarpass.created_datetime.desc()).\
         offset(skip).limit(limit).all()
 
 
@@ -66,8 +79,15 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
+
+    # update carpass set exitcarpass_created = true
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item.id_enter).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    setattr(carpass_from_db, 'exitcarpass_created', True)
+    db.commit()
     
-    return db_item.id_exit
+    return db_item.id
 
 
 def create_carpass(db: Session, carpass: schemas.CarpassCreate):
@@ -100,7 +120,7 @@ def update_carpass(db: Session, carpass_id: int, carpass: schemas.CarpassUpdate)
         setattr(carpass_from_db, field, value)
     db.commit()
 
-    return carpass_from_db.id_enter
+    return carpass_from_db.id
 
 
 def update_exitcarpass(db: Session, carpass_id: int, carpass: schemas.ExitcarpassUpdate):
@@ -128,6 +148,26 @@ def delete_carpass(db: Session, carpass_id: int):
     return {"message": f"Carpass id {carpass_id} deleted successfully"}
 
 
+def delete_exitcarpass(db: Session, carpass_id: int):
+    #
+    exitcarpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
+    if exitcarpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    db.delete(exitcarpass_from_db)
+    db.commit()
+
+    # update carpass set exitcarpass_created = false
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == exitcarpass_from_db.id_enter).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    setattr(carpass_from_db, 'exitcarpass_created', False)
+    db.commit()
+
+    ### [ !!! DEVELOPMENT !!! ]  enrich this with saving deleted record into archive table
+
+    return {"message": f"Exitcarpass id {carpass_id} deleted successfully"}
+
+
 def deactivate_carpass(db: Session, carpass_id: int):
     #
     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
@@ -140,16 +180,23 @@ def deactivate_carpass(db: Session, carpass_id: int):
     return carpass_from_db.id
 
 
-def deactivate_exitcarpass(db: Session, carpass_id: int):
-    #
-    carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
-    if carpass_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+# def deactivate_exitcarpass(db: Session, carpass_id: int):
+#     #
+#     carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
+#     if carpass_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    setattr(carpass_from_db, 'is_active', False)
-    db.commit()
+#     setattr(carpass_from_db, 'is_active', False)
+#     db.commit()
 
-    return carpass_from_db.id
+#     # update carpass set exitcarpass_created = false
+#     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_from_db.id_enter).first()
+#     if carpass_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     setattr(carpass_from_db, 'exitcarpass_created', False)
+#     db.commit()
+
+#     return carpass_from_db.id
 
 
 def posting_carpass(db: Session, carpass_id: int):

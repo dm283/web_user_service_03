@@ -529,13 +529,13 @@ const rowClick = (index, item) => {
     </button>
 
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnCreateexitcarpass', selectedItem)" :disabled="!selectedItem"
+      @click="emit('btnCreateexitcarpass', selectedItem)" :disabled="!selectedItem | selectedItem.exitcarpass_created"
       v-if="props.name=='ТС на терминале'">
       <i class="pi pi-file-plus" style="font-size: 1rem"></i>
     </button>
 
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="emit('btnAdd')" v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
+      @click="emit('btnAdd', props.name)" v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 

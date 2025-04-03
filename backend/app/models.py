@@ -69,6 +69,7 @@ class Carpass(Base):
     dateex = Column(Date)
     timeex = Column(Time)
     status = Column(String())
+    exitcarpass_created = Column(Boolean, default=False)
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)

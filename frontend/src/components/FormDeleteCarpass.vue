@@ -24,9 +24,9 @@ const state = reactive({
 });
 
 if (props.itemName == 'Пропуска ТС на въезд') {
-  state.query = `http://${backendIpAddress}:${backendPort}/carpasses_deactivate/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`;
 } else if (props.itemName == 'Пропуска ТС на выезд') {
-  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses_deactivate/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`;
 }
 
 const toast = useToast();
@@ -34,7 +34,7 @@ const toast = useToast();
 const handleSubmit = async () => {
 
   try {
-    const response = await axios.put(state.query);
+    const response = await axios.delete(state.query);
     // const response = await axios.delete(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`);
     toast.success('Пропуск удалён');      
     emit('docCreated'); // emit

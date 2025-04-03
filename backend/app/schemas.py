@@ -17,9 +17,10 @@ class CarpassCreate(BaseModel):
     contact_broker: int
     broker_name: str
     place_n: str
-    dateex: date | None
-    timeex: time | None
-    status: str
+    dateex: date | None = None
+    timeex: time | None = None
+    status: str = 'parking'
+    exitcarpass_created: bool = False
 
 
 class CarpassUpdate(CarpassCreate):
@@ -48,9 +49,9 @@ class ExitcarpassCreate(BaseModel):
     dev_phone: str
     ndexit: int
     comment: str
-    dateex: date | None
-    timeex: time | None
-    status: str
+    dateex: date | None = None
+    timeex: time | None = None
+    status: str = ''
 
 
 class ExitcarpassUpdate(ExitcarpassCreate):
