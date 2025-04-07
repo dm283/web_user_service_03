@@ -293,25 +293,35 @@ def update_carpass(
 @app.put('/exitcarpasses/{carpass_id}')
 def update_exitcarpass(
     carpass_id: int,
-
-    id_enter: Annotated[str, Form()], 
-    ncar: Annotated[str, Form()], 
-    drv_man: Annotated[str, Form()], 
-    dev_phone: Annotated[str, Form()], 
-    ndexit: Annotated[int, Form()], 
-    comment: Annotated[str, Form()],  
-
+    # id_enter: Annotated[str, Form()], 
+    # ncar: Annotated[str, Form()], 
+    # drv_man: Annotated[str, Form()], 
+    # dev_phone: Annotated[str, Form()], 
+    # ndexit: Annotated[int, Form()], 
+    # comment: Annotated[str, Form()],
+    # timeex: Annotated[time, Form()],
+    # dateex: Annotated[date | str, Form()] = None,
+    data: Annotated[schemas.ExitcarpassCreate, Form()],
     db: Session = Depends(get_db)
 ):
     updated_datetime = datetime.now()
 
+    # print(); print(1111111111, data.timeex, type(data.timeex)); print()
+
+    if not data.dateex or data.dateex == 'null':
+        data.dateex = None
+    if not data.timeex or data.timeex == 'null':
+        data.timeex = None
+
     carpass = schemas.ExitcarpassUpdate(
-        id_enter = id_enter,
-        ncar = ncar,
-        drv_man = drv_man,
-        dev_phone = dev_phone,
-        ndexit = ndexit,
-        comment = comment,
+        id_enter = data.id_enter,
+        ncar = data.ncar,
+        drv_man = data.drv_man,
+        dev_phone = data.dev_phone,
+        ndexit = data.ndexit,
+        comment = data.comment,
+        dateex = data.dateex,
+        timeex = data.timeex,
         updated_datetime = updated_datetime
     )
         
@@ -320,22 +330,32 @@ def update_exitcarpass(
 
 @app.post("/exitcarpasses/")
 def create_exitcarpass(
-    id_enter: Annotated[str, Form()], 
-    ncar: Annotated[str, Form()], 
-    drv_man: Annotated[str, Form()], 
-    dev_phone: Annotated[str, Form()], 
-    ndexit: Annotated[int, Form()], 
-    comment: Annotated[str, Form()], 
+    # id_enter: Annotated[str, Form()], 
+    # ncar: Annotated[str, Form()], 
+    # drv_man: Annotated[str, Form()], 
+    # dev_phone: Annotated[str, Form()], 
+    # ndexit: Annotated[int, Form()], 
+    # comment: Annotated[str, Form()], 
+    # dateex: Annotated[date, Form()],
+    # timeex: Annotated[time, Form()],
+    data: Annotated[schemas.ExitcarpassCreate, Form()],
 
     db: Session = Depends(get_db)
 ):
+    if not data.dateex or data.dateex == 'null':
+        data.dateex = None
+    if not data.timeex or data.timeex == 'null':
+        data.timeex = None
+
     carpass = schemas.ExitcarpassCreate(
-        id_enter = id_enter,
-        ncar = ncar,
-        drv_man = drv_man,
-        dev_phone = dev_phone,
-        ndexit = ndexit,
-        comment = comment,
+        id_enter = data.id_enter,
+        ncar = data.ncar,
+        drv_man = data.drv_man,
+        dev_phone = data.dev_phone,
+        ndexit = data.ndexit,
+        comment = data.comment,
+        dateex = data.dateex,
+        timeex = data.timeex,
     )
         
     return crud.create_exitcarpass(db=db, item=carpass)

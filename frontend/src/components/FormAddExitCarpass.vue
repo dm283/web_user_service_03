@@ -41,8 +41,11 @@ onMounted(async () => {
 
 const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
 const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyleErr = 'border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
+
+const errField = reactive({});
 
 const form = reactive({});
 
@@ -108,8 +111,18 @@ const postingItem = async () => {
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
-    console.error('Error posting item', error);
-    toast.error('Ошибка при проводке');
+    let err = error.response.data.detail
+    // console.log('ответ =', error.response.data.detail)
+    if (err.includes('Не установлена дата выезда')) {
+      errField['dateex'] = 1;
+      toast.error('Не заполнены обязательные поля');
+    };
+    if (err.includes('Не установлено время выезда')) {
+      errField['timeex'] = 1;
+      toast.error('Не заполнены обязательные поля');
+    };
+    console.error('Error posting item', errField['dateex'], errField['timeex']);
+    // console.error('Error posting item', error);
   };
 };
 
@@ -160,7 +173,8 @@ const handleSubmit = async () => {
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
-    console.error('Error adding item', error);
+    console.error('Error adding item');
+    //console.error('Error adding item', error);
     toast.error('Item has not added');
   };
 };
@@ -257,7 +271,7 @@ async function downloadFile(document_id) {
             name="ndexit"
             :class=formInputStyle2
             placeholder=""
-            required
+            
             :disabled="isCard"
           />
         </div>
@@ -274,10 +288,9 @@ async function downloadFile(document_id) {
             :disabled="isCard"
           />
         </div>
-        
       </div>
 
-      <!-- <div class="flex">
+      <div class="flex">
         <div class=formInputDiv>
           <label class=formLabelStyle>Дата выезда</label>
           <input
@@ -285,7 +298,7 @@ async function downloadFile(document_id) {
             v-model="form.dateex"
             id="dateex"
             name="dateex"
-            :class=formInputStyle2
+            :class="[errField['dateex']==1 ? formInputStyleErr : formInputStyle2]"
             placeholder=""
             :disabled="isCard"
           />
@@ -297,12 +310,14 @@ async function downloadFile(document_id) {
             v-model="form.timeex"
             id="timeex"
             name="timeex"
-            :class=formInputStyle2
+            :class="[errField['timeex']==1 ? formInputStyleErr : formInputStyle2]"
             placeholder=""
             :disabled="isCard"
           />
         </div>
-      </div> -->
+      </div>
+
+
 
       <!-- <div class="mx-5 mb-2">
         <label class=formLabelStyle>Файл</label>

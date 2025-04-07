@@ -49,8 +49,8 @@ class ExitcarpassCreate(BaseModel):
     dev_phone: str
     ndexit: int
     comment: str
-    dateex: date | None = None
-    timeex: time | None = None
+    dateex: date | str | None = None
+    timeex: time | str | None = None
     status: str = ''
 
 

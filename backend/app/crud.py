@@ -226,6 +226,13 @@ def posting_exitcarpass(db: Session, carpass_id: int):
     if carpass_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was posted already")
     
+    # validations
+    validation_errs = []
+    if not carpass_from_db.dateex:
+        validation_errs.append("Не установлена дата выезда")
+    if not carpass_from_db.timeex:
+        validation_errs.append("Не установлено время выезда")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=validation_errs)
     
     setattr(carpass_from_db, 'posted', True)
     setattr(carpass_from_db, 'was_posted', True)

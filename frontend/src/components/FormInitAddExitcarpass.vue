@@ -70,16 +70,16 @@ const handleSubmit = async () => {
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       <div class="flex">
         <div class=formInputDiv>
+          <label class=formLabelStyle>QR-код</label>
+          <input ref="files" name="files" type="file" multiple class="formInputFile" />
+        </div>
+        <div class=formInputDiv>
           <label class=formLabelStyle>Номер машины</label>
           <select class="formInputStyle bg-white" v-model="selectedNcar">
             <option v-for="document in state.documents" :value="document">
               {{ document.ncar }}
             </option>
           </select>
-        </div>
-        <div class=formInputDiv>
-          <label class=formLabelStyle>QR-код</label>
-          <input ref="files" name="files" type="file" multiple class="formInputFile" />
         </div>
       </div>
 
