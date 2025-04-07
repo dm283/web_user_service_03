@@ -47,8 +47,8 @@ class ExitcarpassCreate(BaseModel):
     ncar: str
     drv_man: str
     dev_phone: str
-    ndexit: int
-    comment: str
+    ndexit: int | str | None = None
+    comment: str | None = None
     dateex: date | str | None = None
     timeex: time | str | None = None
     status: str = ''

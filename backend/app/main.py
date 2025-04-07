@@ -342,6 +342,10 @@ def create_exitcarpass(
 
     db: Session = Depends(get_db)
 ):
+    if not data.ndexit or data.ndexit == 'null':
+        data.ndexit = None
+    if not data.comment or data.comment == 'null':
+        data.comment = None
     if not data.dateex or data.dateex == 'null':
         data.dateex = None
     if not data.timeex or data.timeex == 'null':

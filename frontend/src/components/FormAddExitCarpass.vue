@@ -41,7 +41,7 @@ onMounted(async () => {
 
 const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
 const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-const formInputStyleErr = 'border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 
@@ -113,6 +113,10 @@ const postingItem = async () => {
   } catch (error) {
     let err = error.response.data.detail
     // console.log('ответ =', error.response.data.detail)
+    if (err.includes('Не установлен номер документа выпуска')) {
+      errField['ndexit'] = 1;
+      toast.error('Не заполнены обязательные поля');
+    };    
     if (err.includes('Не установлена дата выезда')) {
       errField['dateex'] = 1;
       toast.error('Не заполнены обязательные поля');
@@ -121,7 +125,7 @@ const postingItem = async () => {
       errField['timeex'] = 1;
       toast.error('Не заполнены обязательные поля');
     };
-    console.error('Error posting item', errField['dateex'], errField['timeex']);
+    console.error('Error posting item');
     // console.error('Error posting item', error);
   };
 };
@@ -269,9 +273,8 @@ async function downloadFile(document_id) {
             v-model="form.ndexit"
             id="ndexit"
             name="ndexit"
-            :class=formInputStyle2
+            :class="[errField['ndexit']==1 ? formInputStyleErr : formInputStyle2]"
             placeholder=""
-            
             :disabled="isCard"
           />
         </div>
@@ -284,7 +287,6 @@ async function downloadFile(document_id) {
             name="comment"
             :class=formInputStyle2
             placeholder=""
-            required
             :disabled="isCard"
           />
         </div>

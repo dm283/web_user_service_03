@@ -53,7 +53,8 @@ def get_cars_at_terminal_for_exit(db: Session, skip: int = 0, limit: int = 100):
 
 def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.Exitcarpass).filter(models.Exitcarpass.is_active == True).order_by(models.Exitcarpass.created_datetime.desc()).\
+    return db.query(models.Exitcarpass).filter(models.Exitcarpass.is_active == True).\
+        order_by(models.Exitcarpass.updated_datetime.desc(), models.Exitcarpass.created_datetime.desc()).\
         offset(skip).limit(limit).all()
 
 
@@ -228,10 +229,14 @@ def posting_exitcarpass(db: Session, carpass_id: int):
     
     # validations
     validation_errs = []
+    if not carpass_from_db.ndexit:
+        validation_errs.append("Не установлен номер документа выпуска")
     if not carpass_from_db.dateex:
         validation_errs.append("Не установлена дата выезда")
     if not carpass_from_db.timeex:
         validation_errs.append("Не установлено время выезда")
+    
+    if validation_errs:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=validation_errs)
     
     setattr(carpass_from_db, 'posted', True)
