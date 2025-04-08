@@ -46,30 +46,10 @@ const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 
 const errField = reactive({});
-
 const form = reactive({});
-
 const files = ref(null)
 
-const initEmptyForm = () => {
-    form.ncar = 'Х234РА23'
-    form.dateen = ''
-    form.timeen = ''
-    form.ntir = '14'
-    form.nkont = '16'
-    form.driver = 'ООО Перевозчик'
-    form.drv_man = 'Иванов Сидор'
-    form.dev_phone = '322-223-322'
-    form.contact = 111
-    form.contact_name = 'ООО Контакт'
-    form.contact_broker = 222
-    form.broker_name = 'ООО Брокер'
-    form.place_n = '13'
-    form.dateex = ''
-    form.timeex = ''
-}
-
-if (props.isCreate && props.itemData) {
+if (props.isCreate) {
   console.log('999creating !!!!!!', props.itemData)
   form.id_enter = props.itemData.id_enter;
   form.ncar = props.itemData.ncar;
@@ -79,7 +59,7 @@ if (props.isCreate && props.itemData) {
   form.comment = 'тест'
   form.dateex = ''
   form.timeex = ''
-} else if (!props.isCreate && props.itemData) {
+} else if (!props.isCreate) {
   form.id_enter = props.itemData.id_enter;
   form.ncar = props.itemData.ncar;
   form.drv_man = props.itemData.drv_man
@@ -88,13 +68,9 @@ if (props.isCreate && props.itemData) {
   form.comment = props.itemData.comment
   form.dateex = props.itemData.dateex
   form.timeex = props.itemData.timeex
-} 
-else {
-  initEmptyForm();
 };
 
 const file = ref(null)
-
 const toast = useToast();
 
 const postingItem = async () => {

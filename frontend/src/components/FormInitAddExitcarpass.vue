@@ -24,7 +24,9 @@ const state = reactive({
   isLoading: true
 })
 
-const selectedNcar = ref('')
+// const selectedNcar = ref('')
+const selectedItem = ref('')
+
 
 onMounted(async () => {
     try {
@@ -49,7 +51,10 @@ const file = ref(null)
 
 const handleSubmit = async () => {
   // form submit handling
-  emit('docCreated', selectedNcar.value); // emit
+  if (!selectedItem.value) {
+    return 0;
+  };
+  emit('docCreated', selectedItem.value); // emit
   emit('closeModal')
 };
 
@@ -69,13 +74,23 @@ const handleSubmit = async () => {
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       <div class="flex">
-        <div class=formInputDiv>
+        <!-- <div class=formInputDiv>
           <label class=formLabelStyle>QR-код</label>
           <input ref="files" name="files" type="file" multiple class="formInputFile" />
+        </div> -->
+
+        <div class=formInputDiv>
+          <label class=formLabelStyle>Номер пропуска на въезд</label>
+          <select class="formInputStyle bg-white" v-model="selectedItem">
+            <option v-for="document in state.documents" :value="document">
+              {{ document.id_enter }}
+            </option>
+          </select>
         </div>
+
         <div class=formInputDiv>
           <label class=formLabelStyle>Номер машины</label>
-          <select class="formInputStyle bg-white" v-model="selectedNcar">
+          <select class="formInputStyle bg-white" v-model="selectedItem">
             <option v-for="document in state.documents" :value="document">
               {{ document.ncar }}
             </option>
@@ -86,7 +101,7 @@ const handleSubmit = async () => {
       <div class="my-3 py-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СФОРМИРОВАТЬ</button>
-          <button class="formBtn" type="reset">ОЧИСТИТЬ</button>
+          <button class="formBtn" type="button" @click="selectedItem=''">ОЧИСТИТЬ</button>
         </div>
       </div>
     </form>
