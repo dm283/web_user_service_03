@@ -17,6 +17,9 @@ class CarpassCreate(BaseModel):
     contact_broker: int
     broker_name: str
     place_n: str
+    radiation: bool
+    brokenAwning: bool
+    brokenSeal: bool
     dateex: date | None = None
     timeex: time | None = None
     status: str = 'parking'

@@ -311,7 +311,10 @@ def update_carpass(
     contact_name: Annotated[str, Form()], 
     contact_broker: Annotated[int, Form()], 
     broker_name: Annotated[str, Form()], 
-    place_n: Annotated[str, Form()], 
+    place_n: Annotated[str, Form()],
+    radiation: Annotated[bool, Form()],
+    brokenAwning: Annotated[bool, Form()],
+    brokenSeal: Annotated[bool, Form()],
 
     db: Session = Depends(get_db)
 ):
@@ -331,6 +334,9 @@ def update_carpass(
         contact_broker = contact_broker,
         broker_name =  broker_name,
         place_n = place_n,
+        radiation = radiation,
+        brokenAwning = brokenAwning,
+        brokenSeal = brokenSeal,
         updated_datetime = updated_datetime
     )
         
@@ -429,7 +435,10 @@ def create_carpass(
     contact_name: Annotated[str, Form()], 
     contact_broker: Annotated[int, Form()], 
     broker_name: Annotated[str, Form()], 
-    place_n: Annotated[str, Form()], 
+    place_n: Annotated[str, Form()],
+    radiation: Annotated[bool, Form()],
+    brokenAwning: Annotated[bool, Form()],
+    brokenSeal: Annotated[bool, Form()],
 
     db: Session = Depends(get_db)
 ):
@@ -447,6 +456,9 @@ def create_carpass(
         contact_broker = contact_broker,
         broker_name =  broker_name,
         place_n = place_n,
+        radiation = radiation,
+        brokenAwning = brokenAwning,
+        brokenSeal = brokenSeal,
     )
         
     return crud.create_carpass(db=db, carpass=carpass)
