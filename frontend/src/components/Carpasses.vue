@@ -8,6 +8,7 @@ import FormDeleteCarpass from './FormDeleteCarpass.vue';
 import FormRollbackCarpass from './FormRollbackCarpass.vue';
 import FormCarExitPermit from './FormCarExitPermit.vue';
 import FormAddExitCarpass from './FormAddExitCarpass.vue';
+import FormInitAddExitcarpass from './FormInitAddExitcarpass.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -26,6 +27,9 @@ const state = reactive({
   records: [],
   isLoading: true,
   query: '',
+  listTableColumns: {},
+  additionalColumns: {},
+  listItemFileds: {},
 })
   
 const showItemCard = ref(false)
@@ -34,19 +38,53 @@ const showUpdateItem = ref(false)
 const showDeleteItem = ref(false)
 const showRollbackItem = ref(false)
 const showCarExitPermit = ref(false)
+const showCardExitCarpass = ref(false)
 const showCreateExitCarpass = ref(false)
+const showUpdateExitCarpass = ref(false)
+const showAddExitcarpass = ref(false)
+
 const selectedItem = ref('')
+const itemName = ref('')
+
+
+if (props.view_type == 'enter') {
+  state.query = `http://${backendIpAddress}:${backendPort}/carpasses/`;
+  state.listTableColumns = {
+    'ncar':'№ машины','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Наименование клиента', 
+    'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
+  };
+  state.additionalColumns = {
+      'ntir':'№ документа доставки', 'nkont':'№ контейнера',
+      'driver':'Перевозчик','drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи'
+  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+} else if (props.view_type == 'terminal') {
+  state.query = `http://${backendIpAddress}:${backendPort}/car_terminal/`;
+  state.listTableColumns = {
+    'ncar':'№ машины','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Наименование клиента', 
+    'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
+  };
+  state.additionalColumns = {
+      'ntir':'№ документа доставки', 'nkont':'№ контейнера',
+      'driver':'Перевозчик','drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи'
+  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+} else if (props.view_type == 'exitCarpass') {
+  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`;
+  state.listTableColumns = {
+    'ncar':'№ машины', 'drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи',
+    'ndexit':'№ документа выпуска', 'dateex':'Дата выезда', 'timeex':'Время выезда'
+  };
+  state.additionalColumns = {
+      'comment':'Примечание'
+  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+};
+
 
 async function getData() {
     state.isLoading = true;
-    try {
-
-      if (props.view_type == 'enter') {
-        state.query = `http://${backendIpAddress}:${backendPort}/carpasses/`;
-      } else if (props.view_type == 'terminal') {
-        state.query = `http://${backendIpAddress}:${backendPort}/car_terminal/`;
-      };
-      
+    try {     
       const response = await axios.get(state.query);
       state.records = response.data;
     } catch (error) {
@@ -61,19 +99,6 @@ onMounted(async () => {
 });
 
 
-const listTableColumns = {
-    'id_enter':'id','ncar':'№ машины','dateen':'Дата въезда',
-    'timeen':'Время въезда', 'ntir':'№ документа доставки', 'nkont':'№ контейнера', 
-    'contact_name':'Наименование клиента', 'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
-}
-
-const additionalColumns = {
-    'driver':'Перевозчик','drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи'
-}
-
-const listItemFileds = {...listTableColumns, ...additionalColumns};
-
-
 /////////
 const file = ref(null)
 
@@ -86,11 +111,11 @@ const file = ref(null)
 // }
 
 
-async function downloadFile(document_id) {
+async function downloadFile(document_id, section) {
   //
   // const document_id = 28;  
   
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${section}/${document_id}`, {responseType: "blob"});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -113,32 +138,43 @@ async function downloadFile(document_id) {
 
 
 
-const editItem = (item) => {
-  //
-  showUpdateItem.value = true;
+const editItem = (item, name) => {
+  // opens modal for editing item
   selectedItem.value = item;
+  if (name == 'Пропуска ТС на въезд') {
+    showUpdateItem.value = true;
+  } else if (name == 'Пропуска ТС на выезд') {
+    showUpdateExitCarpass.value = true;
+  }
 };
 
-const deleteItem = (item) => {
+const deleteItem = (item, name) => {
   //
+  selectedItem.value = item;
+  itemName.value = name;
   showDeleteItem.value = true;
-  selectedItem.value = item;
 }
 
-const itemCard = (item) => {
-  showItemCard.value = true;
-  selectedItem.value = item;
-}
-
-const rollbackItem = (item) => {
+const itemCard = (item, name) => {
   //
+  selectedItem.value = item;
+  if (name == 'Пропуска ТС на въезд' || name == 'ТС на терминале') {
+    showItemCard.value = true;
+  } else if (name == 'Пропуска ТС на выезд') {
+    showCardExitCarpass.value = true;
+  }
+}
+
+const rollbackItem = (item, section) => {
+  //
+  selectedItem.value = item;
+  itemName.value = section;
   showRollbackItem.value = true;
-  selectedItem.value = item;
-}
+};
 
-const printItem = (item) => {
+const printItem = (item, section) => {
   //
-  downloadFile(item.id);
+  downloadFile(item.id, section);
 };
 
 const setStatusExit = (item) => {
@@ -149,10 +185,19 @@ const setStatusExit = (item) => {
 
 const createExitCarpass = (item) => {
   //
-  console.log('create exit');
   showCreateExitCarpass.value = true;
   selectedItem.value = item;
 };
+
+const addItem = (section) => {
+  //
+  if (section == 'Пропуска ТС на въезд') {
+    showAddItem.value = true;
+  } else if (section == 'Пропуска ТС на выезд') {
+    showAddExitcarpass.value = true;
+  }
+
+}
 
 </script>
 
@@ -186,13 +231,13 @@ const createExitCarpass = (item) => {
   
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
   <div v-if="showDeleteItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemData="selectedItem"/>
+    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemName="itemName" :itemData="selectedItem"/>
   </div>
 
 
   <!-- **********************   MODAL ROLLBACK CARPASS   ************************** -->
   <div v-if="showRollbackItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormRollbackCarpass @close-modal="showRollbackItem=false" @doc-created="getData" :itemData="selectedItem"/>
+    <FormRollbackCarpass @close-modal="showRollbackItem=false" @doc-created="getData" :itemName="itemName" :itemData="selectedItem"/>
   </div>
 
 
@@ -202,9 +247,27 @@ const createExitCarpass = (item) => {
   </div>
 
 
-  <!-- **********************   MODAL CREATE EXIT CARPASS   ************************** -->
+  <!-- **********************   MODAL EXITCARPASS CARD   ************************** -->
+  <div v-if="showCardExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showCardExitCarpass=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+
+
+  <!-- **********************   MODAL EXITCARPASS ADD   ************************** -->
   <div v-if="showCreateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormAddExitCarpass @close-modal="showCreateExitCarpass=false" @doc-created="getData" :isCreate=true :itemData="selectedItem"/>
+  </div>
+
+
+  <!-- **********************   MODAL EXITCARPASS EDIT  ************************** -->
+  <div v-if="showUpdateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showUpdateExitCarpass=false" @doc-created="getData" :isCreate=false :itemData="selectedItem"/>
+  </div>
+
+  
+  <!-- **********************   MODAL INIT ADDING EXITCARPASS  ************************** -->
+  <div v-if="showAddExitcarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormInitAddExitcarpass @close-modal="showAddExitcarpass=false" @doc-created="createExitCarpass" />
   </div>
 
 
@@ -223,9 +286,9 @@ const createExitCarpass = (item) => {
     </div> -->
     <div class="flex-auto w-auto md:w-64">
       <div class="">
-        <ListAdv @btn-add="showAddItem=true" @btn-edit="editItem" @btn-delete="deleteItem" @btn-createexitcarpass="createExitCarpass"
+        <ListAdv @btn-add="addItem" @btn-edit="editItem" @btn-delete="deleteItem" @btn-createexitcarpass="createExitCarpass"
           @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem" @btn-setstatusexit="setStatusExit"
-          :name="props.list_title" :data="state.records" :listTableColumns="listTableColumns" :listItemFileds="listItemFileds"/>
+          :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
       </div>
     </div>
   </div>

@@ -15,15 +15,26 @@ var backendPort = parser.get("main", "backend_port");
 const emit = defineEmits(['docCreated', 'closeModal']) // emit
 
 const props = defineProps({
+  itemName: String,
   itemData: Object,
 });
+
+const state = reactive({
+  query: '',
+});
+
+if (props.itemName == 'Пропуска ТС на въезд') {
+  state.query = `http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`;
+} else if (props.itemName == 'Пропуска ТС на выезд') {
+  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`;
+}
 
 const toast = useToast();
 
 const handleSubmit = async () => {
 
   try {
-    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_deactivate/${props.itemData.id}`);
+    const response = await axios.delete(state.query);
     // const response = await axios.delete(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`);
     toast.success('Пропуск удалён');      
     emit('docCreated'); // emit
@@ -40,13 +51,13 @@ const handleSubmit = async () => {
   <div class="w-74 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
   
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
-      Пропуск
+      {{ props.itemName }}
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
     </header>
 
-    <div class="mt-5 ml-5">Удалить пропуск ID {{ itemData.id_enter }} ?</div>
+    <div class="mt-5 ml-5">Удалить пропуск ID {{ itemData.id }} ?</div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       

@@ -212,7 +212,7 @@ const signOut = async () => {
       :selected="state.selectedMenu=='carTerminal' ? '1' : '0'" @click="state.selectedMenu='carTerminal'"
       />
     </RouterLink>
-    <RouterLink to="">
+    <RouterLink to="/exitcarpasses">
       <MenuSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'"
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
       />

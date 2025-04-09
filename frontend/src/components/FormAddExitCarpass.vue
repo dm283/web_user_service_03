@@ -23,14 +23,19 @@ const props = defineProps({
 
 const state = reactive({
   documents: [],
+  relatedCarpass: {},
   isLoading: true
 })
 
-if (props.itemData) {
+if (!props.isCreate && props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.id}`);
-      state.documents = response.data;
+      // load info about parental Carpass
+      const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id_enter}`);
+      state.relatedCarpass = response1.data;
+      // load related documents
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`);
+      state.documents = response2.data;
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -41,46 +46,36 @@ onMounted(async () => {
 
 const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
 const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 
+const errField = reactive({});
 const form = reactive({});
-
 const files = ref(null)
 
-const initEmptyForm = () => {
-    form.ncar = 'Х234РА23'
-    form.dateen = ''
-    form.timeen = ''
-    form.ntir = '14'
-    form.nkont = '16'
-    form.driver = 'ООО Перевозчик'
-    form.drv_man = 'Иванов Сидор'
-    form.dev_phone = '322-223-322'
-    form.contact = 111
-    form.contact_name = 'ООО Контакт'
-    form.contact_broker = 222
-    form.broker_name = 'ООО Брокер'
-    form.place_n = '13'
-    form.dateex = ''
-    form.timeex = ''
-}
-
-if (props.itemData) {
+if (props.isCreate) {
+  console.log('999creating !!!!!!', props.itemData)
   form.id_enter = props.itemData.id_enter;
   form.ncar = props.itemData.ncar;
   form.drv_man = props.itemData.drv_man
   form.dev_phone = props.itemData.dev_phone
-  form.ndexit = '3'
-  form.comment = 'тест'
+  form.ndexit = ''
+  form.comment = ''
   form.dateex = ''
   form.timeex = ''
-} else {
-  initEmptyForm();
+} else if (!props.isCreate) {
+  form.id_enter = props.itemData.id_enter;
+  form.ncar = props.itemData.ncar;
+  form.drv_man = props.itemData.drv_man
+  form.dev_phone = props.itemData.dev_phone
+  form.ndexit = props.itemData.ndexit
+  form.comment = props.itemData.comment
+  form.dateex = props.itemData.dateex
+  form.timeex = props.itemData.timeex
 };
 
 const file = ref(null)
-
 const toast = useToast();
 
 const postingItem = async () => {
@@ -88,7 +83,7 @@ const postingItem = async () => {
   try {
     // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (props.itemData) {
-      //const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`);
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses_posting/${props.itemData.id}`);
       toast.success('Пропуск проведён');
     } else {
       return;
@@ -97,8 +92,22 @@ const postingItem = async () => {
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
-    console.error('Error posting item', error);
-    toast.error('Ошибка при проводке');
+    let err = error.response.data.detail
+    // console.log('ответ =', error.response.data.detail)
+    if (err.includes('Не установлен номер документа выпуска')) {
+      errField['ndexit'] = 1;
+      toast.error('Не заполнены обязательные поля');
+    };    
+    if (err.includes('Не установлена дата выезда')) {
+      errField['dateex'] = 1;
+      toast.error('Не заполнены обязательные поля');
+    };
+    if (err.includes('Не установлено время выезда')) {
+      errField['timeex'] = 1;
+      toast.error('Не заполнены обязательные поля');
+    };
+    console.error('Error posting item');
+    // console.error('Error posting item', error);
   };
 };
 
@@ -107,19 +116,19 @@ const handleSubmit = async () => {
   let formData = new FormData();
 
   // files uploading
-  // if (files.value) {
-  //   for (let file of files.value.files) {
-  //   formData.append('file', file);
-  //   formData.append('contact_name', form.contact_name);
-  //   try {
-  //     const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.id}`, 
-  //       formData, {headers: {'Content-Type': 'multipart/form-data'}});
-  //   } catch (error) {
-  //     console.error('Error uploading file', error);
-  //     toast.error('File has not been uploaded');
-  //   };
-  // };
-  // };
+  if (files.value) {
+    for (let file of files.value.files) {
+    formData.append('file', file);
+    formData.append('contact_name', form.contact_name);
+    try {
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.uuid}`, 
+        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+    } catch (error) {
+      console.error('Error uploading file', error);
+      toast.error('File has not been uploaded');
+    };
+  };
+  };
             
   // carpass upgrading
   // formData.append('files', files.value.files);
@@ -149,7 +158,8 @@ const handleSubmit = async () => {
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
-    console.error('Error adding item', error);
+    console.error('Error adding item');
+    //console.error('Error adding item', error);
     toast.error('Item has not added');
   };
 };
@@ -184,11 +194,12 @@ async function downloadFile(document_id) {
 
     <div class="ml-6 mt-3" v-if="props.isCard">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="props.itemData.status=='exit_permitted'">
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="state.relatedCarpass.status=='exit_permitted'">
         ВЫЕЗД РАЗРЕШЁН</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else="props.itemData.posted">
-        СТОЯНКА</div>     
-      <!-- <div class="inline-block text-sm font-semibold text-green-600" v-if="props.itemData.posted">ПРОВЕДЁН</div> -->
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else-if="state.relatedCarpass.status=='archival'">
+        АРХИВНЫЙ</div>  
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
+        СТОЯНКА</div>
       <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ДОКУМЕНТ НЕ ПРОВЕДЁН</div>
     </div>
     
@@ -244,9 +255,8 @@ async function downloadFile(document_id) {
             v-model="form.ndexit"
             id="ndexit"
             name="ndexit"
-            :class=formInputStyle2
+            :class="[errField['ndexit']==1 ? formInputStyleErr : formInputStyle2]"
             placeholder=""
-            required
             :disabled="isCard"
           />
         </div>
@@ -259,14 +269,12 @@ async function downloadFile(document_id) {
             name="comment"
             :class=formInputStyle2
             placeholder=""
-            required
             :disabled="isCard"
           />
         </div>
-        
       </div>
 
-      <!-- <div class="flex">
+      <div class="flex">
         <div class=formInputDiv>
           <label class=formLabelStyle>Дата выезда</label>
           <input
@@ -274,7 +282,7 @@ async function downloadFile(document_id) {
             v-model="form.dateex"
             id="dateex"
             name="dateex"
-            :class=formInputStyle2
+            :class="[errField['dateex']==1 ? formInputStyleErr : formInputStyle2]"
             placeholder=""
             :disabled="isCard"
           />
@@ -286,12 +294,14 @@ async function downloadFile(document_id) {
             v-model="form.timeex"
             id="timeex"
             name="timeex"
-            :class=formInputStyle2
+            :class="[errField['timeex']==1 ? formInputStyleErr : formInputStyle2]"
             placeholder=""
             :disabled="isCard"
           />
         </div>
-      </div> -->
+      </div>
+
+
 
       <!-- <div class="mx-5 mb-2">
         <label class=formLabelStyle>Файл</label>
@@ -325,13 +335,12 @@ async function downloadFile(document_id) {
           @click="form.isCapital=(form.isCapital==true) ? false : true ;">Capital</label>
       </div> -->
 
-
-      <!--<div v-if="props.isCard || props.itemData">
-      Show loading spinner while loading is true
+      <div v-if="props.isCard || !props.isCreate">
+      <!-- Show loading spinner while loading is true -->
       <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
         <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
       </div>
-      Show when loading is done
+      <!-- Show when loading is done -->
       <div class="ml-6" v-if="!state.isLoading && state.documents.length>0">
         <label class=formLabelStyle>Документы</label>
         <div class="flex space-x-3 mt-3">
@@ -341,8 +350,7 @@ async function downloadFile(document_id) {
         </div>
         </div>
         </div>
-      </div>-->
-
+      </div>
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
