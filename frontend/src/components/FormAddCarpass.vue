@@ -28,7 +28,7 @@ const state = reactive({
 if (props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.id}`);
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`);
       state.documents = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -117,7 +117,7 @@ const handleSubmit = async () => {
     formData.append('file', file);
     formData.append('contact_name', form.contact_name);
     try {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.id}`, 
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.uuid}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data'}});
     } catch (error) {
       console.error('Error uploading file', error);
@@ -198,8 +198,11 @@ async function downloadFile(document_id) {
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="props.itemData.status=='exit_permitted'">
         ВЫЕЗД РАЗРЕШЁН</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else="props.itemData.posted">
-        СТОЯНКА</div>     
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else-if="props.itemData.status=='archival'">
+        АРХИВНЫЙ</div>  
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
+        СТОЯНКА</div>
+   
       <!-- <div class="inline-block text-sm font-semibold text-green-600" v-if="props.itemData.posted">ПРОВЕДЁН</div> -->
       <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ДОКУМЕНТ НЕ ПРОВЕДЁН</div>
     </div>

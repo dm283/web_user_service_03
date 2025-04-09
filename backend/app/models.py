@@ -38,11 +38,12 @@ class Document(Base):
 
     id = Column(Integer, primary_key=True)
     doc_name = Column(String(length=24))
-    guid_consignment = Column(Integer)
+    related_doc_uuid = Column(String)
     customer_name = Column(String(length=24))
     filename = Column(String)
     filepath = Column(String)
     filecontent = Column(LargeBinary)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True)
 
@@ -51,7 +52,7 @@ class Carpass(Base):
     __tablename__ = 'carpasses'
 
     id = Column(Integer, primary_key=True)
-    guid = Column(String(length=36), unique=True)
+    uuid = Column(String, unique=True)
     id_enter = Column(String(length=8), unique=True)
     ncar = Column(String(length=255))
     dateen = Column(Date)
@@ -83,7 +84,7 @@ class Exitcarpass(Base):
     __tablename__ = 'exitcarpasses'
 
     id = Column(Integer, primary_key=True)
-    uuid = Column(String(length=36), unique=True)
+    uuid = Column(String, unique=True)
     id_exit = Column(String(length=8), unique=True)
     id_enter = Column(String(length=8), unique=True)
     ncar = Column(String(length=255))

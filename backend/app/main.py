@@ -66,7 +66,7 @@ def get_db():
 
 @app.post("/document/")
 async def upload_file(doc_name: Annotated[str, Form()], 
-                      guid_consignment: Annotated[int, Form()],
+                      related_doc_uuid: Annotated[str, Form()],
                       customer_name: Annotated[str, Form()],
                       file: UploadFile,
                       db: Session = Depends(get_db)
@@ -74,7 +74,7 @@ async def upload_file(doc_name: Annotated[str, Form()],
 
     document = schemas.DocumentCreate(
         doc_name = doc_name,
-        guid_consignment = guid_consignment,
+        related_doc_uuid = related_doc_uuid,
         customer_name = customer_name,
         filename = file.filename,
         filepath = f"saved_files/{file.filename}",
@@ -221,16 +221,17 @@ def read_exitcarpasses(skip: int = 0, limit: int = 100, db: Session = Depends(ge
     return items
 
 
-@app.get('/entity_documents/{entity_id}', response_model=list[schemas.Document])
-def get_entity_documents(entity_id: int, db: Session = Depends(get_db)):
+@app.get('/entity_documents/{related_doc_uuid}', response_model=list[schemas.Document])
+def get_entity_documents(related_doc_uuid: str, db: Session = Depends(get_db)):
     # get entity documents from db table documents
-    documents =  db.query(models.Document).filter(models.Document.guid_consignment == entity_id).order_by(models.Document.created_datetime.desc()).all()
+    documents =  db.query(models.Document).filter(models.Document.related_doc_uuid == related_doc_uuid).\
+        order_by(models.Document.created_datetime.desc()).all()
     return documents
 
 
-@app.put("/upload_file_for_carpass/{carpass_id}")
+@app.put("/upload_file_for_carpass/{related_doc_uuid}")
 async def upload_file_for_carpass(
-    carpass_id: int,
+    related_doc_uuid: str,
     contact_name: Annotated[str, Form()], 
     file: UploadFile,
     db: Session = Depends(get_db)
@@ -238,7 +239,7 @@ async def upload_file_for_carpass(
     # file upload for carpass
     document = schemas.DocumentCreate(
         doc_name = 'тест_пропуск',
-        guid_consignment = carpass_id,
+        related_doc_uuid = related_doc_uuid,
         customer_name = contact_name,
         filename = file.filename,
         filepath = f"saved_files/{file.filename}",
@@ -307,7 +308,10 @@ def update_exitcarpass(
     updated_datetime = datetime.now()
 
     # print(); print(1111111111, data.timeex, type(data.timeex)); print()
-
+    if not data.ndexit or data.ndexit == 'null':
+        data.ndexit = None
+    if not data.comment or data.comment == 'null':
+        data.comment = None
     if not data.dateex or data.dateex == 'null':
         data.dateex = None
     if not data.timeex or data.timeex == 'null':
@@ -468,6 +472,14 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
+
+
+@app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
+def read_carpass(carpass_id_enter: str, db: Session = Depends(get_db)):
+    db_carpass = crud.get_carpass(db, carpass_id_enter=carpass_id_enter)
+    if db_carpass is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_carpass
 
 
 @app.get("/users/{user_id}", response_model=schemas.User)

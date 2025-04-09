@@ -23,14 +23,19 @@ const props = defineProps({
 
 const state = reactive({
   documents: [],
+  relatedCarpass: {},
   isLoading: true
 })
 
 if (!props.isCreate && props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.id}`);
-      state.documents = response.data;
+      // load info about parental Carpass
+      const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id_enter}`);
+      state.relatedCarpass = response1.data;
+      // load related documents
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`);
+      state.documents = response2.data;
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -55,8 +60,8 @@ if (props.isCreate) {
   form.ncar = props.itemData.ncar;
   form.drv_man = props.itemData.drv_man
   form.dev_phone = props.itemData.dev_phone
-  form.ndexit = '3'
-  form.comment = 'тест'
+  form.ndexit = ''
+  form.comment = ''
   form.dateex = ''
   form.timeex = ''
 } else if (!props.isCreate) {
@@ -111,19 +116,19 @@ const handleSubmit = async () => {
   let formData = new FormData();
 
   // files uploading
-  // if (files.value) {
-  //   for (let file of files.value.files) {
-  //   formData.append('file', file);
-  //   formData.append('contact_name', form.contact_name);
-  //   try {
-  //     const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.id}`, 
-  //       formData, {headers: {'Content-Type': 'multipart/form-data'}});
-  //   } catch (error) {
-  //     console.error('Error uploading file', error);
-  //     toast.error('File has not been uploaded');
-  //   };
-  // };
-  // };
+  if (files.value) {
+    for (let file of files.value.files) {
+    formData.append('file', file);
+    formData.append('contact_name', form.contact_name);
+    try {
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.uuid}`, 
+        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+    } catch (error) {
+      console.error('Error uploading file', error);
+      toast.error('File has not been uploaded');
+    };
+  };
+  };
             
   // carpass upgrading
   // formData.append('files', files.value.files);
@@ -189,11 +194,12 @@ async function downloadFile(document_id) {
 
     <div class="ml-6 mt-3" v-if="props.isCard">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="props.itemData.status=='exit_permitted'">
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="state.relatedCarpass.status=='exit_permitted'">
         ВЫЕЗД РАЗРЕШЁН</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else="props.itemData.posted">
-        СТОЯНКА</div>     
-      <!-- <div class="inline-block text-sm font-semibold text-green-600" v-if="props.itemData.posted">ПРОВЕДЁН</div> -->
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else-if="state.relatedCarpass.status=='archival'">
+        АРХИВНЫЙ</div>  
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
+        СТОЯНКА</div>
       <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ДОКУМЕНТ НЕ ПРОВЕДЁН</div>
     </div>
     
@@ -329,13 +335,12 @@ async function downloadFile(document_id) {
           @click="form.isCapital=(form.isCapital==true) ? false : true ;">Capital</label>
       </div> -->
 
-
-      <!--<div v-if="props.isCard || props.itemData">
-      Show loading spinner while loading is true
+      <div v-if="props.isCard || !props.isCreate">
+      <!-- Show loading spinner while loading is true -->
       <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
         <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
       </div>
-      Show when loading is done
+      <!-- Show when loading is done -->
       <div class="ml-6" v-if="!state.isLoading && state.documents.length>0">
         <label class=formLabelStyle>Документы</label>
         <div class="flex space-x-3 mt-3">
@@ -345,8 +350,7 @@ async function downloadFile(document_id) {
         </div>
         </div>
         </div>
-      </div>-->
-
+      </div>
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->

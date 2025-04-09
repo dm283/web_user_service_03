@@ -8,7 +8,6 @@ from app import models, schemas
 
 def create_n_save_document(db: Session, file: UploadFile, document: schemas.DocumentCreate):
     # 
-
     # add filecontent as blob 
     document.filecontent = file.file.read()
 
@@ -18,8 +17,9 @@ def create_n_save_document(db: Session, file: UploadFile, document: schemas.Docu
         file_object.write(document.filecontent)
 
     # add record into database
+    post_user_id = '1'
     created_datetime = datetime.datetime.now()
-    db_document = models.Document(**document.model_dump(), created_datetime=created_datetime)
+    db_document = models.Document(**document.model_dump(), post_user_id=post_user_id, created_datetime=created_datetime)
     db.add(db_document)
     db.commit()
     db.refresh(db_document)
@@ -67,16 +67,11 @@ def get_ncars_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
 def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     #
     last_created_item_from_db =  db.query(models.Exitcarpass).order_by(models.Exitcarpass.id.desc()).first()
-    if last_created_item_from_db is None:
-        uuid = '1'
-        id_exit = '1'
-    else:
-        uuid=str(int(last_created_item_from_db.id_exit) + 1)
-        id_exit=str(int(last_created_item_from_db.id_exit) + 1)
+    id_exit = '1' if last_created_item_from_db is None else str(int(last_created_item_from_db.id_exit) + 1)
     created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
 
     db_item = models.Exitcarpass(**item.model_dump(), uuid=uuid, id_exit=id_exit, created_datetime=created_datetime)
-    print(db_item)
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
@@ -92,23 +87,18 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
 
 
 def create_carpass(db: Session, carpass: schemas.CarpassCreate):
-    #
+    # creates a enter carpass
     last_created_carpass_from_db =  db.query(models.Carpass).order_by(models.Carpass.id.desc()).first()
-    if last_created_carpass_from_db is None:
-        guid = '1'
-        id_enter = '1'
-    else:
-        guid=str(int(last_created_carpass_from_db.id_enter) + 1)
-        id_enter=str(int(last_created_carpass_from_db.id_enter) + 1)
+    id_enter = '1' if last_created_carpass_from_db is None else str(int(last_created_carpass_from_db.id_enter) + 1)
     created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
 
-    db_carpass = models.Carpass(**carpass.model_dump(), guid=guid, id_enter=id_enter, created_datetime=created_datetime)
-    print(db_carpass)
+    db_carpass = models.Carpass(**carpass.model_dump(), uuid=uuid, id_enter=id_enter, created_datetime=created_datetime)
     db.add(db_carpass)
     db.commit()
     db.refresh(db_carpass)
     
-    return db_carpass.id_enter
+    return db_carpass.id
 
 
 def update_carpass(db: Session, carpass_id: int, carpass: schemas.CarpassUpdate):
@@ -159,10 +149,9 @@ def delete_exitcarpass(db: Session, carpass_id: int):
 
     # update carpass set exitcarpass_created = false
     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == exitcarpass_from_db.id_enter).first()
-    if carpass_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    setattr(carpass_from_db, 'exitcarpass_created', False)
-    db.commit()
+    if carpass_from_db:
+        setattr(carpass_from_db, 'exitcarpass_created', False)
+        db.commit()
 
     ### [ !!! DEVELOPMENT !!! ]  enrich this with saving deleted record into archive table
 
@@ -243,7 +232,21 @@ def posting_exitcarpass(db: Session, carpass_id: int):
     setattr(carpass_from_db, 'was_posted', True)
     setattr(carpass_from_db, 'post_date', datetime.datetime.now())
     setattr(carpass_from_db, 'post_user_id', '1')
+    db.commit()
 
+    dateex = carpass_from_db.dateex
+    timeex = carpass_from_db.timeex
+
+    # write to Carpass - set dateex & timeex for related carpass
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_from_db.id_enter).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if carpass_from_db.dateex:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Dateex has already set")
+    
+    setattr(carpass_from_db, 'dateex', dateex)
+    setattr(carpass_from_db, 'timeex', timeex)
+    setattr(carpass_from_db, 'status', 'archival')
     db.commit()
 
     return carpass_from_db.id
@@ -295,6 +298,11 @@ def car_exit_permit(db: Session, carpass_id: int):
     return carpass_from_db.id_enter
 
 
+def get_carpass(db: Session, carpass_id_enter: str):
+    # get single carpass from db
+    return db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_id_enter).first()
+
+
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
@@ -313,7 +321,7 @@ def create_user(db: Session, user: schemas.UserCreate):
 
     db_user = models.User(
         **user.model_dump(exclude='password'),
-        uuid=str(uuid4()), 
+        uuid=str(uuid4()),
         hashed_password=password_context.hash(user.password), 
         created=datetime.datetime.now()
         )

@@ -29,7 +29,7 @@ class CarpassUpdate(CarpassCreate):
 
 class Carpass(CarpassCreate):
     id: int
-    guid: str
+    uuid: str
     id_enter: str
     created_datetime: datetime
     updated_datetime: datetime | None
@@ -75,24 +75,22 @@ class Exitcarpass(ExitcarpassCreate):
 
 class DocumentBase(BaseModel):
     doc_name: str
-    guid_consignment: int
+    related_doc_uuid: str
     customer_name: str
     filename: str
     filepath: str
-    
 
 
 class DocumentCreate(DocumentBase):
     filecontent: bytes | None = None
     # filename: str
     # filepath: str
-    # filecontent: bytes | None = None
     # file: UploadFile
-    pass
 
 
 class Document(DocumentBase):
     id: int
+    post_user_id: str | None
     created_datetime: datetime
     updated_datetime: datetime | None
 
