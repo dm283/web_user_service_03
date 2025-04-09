@@ -292,10 +292,39 @@ def car_exit_permit(db: Session, carpass_id: int):
     if not carpass_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(carpass_from_db, 'status', 'exit_permitted')
+    if carpass_from_db.status != 'exit_prohibited':
+        setattr(carpass_from_db, 'status', 'exit_permitted')
     db.commit()
 
     return carpass_from_db.id_enter
+
+
+def set_default_car_status(db: Session, carpass_id: int):
+    #
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not carpass_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    if carpass_from_db.status != 'archival':
+        setattr(carpass_from_db, 'status', 'parking')
+        db.commit()
+
+    return carpass_from_db.id
+
+
+def exit_prohibited(db: Session, carpass_id: int):
+    #
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not carpass_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    if carpass_from_db.status != 'archival':
+        setattr(carpass_from_db, 'status', 'exit_prohibited')
+        db.commit()
+
+    return carpass_from_db.id
 
 
 def get_carpass(db: Session, carpass_id_enter: str):

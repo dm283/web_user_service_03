@@ -518,6 +518,18 @@ def car_exit_permit(carpass_id: int, db: Session = Depends(get_db)):
     return crud.car_exit_permit(db=db, carpass_id=carpass_id)
 
 
+@app.put('/set_default_car_status/{carpass_id}')
+def set_default_car_status(carpass_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.set_default_car_status(db=db, carpass_id=carpass_id)
+
+
+@app.put('/exit_prohibited/{carpass_id}')
+def exit_prohibited(carpass_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.exit_prohibited(db=db, carpass_id=carpass_id)
+
+
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_login(db, login=user.login)

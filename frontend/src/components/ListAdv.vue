@@ -6,7 +6,7 @@ import axios from 'axios';
 import { utils, writeFileXLSX, writeFile } from 'xlsx';
 
 const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit',
-  'btnCreateexitcarpass'
+  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited'
 ]) // emit
 
 const props = defineProps({
@@ -403,9 +403,14 @@ const dataRender = () => {
   for (let i = 0; i < renderedData.length; i++) {
     listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
     if (props.name=='ТС на терминале') {
-      listRowStyle[i] = renderedData[i].status=='exit_permitted' ? 'bg-green-50' : '';
+      if (renderedData[i].status=='exit_permitted') {
+        listRowStyle[i] = 'bg-green-50'
+      } else if (renderedData[i].status=='exit_prohibited') {
+        listRowStyle[i] = 'bg-red-50'
+      } else {
+        listRowStyle[i] = ''
+      }
     };
-    // listRowStyle[i] = '';
     listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
 
@@ -522,18 +527,36 @@ const rowClick = (index, item) => {
 
   <div class="inline-block mt-3 space-x-2">
 
+    <!-- разрешить выезд -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnSetstatusexit', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted'"
+      @click="emit('btnSetstatusexit', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
       v-if="props.name=='ТС на терминале'">
       <i class="pi pi-unlock" style="font-size: 1rem"></i>
     </button>
 
+    <!-- сброс статуса на "стоянка" -->
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
+      @click="emit('btnCancelstatusexit', selectedItem)" 
+      :disabled="!selectedItem | selectedItem.status=='parking'"
+      v-if="props.name=='ТС на терминале'">
+      <i class="pi pi-arrow-circle-left" style="font-size: 1rem"></i>
+    </button>
+
+    <!-- запретить выезд --> 
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
+      @click="emit('btnExitprohibited', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_prohibited'"
+      v-if="props.name=='ТС на терминале'">
+      <i class="pi pi-ban" style="font-size: 1rem"></i>
+    </button>
+
+    <!-- сформировать пропуск на выезд -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnCreateexitcarpass', selectedItem)" :disabled="!selectedItem | selectedItem.exitcarpass_created"
       v-if="props.name=='ТС на терминале'">
       <i class="pi pi-file-plus" style="font-size: 1rem"></i>
     </button>
 
+    <!-- добавить пропуск -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
       @click="emit('btnAdd', props.name)" v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
       <i class="pi pi-plus" style="font-size: 1rem"></i>

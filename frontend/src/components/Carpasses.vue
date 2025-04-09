@@ -9,6 +9,8 @@ import FormRollbackCarpass from './FormRollbackCarpass.vue';
 import FormCarExitPermit from './FormCarExitPermit.vue';
 import FormAddExitCarpass from './FormAddExitCarpass.vue';
 import FormInitAddExitcarpass from './FormInitAddExitcarpass.vue';
+import FormSetDefaultStatus from './FormSetDefaultStatus.vue';
+import FormExitProhibited from './FormExitProhibited.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -42,6 +44,8 @@ const showCardExitCarpass = ref(false)
 const showCreateExitCarpass = ref(false)
 const showUpdateExitCarpass = ref(false)
 const showAddExitcarpass = ref(false)
+const showSetDefaultStatus = ref(false)
+const showExitProhibited = ref(false)
 
 const selectedItem = ref('')
 const itemName = ref('')
@@ -183,6 +187,18 @@ const setStatusExit = (item) => {
   selectedItem.value = item;
 };
 
+const setDefaultStatus = (item) => {
+  //
+  showSetDefaultStatus.value = true;
+  selectedItem.value = item;
+};
+
+const statusExitProhibited = (item) => {
+  //
+  showExitProhibited.value = true;
+  selectedItem.value = item;
+};
+
 const createExitCarpass = (item) => {
   //
   showCreateExitCarpass.value = true;
@@ -247,6 +263,18 @@ const addItem = (section) => {
   </div>
 
 
+  <!-- **********************   MODAL SET DEFAULT STATUS   ************************** -->
+  <div v-if="showSetDefaultStatus" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormSetDefaultStatus @close-modal="showSetDefaultStatus=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
+  <!-- **********************   MODAL EXIT PROHIBITED   ************************** -->
+  <div v-if="showExitProhibited" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormExitProhibited @close-modal="showExitProhibited=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
   <!-- **********************   MODAL EXITCARPASS CARD   ************************** -->
   <div v-if="showCardExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormAddExitCarpass @close-modal="showCardExitCarpass=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
@@ -288,6 +316,7 @@ const addItem = (section) => {
       <div class="">
         <ListAdv @btn-add="addItem" @btn-edit="editItem" @btn-delete="deleteItem" @btn-createexitcarpass="createExitCarpass"
           @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem" @btn-setstatusexit="setStatusExit"
+          @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
           :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
       </div>
     </div>

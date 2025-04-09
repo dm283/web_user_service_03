@@ -208,10 +208,12 @@ async function downloadFile(document_id) {
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="props.itemData.status=='exit_permitted'">
         ВЫЕЗД РАЗРЕШЁН</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else-if="props.itemData.status=='archival'">
-        АРХИВНЫЙ</div>  
+        АРХИВНЫЙ</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-red-600" v-else-if="props.itemData.status=='exit_prohibited'">
+        ВЫЕЗД ЗАПРЕЩЁН</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
         СТОЯНКА</div>
-   
+
       <!-- <div class="inline-block text-sm font-semibold text-green-600" v-if="props.itemData.posted">ПРОВЕДЁН</div> -->
       <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ДОКУМЕНТ НЕ ПРОВЕДЁН</div>
     </div>
