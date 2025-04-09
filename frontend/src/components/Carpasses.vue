@@ -111,11 +111,11 @@ const file = ref(null)
 // }
 
 
-async function downloadFile(document_id) {
+async function downloadFile(document_id, section) {
   //
   // const document_id = 28;  
   
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${section}/${document_id}`, {responseType: "blob"});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -165,16 +165,16 @@ const itemCard = (item, name) => {
   }
 }
 
-const rollbackItem = (item, name) => {
+const rollbackItem = (item, section) => {
   //
   selectedItem.value = item;
-  itemName.value = name;
+  itemName.value = section;
   showRollbackItem.value = true;
 };
 
-const printItem = (item) => {
+const printItem = (item, section) => {
   //
-  downloadFile(item.id);
+  downloadFile(item.id, section);
 };
 
 const setStatusExit = (item) => {
