@@ -186,13 +186,13 @@ async function downloadFile(document_id) {
 <template>
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
-      Пропуск на выезд
+      Пропуск на выезд <span v-if="!props.isCreate">№ {{ props.itemData.id_exit }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
     </header>
 
-    <div class="ml-6 mt-3" v-if="props.isCard">
+    <div class="ml-6 mt-3" v-if="!props.isCreate">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="state.relatedCarpass.status=='exit_permitted'">
         ВЫЕЗД РАЗРЕШЁН</div>
@@ -207,6 +207,19 @@ async function downloadFile(document_id) {
       
       <div class="flex">
         <div class=formInputDiv>
+          <label class=formLabelStyle>№ пропуска на въезд</label>
+          <input
+            type="text"
+            v-model="form.id_enter"
+            id="drv_man"
+            name="drv_man"
+            :class=formInputStyleDis
+            placeholder=""
+            required
+            disabled
+          />
+        </div>
+        <div class=formInputDiv>
           <label class=formLabelStyle>Номер машины</label>
           <input
             type="text"
@@ -219,6 +232,9 @@ async function downloadFile(document_id) {
             disabled
           />
         </div>
+      </div>
+
+      <div class="flex">
         <div class=formInputDiv>
           <label class=formLabelStyle>ФИО водителя</label>
           <input

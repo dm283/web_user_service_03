@@ -50,7 +50,7 @@ const itemName = ref('')
 if (props.view_type == 'enter') {
   state.query = `http://${backendIpAddress}:${backendPort}/carpasses/`;
   state.listTableColumns = {
-    'ncar':'№ машины','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Наименование клиента', 
+    'id_enter':'№','ncar':'№ машины','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Наименование клиента', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {
@@ -61,7 +61,7 @@ if (props.view_type == 'enter') {
 } else if (props.view_type == 'terminal') {
   state.query = `http://${backendIpAddress}:${backendPort}/car_terminal/`;
   state.listTableColumns = {
-    'ncar':'№ машины','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Наименование клиента', 
+    'id_enter':'№','ncar':'№ машины','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Наименование клиента', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {
@@ -72,7 +72,7 @@ if (props.view_type == 'enter') {
 } else if (props.view_type == 'exitCarpass') {
   state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`;
   state.listTableColumns = {
-    'ncar':'№ машины', 'drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи',
+    'id_exit':'№', 'id_enter':'№ пропуска на въезд', 'ncar':'№ машины', 'drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи',
     'ndexit':'№ документа выпуска', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {

@@ -188,7 +188,7 @@ async function downloadFile(document_id) {
 <template>
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
-      Пропуск
+      Пропуск на въезд <span v-if="props.itemData">№ {{ props.itemData.id_enter }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
