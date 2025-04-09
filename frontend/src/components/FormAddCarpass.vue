@@ -60,6 +60,9 @@ const initEmptyForm = () => {
     form.contact_broker = 222
     form.broker_name = 'ООО Брокер'
     form.place_n = '13'
+    form.radiation = false
+    form.brokenAwning = false
+    form.brokenSeal = false
     form.dateex = ''
     form.timeex = ''
 }
@@ -78,6 +81,9 @@ if (props.itemData) {
   form.contact_broker = props.itemData.contact_broker
   form.broker_name = props.itemData.broker_name
   form.place_n = props.itemData.place_n
+  form.radiation = props.itemData.radiation
+  form.brokenAwning = props.itemData.brokenAwning
+  form.brokenSeal = props.itemData.brokenSeal
   form.dateex = props.itemData.dateex
   form.timeex = props.itemData.timeex
 } else {
@@ -141,6 +147,9 @@ const handleSubmit = async () => {
   formData.append('contact_broker', form.contact_broker);
   formData.append('broker_name', form.broker_name);
   formData.append('place_n', form.place_n);
+  formData.append('radiation', form.radiation);
+  formData.append('brokenAwning', form.brokenAwning);
+  formData.append('brokenSeal', form.brokenSeal);
   formData.append('dateex', form.dateex);
   formData.append('timeex', form.timeex);
   // formData.append('file', file.value.files[0]);
@@ -364,6 +373,21 @@ async function downloadFile(document_id) {
         </div>
       </div>
 
+      <div class="flex">
+        <div class=formInputDiv>
+          <input type="checkbox" v-model='form.radiation' id="radiation" name="radiation" class=formInputCheckboxStyle :disabled="isCard"/>
+          <label class=formLabelCheckboxStyle for="radiation">Радиация</label>
+        </div>
+        <div class=formInputDiv>
+          <input type="checkbox" v-model='form.brokenAwning' id="brokenAwning" name="brokenAwning" class=formInputCheckboxStyle :disabled="isCard"/>
+          <label class=formLabelCheckboxStyle for="brokenAwning">Порванный тент</label>
+        </div>
+        <div class=formInputDiv>
+          <input type="checkbox" v-model='form.brokenSeal' id="brokenSeal" name="brokenSeal" class=formInputCheckboxStyle :disabled="isCard"/>
+          <label class=formLabelCheckboxStyle for="brokenSeal">Повреждённая пломба</label>
+        </div>
+      </div>
+
       <!-- <div class="flex">
         <div class=formInputDiv>
           <label class=formLabelStyle>Дата выезда</label>
@@ -484,10 +508,10 @@ async function downloadFile(document_id) {
   @apply border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer
 }
 .formLabelCheckboxStyle {
-  @apply ml-3 text-base font-semibold text-gray-400 cursor-pointer
+  @apply ml-2 text-xs font-bold text-slate-400 cursor-pointer
 }
 .formInputCheckboxStyle {
-    @apply ml-1 w-4 h-4 cursor-pointer
+    @apply w-4 h-4 cursor-pointer
 }
 
 
