@@ -4,6 +4,8 @@ import CarpassesView from "@/views/CarpassesView.vue";
 import CarTerminalView from "@/views/CarTerminalView.vue";
 import ExitcarpassesView from "@/views/ExitcarpassesView.vue";
 import DashboardView from "@/views/DashboardView.vue";
+import EntryRequestsView from "@/views/EntryRequestsView.vue";
+import ParkingMapView from "@/views/ParkingMapView.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
 // import EditItemView from "@/views/EditItemView.vue";
@@ -25,6 +27,16 @@ const router = createRouter({
       path: '/exitcarpasses',
       name: 'exitcarpasses',
       component: ExitcarpassesView,
+    },
+    {
+      path: '/entry_requests',
+      name: 'entry_requests',
+      component: EntryRequestsView,
+    },
+    {
+      path: '/parking_map',
+      name: 'parking_map',
+      component: ParkingMapView,
     },
     {
       path: '/documents',

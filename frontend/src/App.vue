@@ -217,6 +217,16 @@ const signOut = async () => {
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
       />
     </RouterLink>
+    <RouterLink to="/entry_requests">
+      <MenuSection :label="'Заявки на въезд ТС'" :icon="'pen-to-square'" :description="'Информация о заявках на въезд ТС'"
+      :selected="state.selectedMenu=='entryRequest' ? '1' : '0'" @click="state.selectedMenu='entryRequest'"
+      />
+    </RouterLink>
+    <RouterLink to="/parking_map">
+      <MenuSection :label="'План стоянки ТС'" :icon="'th-large'" :description="'План стоянки ТС'"
+      :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
+      />
+    </RouterLink>
     <!-- <RouterLink to="/documents">
       <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"
       :selected="state.selectedMenu=='docsSec' ? '1' : '0'" @click="state.selectedMenu='docsSec'"
