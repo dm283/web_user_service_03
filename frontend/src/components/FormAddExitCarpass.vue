@@ -92,20 +92,27 @@ const postingItem = async () => {
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
-    let err = error.response.data.detail
+    let err = error.response.data.detail;
+    let errFlag = 0;
     // console.log('ответ =', error.response.data.detail)
+    if (err == 'Отсутствует разрешение на выезд') {
+      toast.error('Отсутствует разрешение на выезд');
+    };     
     if (err.includes('Не установлен номер документа выпуска')) {
       errField['ndexit'] = 1;
-      toast.error('Не заполнены обязательные поля');
+      errFlag = 1;
     };    
     if (err.includes('Не установлена дата выезда')) {
       errField['dateex'] = 1;
-      toast.error('Не заполнены обязательные поля');
+      errFlag = 1;
     };
     if (err.includes('Не установлено время выезда')) {
       errField['timeex'] = 1;
-      toast.error('Не заполнены обязательные поля');
+      errFlag = 1;
     };
+    if (errFlag) {
+      toast.error('Не заполнены обязательные поля');
+    }
     console.error('Error posting item');
     // console.error('Error posting item', error);
   };
