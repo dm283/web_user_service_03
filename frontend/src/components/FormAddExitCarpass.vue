@@ -24,8 +24,11 @@ const props = defineProps({
 const state = reactive({
   documents: [],
   relatedCarpass: {},
-  isLoading: true
+  isLoading: true,
+  responseItem: {},
 })
+
+// !!! if 'isCreate' - itemData=Carpass;  if 'not isCreate' (card/update) - itemData=Exitcarpass !!!
 
 if (!props.isCreate && props.itemData) {
 onMounted(async () => {
@@ -121,24 +124,8 @@ const postingItem = async () => {
 const handleSubmit = async () => {
   // form submit handling (carpass create or update)
   let formData = new FormData();
-
-  // files uploading
-  if (files.value) {
-    for (let file of files.value.files) {
-    formData.append('file', file);
-    formData.append('contact_name', form.contact_name);
-    try {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.uuid}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
-    } catch (error) {
-      console.error('Error uploading file', error);
-      toast.error('File has not been uploaded');
-    };
-  };
-  };
-            
+    
   // carpass upgrading
-  // formData.append('files', files.value.files);
   formData.append('id_enter', form.id_enter);
   formData.append('ncar', form.ncar);
   formData.append('drv_man', form.drv_man);
@@ -147,25 +134,39 @@ const handleSubmit = async () => {
   formData.append('comment', form.comment);
   formData.append('dateex', form.dateex);
   formData.append('timeex', form.timeex);
-  // formData.append('file', file.value.files[0]);
-  // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/single-file/`, 
-  // formData, {headers: {'Content-Type': 'multipart/form-data'}});
 
   try {
-    // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (props.isCreate) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/exitcarpasses/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data'}});
       toast.success('Пропуск на выезд добавлен');
+      state.responseItem = response.data;
     } else {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data'}});
-      toast.success('Пропуск на выезд обновлён');      
+      toast.success('Пропуск на выезд обновлён');
+      state.responseItem = response.data;  
     }
-    emit('docCreated'); // emit
-    emit('closeModal')
+
+    // files uploading
+    if (files.value) {
+      for (let file of files.value.files) {
+        formData.append('file', file);
+        formData.append('contact_name', form.contact_name);
+        try {
+          const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`,
+            formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        } catch (error) {
+          console.error('Error uploading file', error);
+          toast.error('File has not been uploaded');
+        };
+      };
+    };
+
+    emit('docCreated'); 
+    emit('closeModal');
   } catch (error) {
-    console.error('Error adding item');
+    console.error('Error adding item', error);
     //console.error('Error adding item', error);
     toast.error('Item has not added');
   };

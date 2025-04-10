@@ -83,7 +83,7 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     setattr(carpass_from_db, 'exitcarpass_created', True)
     db.commit()
     
-    return db_item.id
+    return db_item
 
 
 def create_carpass(db: Session, carpass: schemas.CarpassCreate):
@@ -124,7 +124,7 @@ def update_exitcarpass(db: Session, carpass_id: int, carpass: schemas.Exitcarpas
         setattr(carpass_from_db, field, value)
     db.commit()
 
-    return carpass_from_db.id_exit
+    return carpass_from_db
 
 
 def delete_carpass(db: Session, carpass_id: int):

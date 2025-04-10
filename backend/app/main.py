@@ -343,7 +343,7 @@ def update_carpass(
     return crud.update_carpass(db=db, carpass_id=carpass_id, carpass=carpass)
 
 
-@app.put('/exitcarpasses/{carpass_id}')
+@app.put('/exitcarpasses/{carpass_id}', response_model=schemas.Exitcarpass)
 def update_exitcarpass(
     carpass_id: int,
     # id_enter: Annotated[str, Form()], 
@@ -384,7 +384,7 @@ def update_exitcarpass(
     return crud.update_exitcarpass(db=db, carpass_id=carpass_id, carpass=carpass)
 
 
-@app.post("/exitcarpasses/")
+@app.post("/exitcarpasses/", response_model=schemas.Exitcarpass)
 def create_exitcarpass(
     # id_enter: Annotated[str, Form()], 
     # ncar: Annotated[str, Form()], 
