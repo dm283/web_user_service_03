@@ -385,7 +385,7 @@ async function downloadFile(document_id) {
           <button class="formBtn" type="reset">ОЧИСТИТЬ</button>
           <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
-        <div class="float-right" v-if="props.itemData">
+        <div class="float-right" v-if="!props.isCreate">
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
         </div>
       </div>
