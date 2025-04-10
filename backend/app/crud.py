@@ -216,6 +216,12 @@ def posting_exitcarpass(db: Session, carpass_id: int):
     if carpass_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was posted already")
     
+    carpass_enter_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_from_db.id_enter).first()
+    if carpass_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if carpass_enter_from_db.status != 'exit_permitted':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Отсутствует разрешение на выезд')
+    
     # validations
     validation_errs = []
     if not carpass_from_db.ndexit:
@@ -237,16 +243,10 @@ def posting_exitcarpass(db: Session, carpass_id: int):
     dateex = carpass_from_db.dateex
     timeex = carpass_from_db.timeex
 
-    # write to Carpass - set dateex & timeex for related carpass
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_from_db.id_enter).first()
-    if carpass_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if carpass_from_db.dateex:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Dateex has already set")
-    
-    setattr(carpass_from_db, 'dateex', dateex)
-    setattr(carpass_from_db, 'timeex', timeex)
-    setattr(carpass_from_db, 'status', 'archival')
+    # write to Carpass - set dateex & timeex for related carpass    
+    setattr(carpass_enter_from_db, 'dateex', dateex)
+    setattr(carpass_enter_from_db, 'timeex', timeex)
+    setattr(carpass_enter_from_db, 'status', 'archival')
     db.commit()
 
     return carpass_from_db.id
