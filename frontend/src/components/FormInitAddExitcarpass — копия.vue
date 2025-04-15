@@ -21,15 +21,11 @@ const props = defineProps({
 const state = reactive({
   query: '',
   documents: [],
-  isLoading: true,
-  filteredList: [],
+  isLoading: true
 })
 
 // const selectedNcar = ref('')
 const selectedItem = ref('')
-
-const devSelected = ref('')
-const showDropDownSel = ref(false)
 
 
 onMounted(async () => {
@@ -45,7 +41,7 @@ onMounted(async () => {
 });
 
 const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
-const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-0 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 
@@ -60,24 +56,6 @@ const handleSubmit = async () => {
   };
   emit('docCreated', selectedItem.value); // emit
   emit('closeModal')
-};
-
-
-const setFilter = () => {
-  //
-  state.filteredList = [];
-  for (let rec of state.documents) {
-    if ( rec.ncar.toString().toUpperCase().indexOf(devSelected.value) > -1 ) {
-      state.filteredList.push(rec);
-    };
-  };
-  if (state.filteredList.length == 0) {
-    for (let xobj of state.documents) {
-      let clonedObj = {...xobj};
-      state.filteredList.push(clonedObj);
-    };
-  }
-  console.log(state.filteredList)
 };
 
 </script>
@@ -101,27 +79,14 @@ const setFilter = () => {
           <input ref="files" name="files" type="file" multiple class="formInputFile" />
         </div> -->
 
-        <!-- <div class=formInputDiv>
+        <div class=formInputDiv>
           <label class=formLabelStyle>Номер пропуска на въезд</label>
           <select class="formInputStyle bg-white" v-model="selectedItem">
             <option v-for="document in state.documents" :value="document">
               {{ document.id_enter }}
             </option>
           </select>
-        </div> -->
-  
-        <div class="formInputDiv">
-          <label class=formLabelStyle>Номер машины</label>
-          <div :class=formInputStyle2 class="flex" @click="setFilter(); showDropDownSel=true">
-            <input class="w-64 focus:outline-none" type="text" v-model="devSelected" id="dSel" name="dSel" @keyup="setFilter()"  />
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSel" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="devSelected=item.ncar; selectedItem=item; showDropDownSel=false" >{{ item.ncar }}</div>
-          </div>
         </div>
-
 
         <div class=formInputDiv>
           <label class=formLabelStyle>Номер машины</label>
@@ -136,7 +101,7 @@ const setFilter = () => {
       <div class="my-3 py-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СФОРМИРОВАТЬ</button>
-          <button class="formBtn" type="button" @click="selectedItem=''; devSelected=''">ОЧИСТИТЬ</button>
+          <button class="formBtn" type="button" @click="selectedItem=''">ОЧИСТИТЬ</button>
         </div>
       </div>
     </form>
