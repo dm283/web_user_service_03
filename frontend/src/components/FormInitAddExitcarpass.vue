@@ -28,8 +28,9 @@ const state = reactive({
 // const selectedNcar = ref('')
 const selectedItem = ref('')
 
-const devSelected = ref('')
-const showDropDownSel = ref(false)
+// const devSelected = ref('')
+const devSelected = {};
+const showDropDownSelect = ref({});
 
 
 onMounted(async () => {
@@ -63,11 +64,11 @@ const handleSubmit = async () => {
 };
 
 
-const setFilter = () => {
-  //
+const setFilter = (field) => {
+  // filter setting
   state.filteredList = [];
   for (let rec of state.documents) {
-    if ( rec.ncar.toString().toUpperCase().indexOf(devSelected.value) > -1 ) {
+    if ( rec[field].toString().toUpperCase().indexOf(devSelected[field]) > -1 ) {
       state.filteredList.push(rec);
     };
   };
@@ -77,7 +78,6 @@ const setFilter = () => {
       state.filteredList.push(clonedObj);
     };
   }
-  console.log(state.filteredList)
 };
 
 </script>
@@ -91,16 +91,47 @@ const setFilter = () => {
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
     </header>
-
-    <!-- <div class="">Selected car: {{ selectedNcar }}</div> -->
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       <div class="flex">
-        <!-- <div class=formInputDiv>
-          <label class=formLabelStyle>QR-код</label>
-          <input ref="files" name="files" type="file" multiple class="formInputFile" />
-        </div> -->
 
+        <div class="formInputDiv">
+          <label class=formLabelStyle>Номер пропуска на въезд</label>
+          <div :class=formInputStyle2 class="flex" @click="setFilter('id_enter'); showDropDownSelect.id_enter=true; 
+                  console.log(234, showDropDownSelect)">
+            <input class="w-64 focus:outline-none" type="text" v-model="devSelected.id_enter" id="dSel" name="dSel" @keyup="setFilter('id_enter')"  />
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect.id_enter" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+              @click="devSelected.id_enter=item.id_enter; devSelected.ncar=item.ncar; selectedItem=item; showDropDownSelect.id_enter=false" >
+              {{ item.id_enter }}
+            </div>
+          </div>
+        </div>
+
+        <div class="formInputDiv">
+          <label class=formLabelStyle>Номер машины</label>
+          <div :class=formInputStyle2 class="flex" @click="setFilter('ncar'); showDropDownSelect.ncar=true">
+            <input class="w-64 focus:outline-none" type="text" v-model="devSelected.ncar" id="dSel" name="dSel" @keyup="setFilter('ncar')"  />
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect.ncar" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+              @click="devSelected.ncar=item.ncar; devSelected.id_enter=item.id_enter; selectedItem=item; showDropDownSelect.ncar=false" >
+              {{ item.ncar }}
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class=formInputDiv>
+          <label class=formLabelStyle>Номер машины</label>
+          <select class="formInputStyle bg-white" v-model="selectedItem">
+            <option v-for="document in state.documents" :value="document">
+              {{ document.ncar }}
+            </option>
+          </select>
+        </div> -->
         <!-- <div class=formInputDiv>
           <label class=formLabelStyle>Номер пропуска на въезд</label>
           <select class="formInputStyle bg-white" v-model="selectedItem">
@@ -109,34 +140,12 @@ const setFilter = () => {
             </option>
           </select>
         </div> -->
-  
-        <div class="formInputDiv">
-          <label class=formLabelStyle>Номер машины</label>
-          <div :class=formInputStyle2 class="flex" @click="setFilter(); showDropDownSel=true">
-            <input class="w-64 focus:outline-none" type="text" v-model="devSelected" id="dSel" name="dSel" @keyup="setFilter()"  />
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSel" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="devSelected=item.ncar; selectedItem=item; showDropDownSel=false" >{{ item.ncar }}</div>
-          </div>
-        </div>
-
-
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Номер машины</label>
-          <select class="formInputStyle bg-white" v-model="selectedItem">
-            <option v-for="document in state.documents" :value="document">
-              {{ document.ncar }}
-            </option>
-          </select>
-        </div>
       </div>
 
-      <div class="my-3 py-3 px-5 text-center overflow-auto">
+      <div class="mt-3 mb-5 py-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СФОРМИРОВАТЬ</button>
-          <button class="formBtn" type="button" @click="selectedItem=''; devSelected=''">ОЧИСТИТЬ</button>
+          <button class="formBtn" type="button" @click="selectedItem=''; devSelected.ncar=''; devSelected.id_enter=''">ОЧИСТИТЬ</button>
         </div>
       </div>
     </form>
