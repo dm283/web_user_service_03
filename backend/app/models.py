@@ -105,3 +105,33 @@ class Exitcarpass(Base):
     posted = Column(Boolean, default=False)
     was_posted = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+
+
+class EntryRequest(Base):
+    __tablename__ = 'entry_requests'
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    id_entry_request = Column(String(length=8), unique=True)
+    ncar = Column(String(length=60))
+    plan_dateen = Column(Date)
+    plan_timeen_from = Column(Time)
+    plan_timeen_to = Column(Time)
+    drv_man = Column(String(length=50))
+    drv_licence = Column(String)
+    car_model = Column(String)
+    entry_type = Column(String)
+    contact = Column(Integer)
+    ntir = Column(String(length=50))
+    ntir_date = Column(Date)
+    customs_doc = Column(String(length=50))
+    customs_doc_date = Column(Date)
+    comment = Column(String(length=250))
+    status = Column(String)
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)
+    was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)

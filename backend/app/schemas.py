@@ -76,6 +76,45 @@ class Exitcarpass(ExitcarpassCreate):
         from_attributes = True
 
 
+#############
+class EntryRequestCreate(BaseModel):
+    ncar: str
+    plan_dateen: date
+    plan_timeen_from: time
+    plan_timeen_to: time
+    drv_man: str
+    drv_licence: str
+    car_model: str
+    entry_type: str
+    contact: int
+    ntir: str
+    ntir_date: date
+    customs_doc: str
+    customs_doc_date: date
+    comment: str | None = None
+    status: str = 'open'
+
+
+class EntryRequestUpdate(EntryRequestCreate):
+    updated_datetime: datetime
+
+
+class EntryRequest(EntryRequestCreate):
+    id: int
+    uuid: str
+    id_entry_request: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
+#####################
+
+
 class DocumentBase(BaseModel):
     doc_name: str
     related_doc_uuid: str

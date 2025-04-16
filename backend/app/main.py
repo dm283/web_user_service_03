@@ -421,6 +421,38 @@ def create_exitcarpass(
     return crud.create_exitcarpass(db=db, item=carpass)
 
 
+@app.post("/entry_requests/", response_model=schemas.EntryRequest)
+def create_entry_request(
+    # id_enter: Annotated[str, Form()], 
+    # ncar: Annotated[str, Form()], 
+    # drv_man: Annotated[str, Form()], 
+    # dev_phone: Annotated[str, Form()], 
+    # ndexit: Annotated[int, Form()], 
+    # comment: Annotated[str, Form()], 
+    # dateex: Annotated[date, Form()],
+    # timeex: Annotated[time, Form()],
+    data: Annotated[schemas.EntryRequestCreate, Form()],
+
+    db: Session = Depends(get_db)
+):
+
+    if not data.comment or data.comment == 'null':
+        data.comment = None
+
+    # carpass = schemas.ExitcarpassCreate(
+    #     id_enter = data.id_enter,
+    #     ncar = data.ncar,
+    #     drv_man = data.drv_man,
+    #     dev_phone = data.dev_phone,
+    #     ndexit = data.ndexit,
+    #     comment = data.comment,
+    #     dateex = data.dateex,
+    #     timeex = data.timeex,
+    # )
+        
+    return crud.create_entry_request(db=db, item=data)
+
+
 @app.post("/carpasses/")
 def create_carpass(
     ncar: Annotated[str, Form()], 

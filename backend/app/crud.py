@@ -86,6 +86,22 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     return db_item
 
 
+def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
+    #
+    last_created_item_from_db =  db.query(models.EntryRequest).order_by(models.EntryRequest.id.desc()).first()
+    id_entry_request = '1' if last_created_item_from_db is None else str(int(last_created_item_from_db.id_entry_request) + 1)
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.EntryRequest(**item.model_dump(), uuid=uuid, id_entry_request=id_entry_request, created_datetime=created_datetime)
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    db.commit()
+    
+    return db_item
+
+
 def create_carpass(db: Session, carpass: schemas.CarpassCreate):
     # creates a enter carpass
     last_created_carpass_from_db =  db.query(models.Carpass).order_by(models.Carpass.id.desc()).first()
