@@ -58,6 +58,13 @@ def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
         offset(skip).limit(limit).all()
 
 
+def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active == True).\
+        order_by(models.EntryRequest.updated_datetime.desc(), models.EntryRequest.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
 def get_ncars_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
     # get ncar fields from exitcarpasses
     return db.query(models.Exitcarpass.ncar).filter(models.Exitcarpass.is_active == True).order_by(models.Exitcarpass.created_datetime.desc()).\
@@ -143,6 +150,19 @@ def update_exitcarpass(db: Session, carpass_id: int, carpass: schemas.Exitcarpas
     return carpass_from_db
 
 
+def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUpdate):
+    #
+    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    return item_from_db
+
+
 def delete_carpass(db: Session, carpass_id: int):
     #
     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
@@ -153,6 +173,18 @@ def delete_carpass(db: Session, carpass_id: int):
     db.commit()
 
     return {"message": f"Carpass id {carpass_id} deleted successfully"}
+
+
+def delete_entry_request(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    db.delete(item_from_db)
+    db.commit()
+
+    return {"message": f"Carpass id {item_id} deleted successfully"}
 
 
 def delete_exitcarpass(db: Session, carpass_id: int):

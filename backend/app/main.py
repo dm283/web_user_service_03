@@ -267,6 +267,12 @@ def read_exitcarpasses(skip: int = 0, limit: int = 100, db: Session = Depends(ge
     return items
 
 
+@app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
+def read_entry_requests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_entry_requests(db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/entity_documents/{related_doc_uuid}', response_model=list[schemas.Document])
 def get_entity_documents(related_doc_uuid: str, db: Session = Depends(get_db)):
     # get entity documents from db table documents
@@ -453,6 +459,42 @@ def create_entry_request(
     return crud.create_entry_request(db=db, item=data)
 
 
+@app.put('/entry_requests/{item_id}', response_model=schemas.EntryRequest)
+def update_entry_request(
+    item_id: int,
+    # id_enter: Annotated[str, Form()], 
+    # ncar: Annotated[str, Form()], 
+    # drv_man: Annotated[str, Form()], 
+    # dev_phone: Annotated[str, Form()], 
+    # ndexit: Annotated[int, Form()], 
+    # comment: Annotated[str, Form()],
+    # timeex: Annotated[time, Form()],
+    # dateex: Annotated[date | str, Form()] = None,
+    data: Annotated[schemas.EntryRequestCreate, Form()],
+    db: Session = Depends(get_db)
+):
+    updated_datetime = datetime.now()
+
+    if not data.comment or data.comment == 'null':
+        data.comment = None
+
+    item = schemas.EntryRequestUpdate(**data.model_dump(), updated_datetime=updated_datetime)
+
+    # item = schemas.ExitcarpassUpdate(
+    #     id_enter = data.id_enter,
+    #     ncar = data.ncar,
+    #     drv_man = data.drv_man,
+    #     dev_phone = data.dev_phone,
+    #     ndexit = data.ndexit,
+    #     comment = data.comment,
+    #     dateex = data.dateex,
+    #     timeex = data.timeex,
+    #     updated_datetime = updated_datetime
+    # )
+        
+    return crud.update_entry_request(db=db, item_id=item_id, item=item)
+
+
 @app.post("/carpasses/")
 def create_carpass(
     ncar: Annotated[str, Form()], 
@@ -503,9 +545,15 @@ def delete_carpass(id: int, db: Session = Depends(get_db)):
 
 
 @app.delete('/exitcarpasses/{id}')
-def delete_carpass(id: int, db: Session = Depends(get_db)):
+def delete_exitcarpass(id: int, db: Session = Depends(get_db)):
     #
     return crud.delete_exitcarpass(db=db, carpass_id=id)
+
+
+@app.delete('/entry_requests/{item_id}')
+def delete_entry_request(item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.delete_entry_request(db=db, item_id=item_id)
 
 
 @app.put('/carpasses_deactivate/{carpass_id}')

@@ -25,8 +25,12 @@ const state = reactive({
 
 if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`;
-} else if (props.itemName == 'Пропуска ТС на выезд') {
+} 
+else if (props.itemName == 'Пропуска ТС на выезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`;
+}
+else if (props.itemName == 'Заявки на въезд ТС') {
+  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`;
 }
 
 const toast = useToast();
@@ -36,8 +40,8 @@ const handleSubmit = async () => {
   try {
     const response = await axios.delete(state.query);
     // const response = await axios.delete(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`);
-    toast.success('Пропуск удалён');      
-    emit('docCreated'); // emit
+    toast.success('Запись удалёна');      
+    emit('docCreated')
     emit('closeModal')
   } catch (error) {
     console.error('Error deleting item', error);
@@ -57,7 +61,7 @@ const handleSubmit = async () => {
       </div>
     </header>
 
-    <div class="mt-5 ml-5">Удалить пропуск ID {{ itemData.id }} ?</div>
+    <div class="mt-5 ml-5">Удалить запись ID {{ itemData.id }} ?</div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       
