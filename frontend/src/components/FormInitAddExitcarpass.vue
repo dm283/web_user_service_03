@@ -132,14 +132,6 @@ const setFilter = (field) => {
             </option>
           </select>
         </div> -->
-        <!-- <div class=formInputDiv>
-          <label class=formLabelStyle>Номер пропуска на въезд</label>
-          <select class="formInputStyle bg-white" v-model="selectedItem">
-            <option v-for="document in state.documents" :value="document">
-              {{ document.id_enter }}
-            </option>
-          </select>
-        </div> -->
       </div>
 
       <div class="mt-3 mb-5 py-3 px-5 text-center overflow-auto">
