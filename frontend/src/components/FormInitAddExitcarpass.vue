@@ -29,7 +29,7 @@ const state = reactive({
 const selectedItem = ref('')
 
 // const devSelected = ref('')
-const devSelected = {};
+const devSelected = ref({});
 const showDropDownSelect = ref({});
 
 
@@ -68,7 +68,7 @@ const setFilter = (field) => {
   // filter setting
   state.filteredList = [];
   for (let rec of state.documents) {
-    if ( rec[field].toString().toUpperCase().indexOf(devSelected[field]) > -1 ) {
+    if ( rec[field].toString().toUpperCase().indexOf(devSelected.value[field]) > -1 ) {
       state.filteredList.push(rec);
     };
   };
@@ -99,7 +99,7 @@ const setFilter = (field) => {
           <label class=formLabelStyle>Номер пропуска на въезд</label>
           <div :class=formInputStyle2 class="flex" @click="setFilter('id_enter'); showDropDownSelect.id_enter=true; 
                   console.log(234, showDropDownSelect)">
-            <input class="w-64 focus:outline-none" type="text" v-model="devSelected.id_enter" id="dSel" name="dSel" @keyup="setFilter('id_enter')"  />
+            <input class="w-64 focus:outline-none" type="text" v-model="devSelected.id_enter" id="dSel" name="dSel" @keyup="setFilter('id_enter')"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
           <div v-if="showDropDownSelect.id_enter" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
@@ -113,7 +113,7 @@ const setFilter = (field) => {
         <div class="formInputDiv">
           <label class=formLabelStyle>Номер машины</label>
           <div :class=formInputStyle2 class="flex" @click="setFilter('ncar'); showDropDownSelect.ncar=true">
-            <input class="w-64 focus:outline-none" type="text" v-model="devSelected.ncar" id="dSel" name="dSel" @keyup="setFilter('ncar')"  />
+            <input class="w-64 focus:outline-none" type="text" v-model="devSelected.ncar" id="dSel" name="dSel" @keyup="setFilter('ncar')"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
           <div v-if="showDropDownSelect.ncar" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
