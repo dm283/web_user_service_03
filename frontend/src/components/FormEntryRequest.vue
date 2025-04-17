@@ -42,9 +42,11 @@ const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 const formInputStyleAct = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
+const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 
+const errField = reactive({});
 const form = reactive({});
-
 const files = ref(null)
 
 const itemFields = [
@@ -65,64 +67,54 @@ const itemFields = [
   ]
 
 const initEmptyForm = () => {
-    form.ncar = '_234РА23'
-    form.plan_dateen = ''
-    form.plan_timeen_from = ''
-    form.plan_timeen_to = ''
-    form.drv_man = 'Иванов Сидор'
-    form.drv_licence = 'Р456НВ'
-    form.car_model = 'Volvo F7'
-    form.entry_type = 'Привоз груза'
-    form.contact = 111
-    form.ntir = 'К345НГ32'
-    form.ntir_date = ''
-    form.customs_doc = 'П34КНР23'
-    form.customs_doc_date = ''
-    form.comment = ''
+    form.ncar = '__34РА23'
+    // form.plan_dateen = ''
+    // form.plan_timeen_from = ''
+    // form.plan_timeen_to = ''
+    // form.drv_man = 'Иванов Сидор'
+    // form.drv_licence = 'Р456НВ'
+    // form.car_model = 'Volvo F7'
+    // form.entry_type = 'Привоз груза'
+    // form.contact = 111
+    // form.ntir = 'К345НГ32'
+    // form.ntir_date = ''
+    // form.customs_doc = 'П34КНР23'
+    // form.customs_doc_date = ''
+    // form.comment = ''
 };
 
 if (props.itemData) {
   for (let field of itemFields) {form[field] = props.itemData[field]}
-  // form['ncar'] = props.itemData['ncar']
-  // form.plan_dateen = props.itemData.plan_dateen
-  // form.plan_timeen_from = props.itemData.plan_timeen_from
-  // form.plan_timeen_to = props.itemData.plan_timeen_to
-  // form.drv_man = props.itemData.drv_man
-  // form.drv_licence = props.itemData.drv_licence
-  // form.car_model = props.itemData.car_model
-  // form.entry_type = props.itemData.entry_type
-  // form.contact = props.itemData.contact
-  // form.ntir = props.itemData.ntir
-  // form.ntir_date = props.itemData.ntir_date
-  // form.customs_doc = props.itemData.customs_doc
-  // form.customs_doc_date = props.itemData.customs_doc_date
-  // form.comment = props.itemData.comment
 } else {
   initEmptyForm();
 };
 
 const file = ref(null)
-
 const toast = useToast();
+
 
 const postingItem = async () => {
   //
   try {
-    // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (props.itemData) {
-      //const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`);
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/entry_requests_posting/${props.itemData.id}`);
       toast.success('Запись проведёна');
     } else {
       return;
     }
-
-    emit('docCreated');
-    emit('closeModal')
+    emit('docCreated'); emit('closeModal');
   } catch (error) {
-    console.error('Error posting item', error);
-    toast.error('Ошибка при проводке');
+    let err = error.response.data.detail;
+    let errFlag = 0;
+    if (error.response.data.detail.hasOwnProperty('validation_errors')){
+      let validation_errors_list = err['validation_errors']
+      for (let e of validation_errors_list) { errField[e] = 1; errFlag = 1; }
+    }
+    if (errFlag) { toast.error('Не заполнены обязательные поля') }
+    console.error('Error posting item', error.response.data);
   };
 };
+
 
 const handleSubmit = async () => {
   // form submit handling (carpass create or update)
@@ -143,30 +135,10 @@ const handleSubmit = async () => {
   };
   };
             
-  // carpass upgrading
-  // formData.append('files', files.value.files);
-  for (let field of itemFields) { formData.append(field, form[field]) }
-  // formData.append('ncar', form.ncar)
-  // formData.append('plan_dateen', form.plan_dateen)
-  // formData.append('plan_timeen_from', form.plan_timeen_from)
-  // formData.append('plan_timeen_to', form.plan_timeen_to)
-  // formData.append('drv_man', form.drv_man)
-  // formData.append('drv_licence', form.drv_licence)
-  // formData.append('car_model', form.car_model)
-  // formData.append('entry_type', form.entry_type)
-  // formData.append('contact', form.contact)
-  // formData.append('ntir', form.ntir)
-  // formData.append('ntir_date', form.ntir_date)
-  // formData.append('customs_doc', form.customs_doc)
-  // formData.append('customs_doc_date', form.customs_doc_date)
-  // formData.append('comment', form.comment)
-
-  // formData.append('file', file.value.files[0]);
-  // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/single-file/`, 
-  // formData, {headers: {'Content-Type': 'multipart/form-data'}});
+  // item updating
+  for (let field of itemFields) { formData.append(field, form[field]) };
 
   try {
-    // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (!props.itemData) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/entry_requests/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data'}});
@@ -230,71 +202,80 @@ async function downloadFile(document_id) {
       <!-- types:  text, date, time -->
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Номер машины</label>
-          <input type="text" v-model="form.ncar" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="text" v-model="form.ncar" :class="[errField['ncar']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="true" :disabled="isCard" />
         </div>
       </div>
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Дата въезда</label>
-          <input type="date" v-model="form.plan_dateen" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="date" v-model="form.plan_dateen" :class="[errField['plan_dateen']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Время въезда с</label>
-          <input type="time" v-model="form.plan_timeen_from" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="time" v-model="form.plan_timeen_from" :class="[errField['plan_timeen_from']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Время въезда по</label>
-          <input type="time" v-model="form.plan_timeen_to" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="time" v-model="form.plan_timeen_to" :class="[errField['plan_timeen_to']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
       </div>
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>ФИО водителя</label>
-          <input type="text" v-model="form.drv_man" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="text" v-model="form.drv_man" :class="[errField['drv_man']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>№ водительских прав</label>
-          <input type="text" v-model="form.drv_licence" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="text" v-model="form.drv_licence" :class="[errField['drv_licence']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Модель автомобиля</label>
-          <input type="text" v-model="form.car_model" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="text" v-model="form.car_model" :class="[errField['car_model']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
       </div>
 
       <div class="flex">
-
         <div class=formInputDiv> <label class=formLabelStyle>Тип въезда</label>
-          <select :class=formInputStyle class="bg-white" v-model="form.entry_type" :required="true" :disabled="isCard">
+          <select :class="[errField['entry_type']==1 ? formInputStyleErr : formInputStyle]" class="bg-white" 
+            v-model="form.entry_type" :required="false" :disabled="isCard">
             <option v-for="type in ['Привоз груза', 'Вывоз груза']" :value="type">{{ type }}</option>
           </select>
         </div>
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Тип въезда</label>
-          <input type="text" v-model="form.entry_type" :class=formInputStyle :required="true" :disabled="isCard" />
-        </div> -->
         <div class=formInputDiv>   <label class=formLabelStyle>Клиент</label>
-          <input type="number" v-model="form.contact" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
       </div>
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>№ транспортного документа</label>
-          <input type="text" v-model="form.ntir" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="text" v-model="form.ntir" :class="[errField['ntir']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Дата транспортного документа</label>
-          <input type="date" v-model="form.ntir_date" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="date" v-model="form.ntir_date" :class="[errField['ntir_date']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
       </div>
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>№ таможенного документа</label>
-          <input type="text" v-model="form.customs_doc" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="text" v-model="form.customs_doc" :class="[errField['customs_doc']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Дата таможенного документа</label>
-          <input type="date" v-model="form.customs_doc_date" :class=formInputStyle :required="true" :disabled="isCard" />
+          <input type="date" v-model="form.customs_doc_date" :class="[errField['customs_doc_date']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
       </div>
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Примечание</label>
-          <input type="text" v-model="form.comment" :class=formInputStyle :required="false" :disabled="isCard" />
+          <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
         </div>
       </div>
 

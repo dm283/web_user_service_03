@@ -1,5 +1,6 @@
 import datetime
 from fastapi import UploadFile, HTTPException, Depends, status
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from uuid import uuid4
@@ -254,6 +255,51 @@ def posting_carpass(db: Session, carpass_id: int):
     db.commit()
 
     return carpass_from_db.id
+
+
+def posting_entry_request(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was posted already")
+    
+    # validations
+    validation_errs = []
+
+    try:
+        item_validated = schemas.EntryRequestValidation(**item_from_db.__dict__)
+    except ValidationError as err:
+        for e in err.errors():
+            print(e['loc'][0])
+            validation_errs.append(e['loc'][0])
+
+    if validation_errs:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={'validation_errors': validation_errs})
+
+    # for i in item_dict:
+    #     x = '!empty!' if not item_dict[i] else 'ok'
+    #     print(i, item_dict[i], x)
+
+    # if not carpass_from_db.ndexit:
+    #     validation_errs.append("Не установлен номер документа выпуска")
+    # if not carpass_from_db.dateex:
+    #     validation_errs.append("Не установлена дата выезда")
+    # if not carpass_from_db.timeex:
+    #     validation_errs.append("Не установлено время выезда")
+    
+    # if validation_errs:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=validation_errs)
+    
+    setattr(item_from_db, 'posted', True)
+    setattr(item_from_db, 'was_posted', True)
+    setattr(item_from_db, 'post_date', datetime.datetime.now())
+    setattr(item_from_db, 'post_user_id', '1')
+
+    db.commit()
+
+    return item_from_db.id
 
 
 def posting_exitcarpass(db: Session, carpass_id: int):

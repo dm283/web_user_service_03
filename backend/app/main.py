@@ -427,71 +427,28 @@ def create_exitcarpass(
     return crud.create_exitcarpass(db=db, item=carpass)
 
 
+def redefine_schema_values_to_none(data, schema_obj):
+    # get data received from frontend and redefine values if value is any kind of none to None
+    data_dict = data.dict()
+    for k in data_dict:
+        if not data_dict[k] or data_dict[k] == 'null' or data_dict[k] == 'undefined':
+            data_dict[k] = None
+    return schema_obj(**data_dict)
+
+
 @app.post("/entry_requests/", response_model=schemas.EntryRequest)
-def create_entry_request(
-    # id_enter: Annotated[str, Form()], 
-    # ncar: Annotated[str, Form()], 
-    # drv_man: Annotated[str, Form()], 
-    # dev_phone: Annotated[str, Form()], 
-    # ndexit: Annotated[int, Form()], 
-    # comment: Annotated[str, Form()], 
-    # dateex: Annotated[date, Form()],
-    # timeex: Annotated[time, Form()],
-    data: Annotated[schemas.EntryRequestCreate, Form()],
-
-    db: Session = Depends(get_db)
-):
-
-    if not data.comment or data.comment == 'null':
-        data.comment = None
-
-    # carpass = schemas.ExitcarpassCreate(
-    #     id_enter = data.id_enter,
-    #     ncar = data.ncar,
-    #     drv_man = data.drv_man,
-    #     dev_phone = data.dev_phone,
-    #     ndexit = data.ndexit,
-    #     comment = data.comment,
-    #     dateex = data.dateex,
-    #     timeex = data.timeex,
-    # )
-        
-    return crud.create_entry_request(db=db, item=data)
+def create_entry_request(data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)  
+    return crud.create_entry_request(db=db, item=data_none_values_redefined)
 
 
 @app.put('/entry_requests/{item_id}', response_model=schemas.EntryRequest)
-def update_entry_request(
-    item_id: int,
-    # id_enter: Annotated[str, Form()], 
-    # ncar: Annotated[str, Form()], 
-    # drv_man: Annotated[str, Form()], 
-    # dev_phone: Annotated[str, Form()], 
-    # ndexit: Annotated[int, Form()], 
-    # comment: Annotated[str, Form()],
-    # timeex: Annotated[time, Form()],
-    # dateex: Annotated[date | str, Form()] = None,
-    data: Annotated[schemas.EntryRequestCreate, Form()],
-    db: Session = Depends(get_db)
-):
+def update_entry_request(item_id: int, data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
+    #
     updated_datetime = datetime.now()
-
-    if not data.comment or data.comment == 'null':
-        data.comment = None
-
-    item = schemas.EntryRequestUpdate(**data.model_dump(), updated_datetime=updated_datetime)
-
-    # item = schemas.ExitcarpassUpdate(
-    #     id_enter = data.id_enter,
-    #     ncar = data.ncar,
-    #     drv_man = data.drv_man,
-    #     dev_phone = data.dev_phone,
-    #     ndexit = data.ndexit,
-    #     comment = data.comment,
-    #     dateex = data.dateex,
-    #     timeex = data.timeex,
-    #     updated_datetime = updated_datetime
-    # )
-        
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
+    item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_entry_request(db=db, item_id=item_id, item=item)
 
 
@@ -578,6 +535,12 @@ def posting_carpass(carpass_id: int, db: Session = Depends(get_db)):
 def posting_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.posting_exitcarpass(db=db, carpass_id=carpass_id)
+
+
+@app.put('/entry_requests_posting/{item_id}')
+def posting_entry_request(item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_entry_request(db=db, item_id=item_id)
 
 
 @app.put('/carpasses_rollback/{carpass_id}')

@@ -79,6 +79,24 @@ class Exitcarpass(ExitcarpassCreate):
 #############
 class EntryRequestCreate(BaseModel):
     ncar: str
+    plan_dateen: date | str | None = None
+    plan_timeen_from: time | str | None = None
+    plan_timeen_to: time | str | None = None
+    drv_man: str | None = None
+    drv_licence: str | None = None
+    car_model: str | None = None
+    entry_type: str | None = None
+    contact: int | str | None = None
+    ntir: str | None = None
+    ntir_date: date | str | None = None
+    customs_doc: str | None = None
+    customs_doc_date: date | str | None = None
+    comment: str | None = None
+    status: str = 'open'
+
+
+class EntryRequestValidation(BaseModel):
+    ncar: str
     plan_dateen: date
     plan_timeen_from: time
     plan_timeen_to: time
@@ -91,8 +109,6 @@ class EntryRequestCreate(BaseModel):
     ntir_date: date
     customs_doc: str
     customs_doc_date: date
-    comment: str | None = None
-    status: str = 'open'
 
 
 class EntryRequestUpdate(EntryRequestCreate):

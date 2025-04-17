@@ -91,9 +91,7 @@ const postingItem = async () => {
     } else {
       return;
     }
-
-    emit('docCreated'); // emit
-    emit('closeModal')
+    emit('docCreated'); emit('closeModal');
   } catch (error) {
     let err = error.response.data.detail;
     let errFlag = 0;
