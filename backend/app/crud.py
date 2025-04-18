@@ -257,40 +257,98 @@ def posting_carpass(db: Session, carpass_id: int):
     return carpass_from_db.id
 
 
-def posting_entry_request(db: Session, item_id: int):
-    #
-    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+# def posting_common_validations(item_from_db, schema_obj):
+#     # common validation - check required fields are not empty
+#     validation_errs = []
+#     try:
+#         item_validated = schema_obj(**item_from_db.__dict__)
+#     except ValidationError as err:
+#         for e in err.errors():
+#             # print(e['loc'][0])
+#             validation_errs.append(e['loc'][0])
+#     if validation_errs:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={'validation_errors': validation_errs})
+
+
+# def posting_common_get_item_from_db(db: Session, item_id: int, db_model):
+#     #
+#     item_from_db =  db.query(db_model).filter(db_model.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was posted already")
+#     return item_from_db
+
+
+def common_posting_entity_item(db: Session, item_id: int, db_model, schema_obj, foo_specific_validation):
+    # COMMON FUNCTION FOR ALL ENTITIES - POSTING ITEMS
+    # 01 - get item from db
+    item_from_db = db.query(db_model).filter(db_model.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     if item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was posted already")
     
-    # validations
-    validation_errs = []
-    # 01 - specific validations
-    print(item_from_db.plan_timeen_from, '-', item_from_db.plan_timeen_to)
-    if item_from_db.plan_timeen_from > item_from_db.plan_timeen_to:
-        validation_errs.append('plan_timeen_from')
-        validation_errs.append('plan_timeen_to')
     # 02 - common validation - check required fields are not empty
+    validation_errs = []
     try:
-        item_validated = schemas.EntryRequestValidation(**item_from_db.__dict__)
+        item_validated = schema_obj(**item_from_db.__dict__)
     except ValidationError as err:
         for e in err.errors():
             # print(e['loc'][0])
             validation_errs.append(e['loc'][0])
-    # 03 - raise exception if there are errors
     if validation_errs:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={'validation_errors': validation_errs})
 
+    # 03 - specific validation for entity
+    foo_specific_validation(item_from_db)
+
+    # 04 - save to database
     setattr(item_from_db, 'posted', True)
     setattr(item_from_db, 'was_posted', True)
     setattr(item_from_db, 'post_date', datetime.datetime.now())
     setattr(item_from_db, 'post_user_id', '1')
-
     db.commit()
 
     return item_from_db.id
+
+
+def posting_entry_request(db: Session, item_id: int):
+    #
+    def foo_specific_validation(item_from_db):
+        # specific validations for entity
+        validation_errs = []
+        if item_from_db.plan_timeen_from > item_from_db.plan_timeen_to:
+            validation_errs.append('plan_timeen_from')
+            validation_errs.append('plan_timeen_to')
+        if validation_errs:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={'validation_errors': validation_errs})  
+
+    common_posting_entity_item(db=db, item_id=item_id, db_model=models.EntryRequest, schema_obj=schemas.EntryRequestValidation,
+                          foo_specific_validation=foo_specific_validation)
+
+    
+# def posting_entry_request(db: Session, item_id: int):
+#     # OLD READY FOO FOR POSTING ENTRY REQUESTS!!!!
+#     item_from_db = posting_common_get_item_from_db(db=db, item_id=item_id, db_model=models.EntryRequest)
+    
+#     # validations
+#     validation_errs = []
+#     # 01 - common validation - check required fields are not empty
+#     posting_common_validations(item_from_db, schemas.EntryRequestValidation)
+#     # 02 - specific validations
+#     if item_from_db.plan_timeen_from > item_from_db.plan_timeen_to:
+#         validation_errs.append('plan_timeen_from')
+#         validation_errs.append('plan_timeen_to')
+#     if validation_errs:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={'validation_errors': validation_errs})
+
+#     setattr(item_from_db, 'posted', True)
+#     setattr(item_from_db, 'was_posted', True)
+#     setattr(item_from_db, 'post_date', datetime.datetime.now())
+#     setattr(item_from_db, 'post_user_id', '1')
+#     db.commit()
+#     return item_from_db.id
 
 
 def posting_exitcarpass(db: Session, carpass_id: int):
