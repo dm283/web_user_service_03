@@ -39,7 +39,7 @@ onMounted(async () => {
 };
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
-const formInputStyleAct = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
 const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
@@ -110,7 +110,7 @@ const postingItem = async () => {
       let validation_errors_list = err['validation_errors']
       for (let e of validation_errors_list) { errField[e] = 1; errFlag = 1; }
     }
-    if (errFlag) { toast.error('Не заполнены обязательные поля') }
+    if (errFlag) { toast.error('Не корректные/пропущенные данные') }
     console.error('Error posting item', error.response.data);
   };
 };
@@ -239,7 +239,7 @@ async function downloadFile(document_id) {
 
       <div class="flex">
         <div class=formInputDiv> <label class=formLabelStyle>Тип въезда</label>
-          <select :class="[errField['entry_type']==1 ? formInputStyleErr : formInputStyle]" class="bg-white" 
+          <select :class="[errField['entry_type']==1 ? formInputStyleErr : formInputStyle]" class="" 
             v-model="form.entry_type" :required="false" :disabled="isCard">
             <option v-for="type in ['Привоз груза', 'Вывоз груза']" :value="type">{{ type }}</option>
           </select>

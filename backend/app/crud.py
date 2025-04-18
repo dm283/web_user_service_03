@@ -62,7 +62,7 @@ def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
 def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.EntryRequest).filter(models.EntryRequest.is_active == True).\
-        order_by(models.EntryRequest.updated_datetime.desc(), models.EntryRequest.created_datetime.desc()).\
+        order_by(models.EntryRequest.plan_dateen, models.EntryRequest.plan_timeen_from).\
         offset(skip).limit(limit).all()
 
 
@@ -267,31 +267,22 @@ def posting_entry_request(db: Session, item_id: int):
     
     # validations
     validation_errs = []
-
+    # 01 - specific validations
+    print(item_from_db.plan_timeen_from, '-', item_from_db.plan_timeen_to)
+    if item_from_db.plan_timeen_from > item_from_db.plan_timeen_to:
+        validation_errs.append('plan_timeen_from')
+        validation_errs.append('plan_timeen_to')
+    # 02 - common validation - check required fields are not empty
     try:
         item_validated = schemas.EntryRequestValidation(**item_from_db.__dict__)
     except ValidationError as err:
         for e in err.errors():
-            print(e['loc'][0])
+            # print(e['loc'][0])
             validation_errs.append(e['loc'][0])
-
+    # 03 - raise exception if there are errors
     if validation_errs:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={'validation_errors': validation_errs})
 
-    # for i in item_dict:
-    #     x = '!empty!' if not item_dict[i] else 'ok'
-    #     print(i, item_dict[i], x)
-
-    # if not carpass_from_db.ndexit:
-    #     validation_errs.append("Не установлен номер документа выпуска")
-    # if not carpass_from_db.dateex:
-    #     validation_errs.append("Не установлена дата выезда")
-    # if not carpass_from_db.timeex:
-    #     validation_errs.append("Не установлено время выезда")
-    
-    # if validation_errs:
-    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=validation_errs)
-    
     setattr(item_from_db, 'posted', True)
     setattr(item_from_db, 'was_posted', True)
     setattr(item_from_db, 'post_date', datetime.datetime.now())
