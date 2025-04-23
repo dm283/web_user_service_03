@@ -117,7 +117,7 @@ const postingItem = async () => {
 
 
 const handleSubmit = async () => {
-  // form submit handling (carpass create or update)
+  // form submit handling (item create or update)
   let formData = new FormData();
 
   // files uploading

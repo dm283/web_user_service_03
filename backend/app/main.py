@@ -284,12 +284,7 @@ def get_entity_documents(related_doc_uuid: str, db: Session = Depends(get_db)):
 
 
 @app.put("/upload_file_for_carpass/{related_doc_uuid}")
-async def upload_file_for_carpass(
-    related_doc_uuid: str,
-    contact_name: Annotated[str, Form()], 
-    file: UploadFile,
-    db: Session = Depends(get_db)
-    ):
+async def upload_file_for_carpass(related_doc_uuid: str, contact_name: Annotated[str, Form()],  file: UploadFile, db: Session = Depends(get_db)):
     # file upload for carpass
     document = schemas.DocumentCreate(
         doc_name = 'тест_пропуск',
@@ -299,7 +294,6 @@ async def upload_file_for_carpass(
         filepath = f"saved_files/{file.filename}",
         filecontent = None
     )
-
     return crud.create_n_save_document(db=db, file=file, document=document)
 
 
