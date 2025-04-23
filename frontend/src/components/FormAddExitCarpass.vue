@@ -84,38 +84,30 @@ const toast = useToast();
 const postingItem = async () => {
   //
   try {
-    // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (props.itemData) {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses_posting/${props.itemData.id}`);
-      toast.success('Пропуск проведён');
+      toast.success('Запись проведена');
     } else {
       return;
     }
     emit('docCreated'); emit('closeModal');
   } catch (error) {
     let err = error.response.data.detail;
-    let errFlag = 0;
-    // console.log('ответ =', error.response.data.detail)
+    
+    // special validation
     if (err == 'Отсутствует разрешение на выезд') {
       toast.error('Отсутствует разрешение на выезд');
-    };     
-    if (err.includes('Не установлен номер документа выпуска')) {
-      errField['ndexit'] = 1;
-      errFlag = 1;
-    };    
-    if (err.includes('Не установлена дата выезда')) {
-      errField['dateex'] = 1;
-      errFlag = 1;
     };
-    if (err.includes('Не установлено время выезда')) {
-      errField['timeex'] = 1;
-      errFlag = 1;
-    };
-    if (errFlag) {
-      toast.error('Не заполнены обязательные поля');
+
+    // common validation - check required fields are not empty and correct
+    let errFlag = 0;
+    if (error.response.data.detail.hasOwnProperty('validation_errors')){
+      let validation_errors_list = err['validation_errors']
+      for (let e of validation_errors_list) { errField[e] = 1; errFlag = 1; }
     }
-    console.error('Error posting item');
-    // console.error('Error posting item', error);
+    if (errFlag) { toast.error('Не корректные/пропущенные данные') }
+
+    console.error('Error posting item', error.response.data);
   };
 };
 

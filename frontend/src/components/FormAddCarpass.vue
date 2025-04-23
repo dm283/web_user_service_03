@@ -38,12 +38,18 @@ onMounted(async () => {
 });
 };
 
-const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
-const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
+// const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
+// const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+// const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
+const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
+const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
+const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 
+const errField = reactive({});
 const form = reactive({});
-
 const files = ref(null)
 
 const initEmptyForm = () => {
@@ -97,19 +103,31 @@ const toast = useToast();
 const postingItem = async () => {
   //
   try {
-    // const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, newItem);
     if (props.itemData) {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`);
-      toast.success('Пропуск проведён');
+      toast.success('Запись проведена');
     } else {
       return;
     }
 
-    emit('docCreated'); // emit
-    emit('closeModal')
+    emit('docCreated'); emit('closeModal');
   } catch (error) {
-    console.error('Error posting item', error);
-    toast.error('Ошибка при проводке');
+    let err = error.response.data.detail;
+    
+    // special validation
+    // if (err == 'Отсутствует разрешение на выезд') {
+    //   toast.error('Отсутствует разрешение на выезд');
+    // };
+
+    // common validation - check required fields are not empty and correct
+    let errFlag = 0;
+    if (error.response.data.detail.hasOwnProperty('validation_errors')){
+      let validation_errors_list = err['validation_errors']
+      for (let e of validation_errors_list) { errField[e] = 1; errFlag = 1; }
+    }
+    if (errFlag) { toast.error('Не корректные/пропущенные данные') }
+
+    console.error('Error posting item', error.response.data);
   };
 };
 
@@ -214,7 +232,6 @@ async function downloadFile(document_id) {
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
         СТОЯНКА</div>
 
-      <!-- <div class="inline-block text-sm font-semibold text-green-600" v-if="props.itemData.posted">ПРОВЕДЁН</div> -->
       <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ДОКУМЕНТ НЕ ПРОВЕДЁН</div>
     </div>
     
@@ -223,29 +240,13 @@ async function downloadFile(document_id) {
       <div class="flex">
         <div class=formInputDiv>
           <label class=formLabelStyle>Номер машины</label>
-          <input
-            type="text"
-            v-model="form.ncar"
-            id="ncar"
-            name="ncar"
-            :class=formInputStyle2
-            placeholder=""
-            required
-            :disabled="isCard"
-          />
+          <input type="text" v-model="form.ncar" :class="[errField['ncar']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="isCard" />
         </div>
         <div class=formInputDiv>
           <label class=formLabelStyle>Дата въезда</label>
-          <input
-            type="date"
-            v-model="form.dateen"
-            id="dateen"
-            name="dateen"
-            :class=formInputStyle2
-            placeholder=""
-            required
-            :disabled="isCard"
-          />
+          <input type="date" v-model="form.dateen" :class="[errField['dateen']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>
           <label class=formLabelStyle>Время въезда</label>
@@ -254,9 +255,9 @@ async function downloadFile(document_id) {
             v-model="form.timeen"
             id="timeen"
             name="timeen"
-            :class=formInputStyle2
+            :class="[errField['timeen']==1 ? formInputStyleErr : formInputStyle]"
             placeholder=""
-            required
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -268,11 +269,8 @@ async function downloadFile(document_id) {
           <input
             type="text"
             v-model="form.ntir"
-            id="ntir"
-            name="ntir"
-            :class=formInputStyle2
-            placeholder=""
-            required
+            :class="[errField['ntir']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -281,11 +279,8 @@ async function downloadFile(document_id) {
           <input
             type="text"
             v-model="form.nkont"
-            id="nkont"
-            name="nkont"
-            :class=formInputStyle2
-            placeholder=""
-            required
+            :class="[errField['nkont']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -294,11 +289,8 @@ async function downloadFile(document_id) {
           <input
             type="text"
             v-model="form.driver"
-            id="driver"
-            name="driver"
-            :class=formInputStyle2
-            placeholder=""
-            required
+            :class="[errField['driver']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -310,11 +302,8 @@ async function downloadFile(document_id) {
           <input
             type="text"
             v-model="form.drv_man"
-            id="drv_man"
-            name="drv_man"
-            :class=formInputStyle2
-            placeholder=""
-            required
+            :class="[errField['drv_man']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -323,11 +312,8 @@ async function downloadFile(document_id) {
           <input
             type="text"
             v-model="form.dev_phone"
-            id="dev_phone"
-            name="dev_phone"
-            :class=formInputStyle2
-            placeholder=""
-            required
+            :class="[errField['dev_phone']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -336,11 +322,8 @@ async function downloadFile(document_id) {
           <input
             type="text"
             v-model="form.contact_name"
-            id="contact_name"
-            name="contact_name"
-            :class=formInputStyle2
-            placeholder=""
-            required
+            :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -352,11 +335,8 @@ async function downloadFile(document_id) {
           <input
             type="text"
             v-model="form.broker_name"
-            id="broker_name"
-            name="broker_name"
-            :class=formInputStyle2
-            placeholder=""
-            required
+            :class="[errField['broker_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -365,11 +345,8 @@ async function downloadFile(document_id) {
           <input
             type="text"
             v-model="form.place_n"
-            id="place_n"
-            name="place_n"
-            :class=formInputStyle2
-            placeholder=""
-            required
+            :class="[errField['place_n']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false"
             :disabled="isCard"
           />
         </div>
@@ -389,65 +366,6 @@ async function downloadFile(document_id) {
           <label class=formLabelCheckboxStyle for="brokenSeal">Повреждённая пломба</label>
         </div>
       </div>
-
-      <!-- <div class="flex">
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Дата выезда</label>
-          <input
-            type="date"
-            v-model="form.dateex"
-            id="dateex"
-            name="dateex"
-            :class=formInputStyle2
-            placeholder=""
-            :disabled="isCard"
-          />
-        </div>
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Время выезда</label>
-          <input
-            type="time"
-            v-model="form.timeex"
-            id="timeex"
-            name="timeex"
-            :class=formInputStyle2
-            placeholder=""
-            :disabled="isCard"
-          />
-        </div>
-      </div> -->
-
-      <!-- <div class="mx-5 mb-2">
-        <label class=formLabelStyle>Файл</label>
-        <input ref="file" name="file" type="file" 
-          class=formInputFile
-        />
-      </div> -->
-
-      <!-- <div class="mx-5 mb-2">
-        <label class=formLabelStyle>Дата документа</label>
-        <input
-          type="date"
-          v-model="form.established"
-          id="established"
-          name="established"
-          class=formInputStyle
-          placeholder=""
-          required
-        />
-      </div> -->
-
-      <!-- <div class="mx-5 mb-4">
-        <input
-          type="checkbox"
-          v-model='form.isCapital'
-          id="isCapital"
-          name="isCapital"
-          class=formInputCheckboxStyle
-        />
-        <label class=formLabelCheckboxStyle 
-          @click="form.isCapital=(form.isCapital==true) ? false : true ;">Capital</label>
-      </div> -->
 
 
       <div v-if="props.isCard || props.itemData">

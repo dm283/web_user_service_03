@@ -5,6 +5,29 @@ from fastapi import UploadFile
 
 class CarpassCreate(BaseModel):
     ncar: str
+    dateen: date | str | None = None
+    timeen: time | str | None = None
+    ntir: str | None = None
+    nkont: str | None = None
+    driver: str | None = None
+    drv_man: str | None = None
+    dev_phone: str | None = None
+    contact: int | str | None = None
+    contact_name: str | None = None
+    contact_broker: int | str | None = None
+    broker_name: str | None = None
+    place_n: str | None = None
+    radiation: bool
+    brokenAwning: bool
+    brokenSeal: bool
+    dateex: date | str | None = None
+    timeex: time | str | None = None
+    status: str = 'parking'
+    exitcarpass_created: bool = False
+
+
+class CarpassValidation(BaseModel):
+    ncar: str
     dateen: date
     timeen: time
     ntir: str
@@ -17,13 +40,6 @@ class CarpassCreate(BaseModel):
     contact_broker: int
     broker_name: str
     place_n: str
-    radiation: bool
-    brokenAwning: bool
-    brokenSeal: bool
-    dateex: date | None = None
-    timeex: time | None = None
-    status: str = 'parking'
-    exitcarpass_created: bool = False
 
 
 class CarpassUpdate(CarpassCreate):
@@ -44,7 +60,7 @@ class Carpass(CarpassCreate):
     class Config:
         from_attributes = True
 
-
+##############
 class ExitcarpassCreate(BaseModel):
     id_enter: str
     ncar: str
@@ -54,7 +70,17 @@ class ExitcarpassCreate(BaseModel):
     comment: str | None = None
     dateex: date | str | None = None
     timeex: time | str | None = None
-    status: str = ''
+    status: str = 'default'
+
+
+class ExitcarpassValidation(BaseModel):
+    id_enter: str
+    ncar: str
+    drv_man: str
+    dev_phone: str
+    ndexit: int
+    dateex: date
+    timeex: time
 
 
 class ExitcarpassUpdate(ExitcarpassCreate):
