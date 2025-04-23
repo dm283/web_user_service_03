@@ -51,11 +51,11 @@ const files = ref(null)
 
 const itemFields = [
     'ncar',
-    'plan_dateen',
-    'plan_timeen_from',
+    'dateen',
+    'timeen',
     'plan_timeen_to',
-    'drv_man',
-    'drv_licence',
+    'driver_fio',
+    'driver_licence',
     'car_model',
     'entry_type',
     'contact',
@@ -67,7 +67,7 @@ const itemFields = [
   ]
 
 const initEmptyForm = () => {
-    form.ncar = '__34РА23'
+    form.ncar = '_234РА23'
     // form.plan_dateen = ''
     // form.plan_timeen_from = ''
     // form.plan_timeen_to = ''
@@ -209,11 +209,11 @@ async function downloadFile(document_id) {
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Дата въезда</label>
-          <input type="date" v-model="form.plan_dateen" :class="[errField['plan_dateen']==1 ? formInputStyleErr : formInputStyle]"
+          <input type="date" v-model="form.dateen" :class="[errField['dateen']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Время въезда с</label>
-          <input type="time" v-model="form.plan_timeen_from" :class="[errField['plan_timeen_from']==1 ? formInputStyleErr : formInputStyle]"
+          <input type="time" v-model="form.timeen" :class="[errField['timeen']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Время въезда по</label>
@@ -224,11 +224,11 @@ async function downloadFile(document_id) {
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>ФИО водителя</label>
-          <input type="text" v-model="form.drv_man" :class="[errField['drv_man']==1 ? formInputStyleErr : formInputStyle]"
+          <input type="text" v-model="form.driver_fio" :class="[errField['driver_fio']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>№ водительских прав</label>
-          <input type="text" v-model="form.drv_licence" :class="[errField['drv_licence']==1 ? formInputStyleErr : formInputStyle]"
+          <input type="text" v-model="form.driver_licence" :class="[errField['driver_licence']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Модель автомобиля</label>
@@ -238,13 +238,13 @@ async function downloadFile(document_id) {
       </div>
 
       <div class="flex">
-        <div class=formInputDiv> <label class=formLabelStyle>Тип въезда</label>
-          <select :class="[errField['entry_type']==1 ? formInputStyleErr : formInputStyle]" class="" 
+        <div class=formInputDiv>   <label class=formLabelStyle>Тип въезда</label>
+          <select :class="[errField['entry_type']==1 ? formInputStyleErr : formInputStyle]"
             v-model="form.entry_type" :required="false" :disabled="isCard">
             <option v-for="type in ['Привоз груза', 'Вывоз груза']" :value="type">{{ type }}</option>
           </select>
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Клиент</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
           <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
         </div>

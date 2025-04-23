@@ -63,35 +63,35 @@ const itemName = ref('')
 if (props.view_type == 'enter') {
   state.query = `http://${backendIpAddress}:${backendPort}/carpasses/`;
   state.listTableColumns = {
-    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Наименование клиента', 
+    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact':'Клиент', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {
-      'ntir':'№ документа доставки', 'nkont':'№ контейнера',
-      'driver':'Перевозчик','drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи'
+      // 'ntir':'№ документа доставки','ntir_date':'','customs_doc':'','customs_doc_date':'',
+      // 'driver_fio':'ФИО водителя','driver_phone':'Телефон водителя для связи','driver_licence':'',
+      // 'car_model':'','entry_type':''
   };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 } 
 else if (props.view_type == 'terminal') {
   state.query = `http://${backendIpAddress}:${backendPort}/car_terminal/`;
   state.listTableColumns = {
-    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Наименование клиента', 
+    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact':'Клиент', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {
-      'ntir':'№ документа доставки', 'nkont':'№ контейнера',
-      'driver':'Перевозчик','drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи'
+      // 'ntir':'№ документа доставки', 'driver':'Перевозчик','drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи'
   };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 } 
 else if (props.view_type == 'exitCarpass') {
   state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`;
   state.listTableColumns = {
-    'id_exit':'№', 'id_enter':'№ пропуска на въезд', 'ncar':'№ ТС', 'drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи',
+    'id_exit':'№', 'id_enter':'№ пропуска на въезд', 'ncar':'№ ТС', 'driver_fio':'ФИО водителя','driver_phone':'Телефон водителя для связи',
     'ndexit':'№ документа выпуска', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {
-      'comment':'Примечание'
+      // 'comment':'Примечание'
   };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
@@ -99,18 +99,18 @@ else if (props.view_type == 'exitCarpass') {
 else if (props.view_type == 'entryRequest') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/`;
   state.listTableColumns = {
-    'plan_dateen':'Дата въезда','plan_timeen_from':'Время въезда с','plan_timeen_to':'Время въезда по','ncar':'№ ТС',
+    'dateen':'Дата въезда','timeen':'Время въезда с','plan_timeen_to':'Время въезда по','ncar':'№ ТС',
     'contact':'Клиент','entry_type':'Тип въезда'
   };
   state.additionalColumns = {
-      'drv_man':'ФИО водителя',
-      'drv_licence':'№ водительских прав',
-      'car_model':'Модель автомобиля',
-      'ntir':'№ транспортного документа',
-      'ntir_date':'Дата транспортного документа',
-      'customs_doc':'№ таможенного документа',
-      'customs_doc_date':'Дата таможенного документа',
-      'comment':'Примечание'
+      // 'drv_man':'ФИО водителя',
+      // 'drv_licence':'№ водительских прав',
+      // 'car_model':'Модель автомобиля',
+      // 'ntir':'№ транспортного документа',
+      // 'ntir_date':'Дата транспортного документа',
+      // 'customs_doc':'№ таможенного документа',
+      // 'customs_doc_date':'Дата таможенного документа',
+      // 'comment':'Примечание'
   };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }

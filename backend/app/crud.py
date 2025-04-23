@@ -62,7 +62,14 @@ def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
 def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.EntryRequest).filter(models.EntryRequest.is_active == True).\
-        order_by(models.EntryRequest.plan_dateen, models.EntryRequest.plan_timeen_from).\
+        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
+        offset(skip).limit(limit).all()
+
+
+def get_entry_requests_posted(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active==True, models.EntryRequest.posted==True).\
+        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
         offset(skip).limit(limit).all()
 
 
@@ -310,8 +317,8 @@ def posting_entry_request(db: Session, item_id: int):
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
         validation_errs = []
-        if (item_from_db.plan_timeen_from and item_from_db.plan_timeen_to) and (item_from_db.plan_timeen_from > item_from_db.plan_timeen_to):
-            validation_errs.append('plan_timeen_from')
+        if (item_from_db.timeen and item_from_db.plan_timeen_to) and (item_from_db.timeen > item_from_db.plan_timeen_to):
+            validation_errs.append('timeen')
             validation_errs.append('plan_timeen_to')
         return validation_errs
 

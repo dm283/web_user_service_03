@@ -481,7 +481,7 @@ const rowClick = (index, item) => {
 <div class="" > <!-- v-if="props.data[0]" necessary div for waiting data from root component!!! -->
 
 <!-- **********************   MODAL ITEM DETAILS   ************************** -->
-<div v-if="showItemCard" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50
+<!-- <div v-if="showItemCard" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50
   flex items-center justify-center">
   <div class="flex-col w-3/5 h-4/5 bg-white rounded-lg">
 
@@ -508,7 +508,7 @@ const rowClick = (index, item) => {
     </div>
 
   </div>
-</div>
+</div> -->
 
 
 <div @click="checkState()" class="listArea m-0 px-3 py-2 border border-gray-200 rounded-lg

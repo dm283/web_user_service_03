@@ -8,14 +8,20 @@ class CarpassCreate(BaseModel):
     dateen: date | str | None = None
     timeen: time | str | None = None
     ntir: str | None = None
-    nkont: str | None = None
-    driver: str | None = None
-    drv_man: str | None = None
-    dev_phone: str | None = None
+    ntir_date: date | str | None = None
+    customs_doc: str | None = None
+    customs_doc_date: date | str | None = None
+    # nkont: str | None = None
+    # driver: str | None = None
+    driver_fio: str | None = None
+    driver_phone: str | None = None
+    driver_licence: str | None = None
+    car_model: str | None = None
+    entry_type: str | None = None
     contact: int | str | None = None
-    contact_name: str | None = None
-    contact_broker: int | str | None = None
-    broker_name: str | None = None
+    # contact_name: str | None = None
+    # contact_broker: int | str | None = None
+    # broker_name: str | None = None
     place_n: str | None = None
     radiation: bool
     brokenAwning: bool
@@ -31,14 +37,20 @@ class CarpassValidation(BaseModel):
     dateen: date
     timeen: time
     ntir: str
-    nkont: str
-    driver: str
-    drv_man: str
-    dev_phone: str
+    ntir_date: date
+    customs_doc: str
+    customs_doc_date: date
+    # nkont: str
+    # driver: str
+    driver_fio: str
+    driver_phone: str
+    driver_licence: str
+    car_model: str
+    entry_type: str
     contact: int
-    contact_name: str
-    contact_broker: int
-    broker_name: str
+    # contact_name: str
+    # contact_broker: int
+    # broker_name: str
     place_n: str
 
 
@@ -64,8 +76,9 @@ class Carpass(CarpassCreate):
 class ExitcarpassCreate(BaseModel):
     id_enter: str
     ncar: str
-    drv_man: str
-    dev_phone: str
+    driver_fio: str
+    driver_phone: str
+    driver_licence: str
     ndexit: int | str | None = None
     comment: str | None = None
     dateex: date | str | None = None
@@ -76,8 +89,9 @@ class ExitcarpassCreate(BaseModel):
 class ExitcarpassValidation(BaseModel):
     id_enter: str
     ncar: str
-    drv_man: str
-    dev_phone: str
+    driver_fio: str
+    driver_phone: str
+    driver_licence: str
     ndexit: int
     dateex: date
     timeex: time
@@ -105,11 +119,11 @@ class Exitcarpass(ExitcarpassCreate):
 #############
 class EntryRequestCreate(BaseModel):
     ncar: str
-    plan_dateen: date | str | None = None
-    plan_timeen_from: time | str | None = None
+    dateen: date | str | None = None    # plan_dateen
+    timeen: time | str | None = None   # plan_timeen_from
     plan_timeen_to: time | str | None = None
-    drv_man: str | None = None
-    drv_licence: str | None = None
+    driver_fio: str | None = None
+    driver_licence: str | None = None
     car_model: str | None = None
     entry_type: str | None = None
     contact: int | str | None = None
@@ -123,11 +137,11 @@ class EntryRequestCreate(BaseModel):
 
 class EntryRequestValidation(BaseModel):
     ncar: str
-    plan_dateen: date
-    plan_timeen_from: time
+    dateen: date
+    timeen: time
     plan_timeen_to: time
-    drv_man: str
-    drv_licence: str
+    driver_fio: str
+    driver_licence: str
     car_model: str
     entry_type: str
     contact: int

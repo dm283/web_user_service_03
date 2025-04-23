@@ -275,6 +275,12 @@ def read_entry_requests(skip: int = 0, limit: int = 100, db: Session = Depends(g
     return items
 
 
+@app.get('/entry_requests_posted/', response_model=list[schemas.EntryRequest])
+def read_entry_requests_posted(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_entry_requests_posted(db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/entity_documents/{related_doc_uuid}', response_model=list[schemas.Document])
 def get_entity_documents(related_doc_uuid: str, db: Session = Depends(get_db)):
     # get entity documents from db table documents
