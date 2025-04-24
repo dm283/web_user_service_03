@@ -405,7 +405,7 @@ async function downloadFile(document_id) {
           <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="props.itemData">
-          <button class="formBtn" type="button">ПРОВОДКА</button>
+          <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
         </div>
       </div>
 

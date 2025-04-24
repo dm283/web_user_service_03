@@ -232,6 +232,30 @@ def carpass_download(section: str, carpass_id: int,  db: Session = Depends(get_d
     return response
 
 
+@app.put("/upload_file_for_carpass/{related_doc_uuid}")
+async def upload_file_for_carpass(related_doc_uuid: str, contact_name: Annotated[str, Form()],  file: UploadFile, db: Session = Depends(get_db)):
+    # file upload for carpass
+    document = schemas.DocumentCreate(
+        doc_name = 'тест_пропуск',
+        related_doc_uuid = related_doc_uuid,
+        customer_name = contact_name,
+        filename = file.filename,
+        filepath = f"saved_files/{file.filename}",
+        filecontent = None
+    )
+    return crud.create_n_save_document(db=db, file=file, document=document)
+
+
+#########################################################    GET ITEM ENDPOINTS
+@app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
+def read_carpass(carpass_id_enter: str, db: Session = Depends(get_db)):
+    db_carpass = crud.get_carpass(db, carpass_id_enter=carpass_id_enter)
+    if db_carpass is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_carpass
+
+
+#########################################################    GET LIST OF ITEMS ENDPOINTS
 @app.get('/documents/', response_model=list[schemas.Document])
 def read_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     documents = crud.get_documents(db, skip=skip, limit=limit)
@@ -253,13 +277,6 @@ def read_car_at_terminal(skip: int = 0, limit: int = 100, db: Session = Depends(
 @app.get('/car_terminal_for_exit/')
 def read_car_at_terminal_for_exit(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_cars_at_terminal_for_exit(db, skip=skip, limit=limit)
-
-    # for record in items_with_exitcarpass:
-    #     print(record[0])
-
-    # ncar_list_excluded = list(items_with_exitcarpass)
-    # print('ncar_list_excluded =', ncar_list_excluded)
-    # items_at_terminal_without_exitcarpasses = crud.get_cars_at_terminal_for_exit(db, ncar_list_excluded, skip=skip, limit=limit)
     return items
 
 
@@ -287,20 +304,6 @@ def get_entity_documents(related_doc_uuid: str, db: Session = Depends(get_db)):
     documents =  db.query(models.Document).filter(models.Document.related_doc_uuid == related_doc_uuid).\
         order_by(models.Document.created_datetime.desc()).all()
     return documents
-
-
-@app.put("/upload_file_for_carpass/{related_doc_uuid}")
-async def upload_file_for_carpass(related_doc_uuid: str, contact_name: Annotated[str, Form()],  file: UploadFile, db: Session = Depends(get_db)):
-    # file upload for carpass
-    document = schemas.DocumentCreate(
-        doc_name = 'тест_пропуск',
-        related_doc_uuid = related_doc_uuid,
-        customer_name = contact_name,
-        filename = file.filename,
-        filepath = f"saved_files/{file.filename}",
-        filecontent = None
-    )
-    return crud.create_n_save_document(db=db, file=file, document=document)
 
 
 #########################################################    CREATE ITEM ENDPOINTS
@@ -353,10 +356,10 @@ def update_entry_request(item_id: int, data: Annotated[schemas.EntryRequestCreat
 
 
 #########################################################    DELETE ITEM ENDPOINTS
-@app.delete('/carpasses/{id}')
-def delete_carpass(id: int, db: Session = Depends(get_db)):
+@app.delete('/carpasses/{item_id}')
+def delete_carpass(item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.delete_carpass(db=db, carpass_id=id)
+    return crud.delete_carpass(db=db, item_id=item_id)
 
 
 @app.delete('/exitcarpasses/{id}')
@@ -413,6 +416,13 @@ def rollback_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
     return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id)
 
 
+@app.put('/entry_requests_rollback/{item_id}')
+def rollback_entry_requests(item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.rollback_entry_requests(db=db, item_id=item_id)
+
+
+#########################################################    STATUS MANAGING ENDPOINTS
 @app.put('/car_exit_permit/{carpass_id}')
 def car_exit_permit(carpass_id: int, db: Session = Depends(get_db)):
     #
@@ -431,6 +441,7 @@ def exit_prohibited(carpass_id: int, db: Session = Depends(get_db)):
     return crud.exit_prohibited(db=db, carpass_id=carpass_id)
 
 
+#########################################################    USERS ENDPOINTS
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_login(db, login=user.login)
@@ -443,14 +454,6 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
-
-
-@app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
-def read_carpass(carpass_id_enter: str, db: Session = Depends(get_db)):
-    db_carpass = crud.get_carpass(db, carpass_id_enter=carpass_id_enter)
-    if db_carpass is None:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return db_carpass
 
 
 @app.get("/users/{user_id}", response_model=schemas.User)
@@ -472,7 +475,6 @@ def create_item_for_user(
 def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
-
 
 
 ####################### chat

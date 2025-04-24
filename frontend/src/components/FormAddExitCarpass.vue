@@ -47,35 +47,55 @@ onMounted(async () => {
 });
 };
 
-const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
-const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
+// const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
+// const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+// const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+// const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
+// const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
+
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
+const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
+const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 
 const errField = reactive({});
 const form = reactive({});
 const files = ref(null)
 
+const itemFields = [
+  'id_enter',
+  'ncar',
+  'driver_fio',
+  'driver_phone',
+  'driver_licence',
+  'ndexit',
+  'comment',
+  'dateex',
+  'timeex',
+]
+
 if (props.isCreate) {
-  console.log('999creating !!!!!!', props.itemData)
   form.id_enter = props.itemData.id_enter;
   form.ncar = props.itemData.ncar;
-  form.drv_man = props.itemData.drv_man
-  form.dev_phone = props.itemData.dev_phone
-  form.ndexit = ''
-  form.comment = ''
-  form.dateex = ''
-  form.timeex = ''
+  form.driver_fio = props.itemData.driver_fio
+  form.driver_phone = props.itemData.driver_phone
+  form.driver_licence = props.itemData.driver_licence
+  // form.ndexit = ''
+  // form.comment = ''
+  // form.dateex = ''
+  // form.timeex = ''
 } else if (!props.isCreate) {
-  form.id_enter = props.itemData.id_enter;
-  form.ncar = props.itemData.ncar;
-  form.drv_man = props.itemData.drv_man
-  form.dev_phone = props.itemData.dev_phone
-  form.ndexit = props.itemData.ndexit
-  form.comment = props.itemData.comment
-  form.dateex = props.itemData.dateex
-  form.timeex = props.itemData.timeex
+  for (let field of itemFields) {form[field] = props.itemData[field]}
+  // form.id_enter = props.itemData.id_enter;
+  // form.ncar = props.itemData.ncar;
+  // form.drv_man = props.itemData.drv_man
+  // form.dev_phone = props.itemData.dev_phone
+  // form.ndexit = props.itemData.ndexit
+  // form.comment = props.itemData.comment
+  // form.dateex = props.itemData.dateex
+  // form.timeex = props.itemData.timeex
 };
 
 const file = ref(null)
@@ -115,15 +135,17 @@ const handleSubmit = async () => {
   // form submit handling (carpass create or update)
   let formData = new FormData();
     
+  // item updating
+  for (let field of itemFields) { formData.append(field, form[field]) };
   // carpass upgrading
-  formData.append('id_enter', form.id_enter);
-  formData.append('ncar', form.ncar);
-  formData.append('drv_man', form.drv_man);
-  formData.append('dev_phone', form.dev_phone);
-  formData.append('ndexit', form.ndexit);
-  formData.append('comment', form.comment);
-  formData.append('dateex', form.dateex);
-  formData.append('timeex', form.timeex);
+  // formData.append('id_enter', form.id_enter);
+  // formData.append('ncar', form.ncar);
+  // formData.append('drv_man', form.drv_man);
+  // formData.append('dev_phone', form.dev_phone);
+  // formData.append('ndexit', form.ndexit);
+  // formData.append('comment', form.comment);
+  // formData.append('dateex', form.dateex);
+  // formData.append('timeex', form.timeex);
 
   try {
     if (props.isCreate) {
@@ -206,150 +228,47 @@ async function downloadFile(document_id) {
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       
       <div class="flex">
-        <div class=formInputDiv>
-          <label class=formLabelStyle>№ пропуска на въезд</label>
-          <input
-            type="text"
-            v-model="form.id_enter"
-            id="drv_man"
-            name="drv_man"
-            :class=formInputStyleDis
-            placeholder=""
-            required
-            disabled
-          />
+        <div class=formInputDiv>   <label class=formLabelStyle>№ пропуска на въезд</label>
+          <input type="text" v-model="form.id_enter" :class=formInputStyleDis required disabled />
         </div>
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Номер машины</label>
-          <input
-            type="text"
-            v-model="form.ncar"
-            id="ncar"
-            name="ncar"
-            :class=formInputStyleDis
-            placeholder=""
-            required
-            disabled
-          />
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер машины</label>
+          <input type="text" v-model="form.ncar" :class=formInputStyleDis required disabled />
         </div>
       </div>
 
       <div class="flex">
-        <div class=formInputDiv>
-          <label class=formLabelStyle>ФИО водителя</label>
-          <input
-            type="text"
-            v-model="form.drv_man"
-            id="drv_man"
-            name="drv_man"
-            :class=formInputStyleDis
-            placeholder=""
-            required
-            disabled
-          />
+        <div class=formInputDiv>   <label class=formLabelStyle>ФИО водителя</label>
+          <input type="text" v-model="form.driver_fio" :class=formInputStyleDis required disabled />
         </div>
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Телефон водителя для связи</label>
-          <input
-            type="text"
-            v-model="form.dev_phone"
-            id="dev_phone"
-            name="dev_phone"
-            :class=formInputStyleDis
-            placeholder=""
-            required
-            disabled
-          />
+        <div class=formInputDiv>   <label class=formLabelStyle>Телефон водителя для связи</label>
+          <input type="text" v-model="form.driver_phone" :class=formInputStyleDis required disabled />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер водительских прав</label>
+          <input type="text" v-model="form.driver_licence" :class=formInputStyleDis required disabled />
         </div>
       </div>
 
       <div class="flex">
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Номер документа выпуска</label>
-          <input
-            type="text"
-            v-model="form.ndexit"
-            id="ndexit"
-            name="ndexit"
-            :class="[errField['ndexit']==1 ? formInputStyleErr : formInputStyle2]"
-            placeholder=""
-            :disabled="isCard"
-          />
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер документа выпуска</label>
+          <input type="text" v-model="form.ndexit" :class="[errField['ndexit']==1 ? formInputStyleErr : formInputStyle]"
+            :disabled="isCard" />
         </div>
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Примечание</label>
-          <input
-            type="text"
-            v-model="form.comment"
-            id="comment"
-            name="comment"
-            :class=formInputStyle2
-            placeholder=""
-            :disabled="isCard"
-          />
+        <div class=formInputDiv>   <label class=formLabelStyle>Примечание</label>
+          <input type="text" v-model="form.comment" :class=formInputStyle :disabled="isCard" />
         </div>
       </div>
 
       <div class="flex">
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Дата выезда</label>
-          <input
-            type="date"
-            v-model="form.dateex"
-            id="dateex"
-            name="dateex"
-            :class="[errField['dateex']==1 ? formInputStyleErr : formInputStyle2]"
-            placeholder=""
-            :disabled="isCard"
-          />
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата выезда</label>
+          <input type="date" v-model="form.dateex" :class="[errField['dateex']==1 ? formInputStyleErr : formInputStyle]"
+            :disabled="isCard" />
         </div>
-        <div class=formInputDiv>
-          <label class=formLabelStyle>Время выезда</label>
-          <input
-            type="time"
-            v-model="form.timeex"
-            id="timeex"
-            name="timeex"
-            :class="[errField['timeex']==1 ? formInputStyleErr : formInputStyle2]"
-            placeholder=""
-            :disabled="isCard"
-          />
+        <div class=formInputDiv>   <label class=formLabelStyle>Время выезда</label>
+          <input type="time" v-model="form.timeex" :class="[errField['timeex']==1 ? formInputStyleErr : formInputStyle]"
+            :disabled="isCard" />
         </div>
       </div>
 
-
-
-      <!-- <div class="mx-5 mb-2">
-        <label class=formLabelStyle>Файл</label>
-        <input ref="file" name="file" type="file" 
-          class=formInputFile
-        />
-      </div> -->
-
-      <!-- <div class="mx-5 mb-2">
-        <label class=formLabelStyle>Дата документа</label>
-        <input
-          type="date"
-          v-model="form.established"
-          id="established"
-          name="established"
-          class=formInputStyle
-          placeholder=""
-          required
-        />
-      </div> -->
-
-      <!-- <div class="mx-5 mb-4">
-        <input
-          type="checkbox"
-          v-model='form.isCapital'
-          id="isCapital"
-          name="isCapital"
-          class=formInputCheckboxStyle
-        />
-        <label class=formLabelCheckboxStyle 
-          @click="form.isCapital=(form.isCapital==true) ? false : true ;">Capital</label>
-      </div> -->
 
       <div v-if="props.isCard || !props.isCreate">
       <!-- Show loading spinner while loading is true -->

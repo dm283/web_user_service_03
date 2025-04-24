@@ -133,6 +133,7 @@ class EntryRequestCreate(BaseModel):
     customs_doc_date: date | str | None = None
     comment: str | None = None
     status: str = 'open'
+    carpass_created: bool = False
 
 
 class EntryRequestValidation(BaseModel):

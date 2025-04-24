@@ -135,6 +135,13 @@ def create_carpass(db: Session, item: schemas.CarpassCreate):
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     
+    # update entry_request set carpass_created = true (if carpass is creating from entry_request)
+    entry_request_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item.ncar).first()
+    if entry_request_from_db:
+        # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        setattr(entry_request_from_db, 'carpass_created', True)
+        db.commit()
+
     return db_item
 
 
@@ -179,16 +186,22 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
 
 
 #########################################################    DELETE FUNCTIONS
-def delete_carpass(db: Session, carpass_id: int):
+def delete_carpass(db: Session, item_id: int):
     #
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
-    if carpass_from_db is None:
+    item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
+    if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    db.delete(carpass_from_db)
+    db.delete(item_from_db)
     db.commit()
 
-    return {"message": f"Carpass id {carpass_id} deleted successfully"}
+    # update entry_request set carpass_created = false
+    entry_request_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item_from_db.ncar).first()
+    if entry_request_from_db:
+        setattr(entry_request_from_db, 'carpass_created', False)
+        db.commit()
+
+    return {"message": f"Carpass id {item_id} deleted successfully"}
 
 
 def delete_entry_request(db: Session, item_id: int):
@@ -403,6 +416,22 @@ def rollback_exitcarpass(db: Session, carpass_id: int):
     return carpass_from_db.id
 
 
+def rollback_entry_requests(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False)
+    setattr(item_from_db, 'post_date', None)
+    setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    return item_from_db.id
+
+#########################################################    STATUS MANAGING FUNCTIONS
 def car_exit_permit(db: Session, carpass_id: int):
     #
     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()

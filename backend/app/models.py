@@ -135,6 +135,7 @@ class EntryRequest(Base):
     customs_doc_date = Column(Date)
     comment = Column(String(length=250))
     status = Column(String)
+    carpass_created = Column(Boolean, default=False)
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)

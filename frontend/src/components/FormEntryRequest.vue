@@ -148,8 +148,7 @@ const handleSubmit = async () => {
         formData, {headers: {'Content-Type': 'multipart/form-data'}});
       toast.success('Запись обновлёна');      
     }
-    emit('docCreated');
-    emit('closeModal')
+    emit('docCreated'); emit('closeModal');
   } catch (error) {
     console.error('Error adding item', error);
     toast.error('Item has not added');

@@ -588,8 +588,9 @@ const rowClick = (index, item) => {
 
     <!-- откат проводки -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnRollback', selectedItem, props.name)" :disabled="!selectedItem | !selectedItem.posted | selectedItem.exitcarpass_created" 
-      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
+      @click="emit('btnRollback', selectedItem, props.name)" 
+      :disabled="!selectedItem | !selectedItem.posted | selectedItem.exitcarpass_created | selectedItem.carpass_created" 
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'">
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>
     </button>
 
