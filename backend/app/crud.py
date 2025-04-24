@@ -322,6 +322,13 @@ def posting_carpass(db: Session, item_id: int):
                                foo_fields_validation=foo_fields_validation,
                                foo_check_conditions=foo_check_conditions)
 
+    # additional actions after posting item
+    # write to EntryRequest - set status entered
+    entry_request_from_db = db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item_from_db.ncar).first()
+    if entry_request_from_db:
+        setattr(entry_request_from_db, 'status', 'entered')
+        db.commit()
+
     return item_from_db
 
 

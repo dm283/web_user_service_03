@@ -403,14 +403,13 @@ const dataRender = () => {
   for (let i = 0; i < renderedData.length; i++) {
     listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
     if (props.name=='ТС на терминале') {
-      if (renderedData[i].status=='exit_permitted') {
-        listRowStyle[i] = 'bg-green-50'
-      } else if (renderedData[i].status=='exit_prohibited') {
-        listRowStyle[i] = 'bg-red-50'
-      } else {
-        listRowStyle[i] = ''
-      }
+      if (renderedData[i].status=='exit_permitted') { listRowStyle[i] = 'bg-green-50' }
+      else if (renderedData[i].status=='exit_prohibited') { listRowStyle[i] = 'bg-red-50' }
+      else { listRowStyle[i] = '' }
     };
+    if (props.name=='Заявки на въезд ТС') {
+      if (renderedData[i].status=='entered') { listRowStyle[i] = 'bg-blue-50' }
+    }
     listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
 

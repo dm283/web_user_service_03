@@ -185,16 +185,16 @@ async function downloadFile(document_id) {
 
     <div class="ml-6 mt-3" v-if="props.isCard">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
-      <!-- <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-600" v-if="props.itemData.status=='exit_permitted'">
-        ВЫЕЗД РАЗРЕШЁН</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else-if="props.itemData.status=='archival'">
-        АРХИВНЫЙ</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-red-600" v-else-if="props.itemData.status=='exit_prohibited'">
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-400" v-if="props.itemData.status=='entered'">
+        ТРАНСПОРТ ВЪЕХАЛ</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-500" v-else-if="props.itemData.status=='open'">
+        ЗАЯВКА ОТКРЫТА</div>
+      <!-- <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-red-600" v-else-if="props.itemData.status=='exit_prohibited'">
         ВЫЕЗД ЗАПРЕЩЁН</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
         СТОЯНКА</div> -->
 
-      <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ДОКУМЕНТ НЕ ПРОВЕДЁН</div>
+      <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
     </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
