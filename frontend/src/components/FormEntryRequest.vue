@@ -189,10 +189,6 @@ async function downloadFile(document_id) {
         ТРАНСПОРТ ВЪЕХАЛ</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-500" v-else-if="props.itemData.status=='open'">
         ЗАЯВКА ОТКРЫТА</div>
-      <!-- <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-red-600" v-else-if="props.itemData.status=='exit_prohibited'">
-        ВЫЕЗД ЗАПРЕЩЁН</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
-        СТОЯНКА</div> -->
 
       <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
     </div>
