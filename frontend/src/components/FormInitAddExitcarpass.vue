@@ -25,13 +25,9 @@ const state = reactive({
   filteredList: [],
 })
 
-// const selectedNcar = ref('')
 const selectedItem = ref('')
-
-// const devSelected = ref('')
 const devSelected = ref({});
 const showDropDownSelect = ref({});
-
 
 onMounted(async () => {
     try {

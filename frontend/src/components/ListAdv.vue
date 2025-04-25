@@ -403,14 +403,13 @@ const dataRender = () => {
   for (let i = 0; i < renderedData.length; i++) {
     listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
     if (props.name=='ТС на терминале') {
-      if (renderedData[i].status=='exit_permitted') {
-        listRowStyle[i] = 'bg-green-50'
-      } else if (renderedData[i].status=='exit_prohibited') {
-        listRowStyle[i] = 'bg-red-50'
-      } else {
-        listRowStyle[i] = ''
-      }
+      if (renderedData[i].status=='exit_permitted') { listRowStyle[i] = 'bg-green-50' }
+      else if (renderedData[i].status=='exit_prohibited') { listRowStyle[i] = 'bg-red-50' }
+      else { listRowStyle[i] = '' }
     };
+    if (props.name=='Заявки на въезд ТС') {
+      if (renderedData[i].status=='entered') { listRowStyle[i] = 'bg-blue-50' }
+    }
     listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
 
@@ -481,7 +480,7 @@ const rowClick = (index, item) => {
 <div class="" > <!-- v-if="props.data[0]" necessary div for waiting data from root component!!! -->
 
 <!-- **********************   MODAL ITEM DETAILS   ************************** -->
-<div v-if="showItemCard" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50
+<!-- <div v-if="showItemCard" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50
   flex items-center justify-center">
   <div class="flex-col w-3/5 h-4/5 bg-white rounded-lg">
 
@@ -508,7 +507,7 @@ const rowClick = (index, item) => {
     </div>
 
   </div>
-</div>
+</div> -->
 
 
 <div @click="checkState()" class="listArea m-0 px-3 py-2 border border-gray-200 rounded-lg
@@ -556,23 +555,26 @@ const rowClick = (index, item) => {
       <i class="pi pi-file-plus" style="font-size: 1rem"></i>
     </button>
 
-    <!-- добавить пропуск -->
+    <!-- добавить запись -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="emit('btnAdd', props.name)" v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
+      @click="emit('btnAdd', props.name)" 
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'"
+    >
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
 
     <!-- редактировать -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnEdit', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
-      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'"
+    >
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
 
     <!-- удалить -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnDelete', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
-      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'">
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>
 
@@ -585,8 +587,9 @@ const rowClick = (index, item) => {
 
     <!-- откат проводки -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
-      @click="emit('btnRollback', selectedItem, props.name)" :disabled="!selectedItem | !selectedItem.posted | selectedItem.exitcarpass_created" 
-      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд'">
+      @click="emit('btnRollback', selectedItem, props.name)" 
+      :disabled="!selectedItem | !selectedItem.posted | selectedItem.exitcarpass_created | selectedItem.carpass_created" 
+      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'">
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>
     </button>
 

@@ -11,8 +11,8 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
-
-const emit = defineEmits(['docCreated', 'closeModal']) // emit
+const toast = useToast();
+const emit = defineEmits(['docCreated', 'closeModal'])
 
 const props = defineProps({
   itemName: String,
@@ -24,26 +24,23 @@ const state = reactive({
 });
 
 if (props.itemName == 'Пропуска ТС на въезд') {
-  console.log('ENTER!')
   state.query = `http://${backendIpAddress}:${backendPort}/carpasses_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Пропуска ТС на выезд') {
-  console.log('EXIT!')
   state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses_rollback/${props.itemData.id}`;
+} else if (props.itemName == 'Заявки на въезд ТС') {
+  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_rollback/${props.itemData.id}`;
 }
 
-const toast = useToast();
 
 const handleSubmit = async () => {
-
+  //
   try {
     const response = await axios.put(state.query);
-    // const response = await axios.delete(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`);
     toast.success('Проводка отменена');      
-    emit('docCreated'); // emit
-    emit('closeModal')
+    emit('docCreated'); emit('closeModal');
   } catch (error) {
     console.error('Error deleting item', error);
-    toast.error('Item has not deleted');
+    toast.error('Item has not been deleted');
   };
 };
 
@@ -59,34 +56,20 @@ const handleSubmit = async () => {
       </div>
     </header>
 
-    <div class="mt-5 ml-5">Откатить проводку пропуска ID {{ itemData.id }} ?</div>
+    <div class="mt-5 ml-5">Отменить проводку записи ID {{ itemData.id }} ?</div>
     
-    <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
-      
+    <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5"> 
       <div class="my-3 flex justify-left space-x-5 py-3 px-5 text-center">
-        <button
-          class="formBtn"
-          type="submit"
-        >
-        ОТКАТИТЬ
-        </button>
-        <button
-          class="formBtn"
-          type="button"
-          @click="emit('closeModal')"
-        >
-        ОТМЕНА
-        </button>
+        <button class="formBtn" type="submit">ОТКАТИТЬ</button>
+        <button class="formBtn" type="button" @click="emit('closeModal')">ОТМЕНА</button>
       </div>
-
     </form>
-  </div>
 
+  </div>
 </template>
 
 
 <style lang="postcss" scoped>
-
 .formInputDiv {
   @apply w-64 mx-5 mb-2
 }

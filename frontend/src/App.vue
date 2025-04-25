@@ -202,6 +202,11 @@ const signOut = async () => {
 <!-- **************   MAIN MENU SIDEBAR    ******************* -->
 <div v-if="showMenuBar" class="w-60 h-full fixed bg-sky-700 text-white">
   <div class="">
+    <RouterLink to="/entry_requests">
+      <MenuSection :label="'Заявки на въезд ТС'" :icon="'pen-to-square'" :description="'Информация о заявках на въезд ТС'"
+      :selected="state.selectedMenu=='entryRequest' ? '1' : '0'" @click="state.selectedMenu='entryRequest'"
+      />
+    </RouterLink>
     <RouterLink to="/">
       <MenuSection :label="'Пропуска ТС на въезд'" :icon="'truck'" :description="'Информация о пропусках ТС на въезд'"
       :selected="state.selectedMenu=='carEnter' ? '1' : '0'" @click="state.selectedMenu='carEnter'"
@@ -215,11 +220,6 @@ const signOut = async () => {
     <RouterLink to="/exitcarpasses">
       <MenuSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'"
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
-      />
-    </RouterLink>
-    <RouterLink to="/entry_requests">
-      <MenuSection :label="'Заявки на въезд ТС'" :icon="'pen-to-square'" :description="'Информация о заявках на въезд ТС'"
-      :selected="state.selectedMenu=='entryRequest' ? '1' : '0'" @click="state.selectedMenu='entryRequest'"
       />
     </RouterLink>
     <RouterLink to="/parking_map">

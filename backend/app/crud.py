@@ -1,5 +1,6 @@
 import datetime
 from fastapi import UploadFile, HTTPException, Depends, status
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from uuid import uuid4
@@ -58,12 +59,27 @@ def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
         offset(skip).limit(limit).all()
 
 
+def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active == True).\
+        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
+        offset(skip).limit(limit).all()
+
+
+def get_entry_requests_posted(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active==True, models.EntryRequest.posted==True).\
+        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
+        offset(skip).limit(limit).all()
+
+
 def get_ncars_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
     # get ncar fields from exitcarpasses
     return db.query(models.Exitcarpass.ncar).filter(models.Exitcarpass.is_active == True).order_by(models.Exitcarpass.created_datetime.desc()).\
         offset(skip).limit(limit).all()
 
 
+#########################################################    CREATE FUNCTIONS
 def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     #
     last_created_item_from_db =  db.query(models.Exitcarpass).order_by(models.Exitcarpass.id.desc()).first()
@@ -72,9 +88,11 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     uuid=str(uuid4())
 
     db_item = models.Exitcarpass(**item.model_dump(), uuid=uuid, id_exit=id_exit, created_datetime=created_datetime)
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     # update carpass set exitcarpass_created = true
     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item.id_enter).first()
@@ -86,57 +104,116 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     return db_item
 
 
-def create_carpass(db: Session, carpass: schemas.CarpassCreate):
+def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
+    #
+    last_created_item_from_db =  db.query(models.EntryRequest).order_by(models.EntryRequest.id.desc()).first()
+    id_entry_request = '1' if last_created_item_from_db is None else str(int(last_created_item_from_db.id_entry_request) + 1)
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.EntryRequest(**item.model_dump(), uuid=uuid, id_entry_request=id_entry_request, created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    
+    return db_item
+
+
+def create_carpass(db: Session, item: schemas.CarpassCreate):
     # creates a enter carpass
     last_created_carpass_from_db =  db.query(models.Carpass).order_by(models.Carpass.id.desc()).first()
     id_enter = '1' if last_created_carpass_from_db is None else str(int(last_created_carpass_from_db.id_enter) + 1)
     created_datetime = datetime.datetime.now()
     uuid=str(uuid4())
 
-    db_carpass = models.Carpass(**carpass.model_dump(), uuid=uuid, id_enter=id_enter, created_datetime=created_datetime)
-    db.add(db_carpass)
-    db.commit()
-    db.refresh(db_carpass)
+    db_item = models.Carpass(**item.model_dump(), uuid=uuid, id_enter=id_enter, created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     
-    return db_carpass.id
+    # update entry_request set carpass_created = true (if carpass is creating from entry_request)
+    entry_request_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item.ncar).first()
+    if entry_request_from_db:
+        # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        setattr(entry_request_from_db, 'carpass_created', True)
+        db.commit()
+
+    return db_item
 
 
-def update_carpass(db: Session, carpass_id: int, carpass: schemas.CarpassUpdate):
+#########################################################    UPDATE FUNCTIONS
+def update_carpass(db: Session, item_id: int, item: schemas.CarpassUpdate):
     #
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    return item_from_db
+
+
+def update_exitcarpass(db: Session, item_id: int, item: schemas.ExitcarpassUpdate):
+    #
+    carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == item_id).first()
     if carpass_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    for field, value in carpass.model_dump(exclude_unset=True).items():
-        setattr(carpass_from_db, field, value)
-    db.commit()
-
-    return carpass_from_db.id
-
-
-def update_exitcarpass(db: Session, carpass_id: int, carpass: schemas.ExitcarpassUpdate):
-    #
-    carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
-    if carpass_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in carpass.model_dump(exclude_unset=True).items():
+    for field, value in item.model_dump(exclude_unset=True).items():
         setattr(carpass_from_db, field, value)
     db.commit()
 
     return carpass_from_db
 
 
-def delete_carpass(db: Session, carpass_id: int):
+def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUpdate):
     #
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
-    if carpass_from_db is None:
+    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+    if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    db.delete(carpass_from_db)
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
     db.commit()
 
-    return {"message": f"Carpass id {carpass_id} deleted successfully"}
+    return item_from_db
+
+
+#########################################################    DELETE FUNCTIONS
+def delete_carpass(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    db.delete(item_from_db)
+    db.commit()
+
+    # update entry_request set carpass_created = false
+    entry_request_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item_from_db.ncar).first()
+    if entry_request_from_db:
+        setattr(entry_request_from_db, 'carpass_created', False)
+        db.commit()
+
+    return {"message": f"Carpass id {item_id} deleted successfully"}
+
+
+def delete_entry_request(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    db.delete(item_from_db)
+    db.commit()
+
+    return {"message": f"Carpass id {item_id} deleted successfully"}
 
 
 def delete_exitcarpass(db: Session, carpass_id: int):
@@ -188,70 +265,132 @@ def deactivate_carpass(db: Session, carpass_id: int):
 
 #     return carpass_from_db.id
 
-
-def posting_carpass(db: Session, carpass_id: int):
-    #
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
-    if carpass_from_db is None:
+#########################################################    POSTING FUNCTIONS
+def common_posting_entity_item(db: Session, item_id: int, db_model, schema_obj, foo_fields_validation, foo_check_conditions):
+    # COMMON FUNCTION FOR ALL ENTITIES - POSTING ITEMS
+    # 01 - get item from db
+    item_from_db = db.query(db_model).filter(db_model.id == item_id).first()
+    if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if carpass_from_db.posted:
+    if item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was posted already")
     
-    
-    setattr(carpass_from_db, 'posted', True)
-    setattr(carpass_from_db, 'was_posted', True)
-    setattr(carpass_from_db, 'post_date', datetime.datetime.now())
-    setattr(carpass_from_db, 'post_user_id', '1')
+    # 02 - check general conditions and data for posting posibility
+    foo_check_conditions(item_from_db)
 
-    db.commit()
-
-    return carpass_from_db.id
-
-
-def posting_exitcarpass(db: Session, carpass_id: int):
-    #
-    carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
-    if carpass_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if carpass_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was posted already")
-    
-    carpass_enter_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_from_db.id_enter).first()
-    if carpass_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if carpass_enter_from_db.status != 'exit_permitted':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Отсутствует разрешение на выезд')
-    
-    # validations
+    # 03 - fields validation - check required fields are not empty
     validation_errs = []
-    if not carpass_from_db.ndexit:
-        validation_errs.append("Не установлен номер документа выпуска")
-    if not carpass_from_db.dateex:
-        validation_errs.append("Не установлена дата выезда")
-    if not carpass_from_db.timeex:
-        validation_errs.append("Не установлено время выезда")
-    
+    try:
+        item_validated = schema_obj(**item_from_db.__dict__)
+    except ValidationError as err:
+        for e in err.errors():
+            # print(e['loc'][0])
+            validation_errs.append(e['loc'][0])
+
+    # 04 - fields validation - check values are correct and not contradictory
+    correct_fiel_value_errs = foo_fields_validation(item_from_db)
+    validation_errs.extend(correct_fiel_value_errs)
+
     if validation_errs:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=validation_errs)
-    
-    setattr(carpass_from_db, 'posted', True)
-    setattr(carpass_from_db, 'was_posted', True)
-    setattr(carpass_from_db, 'post_date', datetime.datetime.now())
-    setattr(carpass_from_db, 'post_user_id', '1')
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={'validation_errors': validation_errs})
+
+    # 05 - save to database
+    setattr(item_from_db, 'posted', True)
+    setattr(item_from_db, 'was_posted', True)
+    setattr(item_from_db, 'post_date', datetime.datetime.now())
+    setattr(item_from_db, 'post_user_id', '1')
     db.commit()
 
-    dateex = carpass_from_db.dateex
-    timeex = carpass_from_db.timeex
+    return item_from_db
 
-    # write to Carpass - set dateex & timeex for related carpass    
+
+def posting_carpass(db: Session, item_id: int):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        #
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.Carpass, 
+                               schema_obj=schemas.CarpassValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    # additional actions after posting item
+    # write to EntryRequest - set status entered
+    entry_request_from_db = db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item_from_db.ncar).first()
+    if entry_request_from_db:
+        setattr(entry_request_from_db, 'status', 'entered')
+        db.commit()
+
+    return item_from_db
+
+
+def posting_entry_request(db: Session, item_id: int):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        if (item_from_db.timeen and item_from_db.plan_timeen_to) and (item_from_db.timeen > item_from_db.plan_timeen_to):
+            validation_errs.append('timeen')
+            validation_errs.append('plan_timeen_to')
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.EntryRequest, 
+                               schema_obj=schemas.EntryRequestValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    return item_from_db
+
+
+def posting_exitcarpass(db: Session, item_id: int):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        ###
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        carpass_enter_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item_from_db.id_enter).first()
+        if item_from_db is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        if carpass_enter_from_db.status != 'exit_permitted':
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Отсутствует разрешение на выезд')
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.Exitcarpass, 
+                               schema_obj=schemas.ExitcarpassValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+    
+    # additional actions after posting item
+    # write to Carpass - set dateex & timeex for related carpass 
+    dateex = item_from_db.dateex
+    timeex = item_from_db.timeex 
+    carpass_enter_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item_from_db.id_enter).first()
     setattr(carpass_enter_from_db, 'dateex', dateex)
     setattr(carpass_enter_from_db, 'timeex', timeex)
     setattr(carpass_enter_from_db, 'status', 'archival')
     db.commit()
 
-    return carpass_from_db.id
+    return item_from_db
 
 
+#########################################################    ROLLBACK FUNCTIONS
 def rollback_carpass(db: Session, carpass_id: int):
     #
     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
@@ -284,6 +423,22 @@ def rollback_exitcarpass(db: Session, carpass_id: int):
     return carpass_from_db.id
 
 
+def rollback_entry_requests(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False)
+    setattr(item_from_db, 'post_date', None)
+    setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    return item_from_db.id
+
+#########################################################    STATUS MANAGING FUNCTIONS
 def car_exit_permit(db: Session, carpass_id: int):
     #
     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()

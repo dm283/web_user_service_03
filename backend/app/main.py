@@ -24,12 +24,6 @@ app = FastAPI()
 
 origins = [
     "*",
-    # "http://localhost",
-    # "http://127.0.0.1",
-    # "http://localhost:8000",
-    # "http://localhost:8080",
-    # "http://localhost:5173",
-    # "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
@@ -50,9 +44,6 @@ app.include_router(views.router, prefix='/dashboard', tags=['dashboard'])
 
 
 #############################
-
-######################
-
 models.Base.metadata.create_all(bind=engine)
 
 # Dependency
@@ -64,6 +55,17 @@ def get_db():
         db.close()
 
 
+#########################################################    SERVICE FUNCTIONS
+def redefine_schema_values_to_none(data, schema_obj):
+    # get data received from frontend and redefine values if value is any kind of none to None
+    data_dict = data.dict()
+    for k in data_dict:
+        if data_dict[k] in ['null', 'undefined', '']:
+            data_dict[k] = None
+    return schema_obj(**data_dict)
+
+
+#########################################################    ENDPOINTS
 @app.post("/document/")
 async def upload_file(doc_name: Annotated[str, Form()], 
                       related_doc_uuid: Annotated[str, Form()],
@@ -230,6 +232,30 @@ def carpass_download(section: str, carpass_id: int,  db: Session = Depends(get_d
     return response
 
 
+@app.put("/upload_file_for_carpass/{related_doc_uuid}")
+async def upload_file_for_carpass(related_doc_uuid: str, contact_name: Annotated[str, Form()],  file: UploadFile, db: Session = Depends(get_db)):
+    # file upload for carpass
+    document = schemas.DocumentCreate(
+        doc_name = 'тест_пропуск',
+        related_doc_uuid = related_doc_uuid,
+        customer_name = contact_name,
+        filename = file.filename,
+        filepath = f"saved_files/{file.filename}",
+        filecontent = None
+    )
+    return crud.create_n_save_document(db=db, file=file, document=document)
+
+
+#########################################################    GET ITEM ENDPOINTS
+@app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
+def read_carpass(carpass_id_enter: str, db: Session = Depends(get_db)):
+    db_carpass = crud.get_carpass(db, carpass_id_enter=carpass_id_enter)
+    if db_carpass is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_carpass
+
+
+#########################################################    GET LIST OF ITEMS ENDPOINTS
 @app.get('/documents/', response_model=list[schemas.Document])
 def read_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     documents = crud.get_documents(db, skip=skip, limit=limit)
@@ -251,19 +277,24 @@ def read_car_at_terminal(skip: int = 0, limit: int = 100, db: Session = Depends(
 @app.get('/car_terminal_for_exit/')
 def read_car_at_terminal_for_exit(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_cars_at_terminal_for_exit(db, skip=skip, limit=limit)
-
-    # for record in items_with_exitcarpass:
-    #     print(record[0])
-
-    # ncar_list_excluded = list(items_with_exitcarpass)
-    # print('ncar_list_excluded =', ncar_list_excluded)
-    # items_at_terminal_without_exitcarpasses = crud.get_cars_at_terminal_for_exit(db, ncar_list_excluded, skip=skip, limit=limit)
     return items
 
 
 @app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
 def read_exitcarpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
+def read_entry_requests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_entry_requests(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/entry_requests_posted/', response_model=list[schemas.EntryRequest])
+def read_entry_requests_posted(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_entry_requests_posted(db, skip=skip, limit=limit)
     return items
 
 
@@ -275,205 +306,72 @@ def get_entity_documents(related_doc_uuid: str, db: Session = Depends(get_db)):
     return documents
 
 
-@app.put("/upload_file_for_carpass/{related_doc_uuid}")
-async def upload_file_for_carpass(
-    related_doc_uuid: str,
-    contact_name: Annotated[str, Form()], 
-    file: UploadFile,
-    db: Session = Depends(get_db)
-    ):
-    # file upload for carpass
-    document = schemas.DocumentCreate(
-        doc_name = 'тест_пропуск',
-        related_doc_uuid = related_doc_uuid,
-        customer_name = contact_name,
-        filename = file.filename,
-        filepath = f"saved_files/{file.filename}",
-        filecontent = None
-    )
-
-    return crud.create_n_save_document(db=db, file=file, document=document)
-
-
-@app.put('/carpasses/{carpass_id}')
-def update_carpass(
-    carpass_id: int,
-
-    ncar: Annotated[str, Form()], 
-    dateen: Annotated[date, Form()],
-    timeen: Annotated[time, Form()],
-    ntir: Annotated[str, Form()], 
-    nkont: Annotated[str, Form()], 
-    driver: Annotated[str, Form()], 
-    drv_man: Annotated[str, Form()], 
-    dev_phone: Annotated[str, Form()], 
-    contact: Annotated[int, Form()], 
-    contact_name: Annotated[str, Form()], 
-    contact_broker: Annotated[int, Form()], 
-    broker_name: Annotated[str, Form()], 
-    place_n: Annotated[str, Form()],
-    radiation: Annotated[bool, Form()],
-    brokenAwning: Annotated[bool, Form()],
-    brokenSeal: Annotated[bool, Form()],
-
-    db: Session = Depends(get_db)
-):
-    updated_datetime = datetime.now()
-
-    carpass = schemas.CarpassUpdate(
-        ncar = ncar,
-        dateen = dateen,
-        timeen = timeen,
-        ntir = ntir,
-        nkont = nkont,
-        driver = driver,
-        drv_man = drv_man,
-        dev_phone = dev_phone,
-        contact = contact,
-        contact_name = contact_name,
-        contact_broker = contact_broker,
-        broker_name =  broker_name,
-        place_n = place_n,
-        radiation = radiation,
-        brokenAwning = brokenAwning,
-        brokenSeal = brokenSeal,
-        updated_datetime = updated_datetime
-    )
-        
-    return crud.update_carpass(db=db, carpass_id=carpass_id, carpass=carpass)
-
-
-@app.put('/exitcarpasses/{carpass_id}', response_model=schemas.Exitcarpass)
-def update_exitcarpass(
-    carpass_id: int,
-    # id_enter: Annotated[str, Form()], 
-    # ncar: Annotated[str, Form()], 
-    # drv_man: Annotated[str, Form()], 
-    # dev_phone: Annotated[str, Form()], 
-    # ndexit: Annotated[int, Form()], 
-    # comment: Annotated[str, Form()],
-    # timeex: Annotated[time, Form()],
-    # dateex: Annotated[date | str, Form()] = None,
-    data: Annotated[schemas.ExitcarpassCreate, Form()],
-    db: Session = Depends(get_db)
-):
-    updated_datetime = datetime.now()
-
-    # print(); print(1111111111, data.timeex, type(data.timeex)); print()
-    if not data.ndexit or data.ndexit == 'null':
-        data.ndexit = None
-    if not data.comment or data.comment == 'null':
-        data.comment = None
-    if not data.dateex or data.dateex == 'null':
-        data.dateex = None
-    if not data.timeex or data.timeex == 'null':
-        data.timeex = None
-
-    carpass = schemas.ExitcarpassUpdate(
-        id_enter = data.id_enter,
-        ncar = data.ncar,
-        drv_man = data.drv_man,
-        dev_phone = data.dev_phone,
-        ndexit = data.ndexit,
-        comment = data.comment,
-        dateex = data.dateex,
-        timeex = data.timeex,
-        updated_datetime = updated_datetime
-    )
-        
-    return crud.update_exitcarpass(db=db, carpass_id=carpass_id, carpass=carpass)
-
-
+#########################################################    CREATE ITEM ENDPOINTS
 @app.post("/exitcarpasses/", response_model=schemas.Exitcarpass)
-def create_exitcarpass(
-    # id_enter: Annotated[str, Form()], 
-    # ncar: Annotated[str, Form()], 
-    # drv_man: Annotated[str, Form()], 
-    # dev_phone: Annotated[str, Form()], 
-    # ndexit: Annotated[int, Form()], 
-    # comment: Annotated[str, Form()], 
-    # dateex: Annotated[date, Form()],
-    # timeex: Annotated[time, Form()],
-    data: Annotated[schemas.ExitcarpassCreate, Form()],
-
-    db: Session = Depends(get_db)
-):
-    if not data.ndexit or data.ndexit == 'null':
-        data.ndexit = None
-    if not data.comment or data.comment == 'null':
-        data.comment = None
-    if not data.dateex or data.dateex == 'null':
-        data.dateex = None
-    if not data.timeex or data.timeex == 'null':
-        data.timeex = None
-
-    carpass = schemas.ExitcarpassCreate(
-        id_enter = data.id_enter,
-        ncar = data.ncar,
-        drv_man = data.drv_man,
-        dev_phone = data.dev_phone,
-        ndexit = data.ndexit,
-        comment = data.comment,
-        dateex = data.dateex,
-        timeex = data.timeex,
-    )
-        
-    return crud.create_exitcarpass(db=db, item=carpass)
-
-
-@app.post("/carpasses/")
-def create_carpass(
-    ncar: Annotated[str, Form()], 
-    dateen: Annotated[date, Form()],
-    timeen: Annotated[time, Form()],
-    ntir: Annotated[str, Form()], 
-    nkont: Annotated[str, Form()], 
-    driver: Annotated[str, Form()], 
-    drv_man: Annotated[str, Form()], 
-    dev_phone: Annotated[str, Form()], 
-    contact: Annotated[int, Form()], 
-    contact_name: Annotated[str, Form()], 
-    contact_broker: Annotated[int, Form()], 
-    broker_name: Annotated[str, Form()], 
-    place_n: Annotated[str, Form()],
-    radiation: Annotated[bool, Form()],
-    brokenAwning: Annotated[bool, Form()],
-    brokenSeal: Annotated[bool, Form()],
-
-    db: Session = Depends(get_db)
-):
-    carpass = schemas.CarpassCreate(
-        ncar = ncar,
-        dateen = dateen,
-        timeen = timeen,
-        ntir = ntir,
-        nkont = nkont,
-        driver = driver,
-        drv_man = drv_man,
-        dev_phone = dev_phone,
-        contact = contact,
-        contact_name = contact_name,
-        contact_broker = contact_broker,
-        broker_name =  broker_name,
-        place_n = place_n,
-        radiation = radiation,
-        brokenAwning = brokenAwning,
-        brokenSeal = brokenSeal,
-    )
-        
-    return crud.create_carpass(db=db, carpass=carpass)
-
-
-@app.delete('/carpasses/{id}')
-def delete_carpass(id: int, db: Session = Depends(get_db)):
+def create_exitcarpass(data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
     #
-    return crud.delete_carpass(db=db, carpass_id=id)
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)  
+    return crud.create_exitcarpass(db=db, item=data_none_values_redefined)
+
+
+@app.post("/entry_requests/", response_model=schemas.EntryRequest)
+def create_entry_request(data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)  
+    return crud.create_entry_request(db=db, item=data_none_values_redefined)
+
+
+@app.post("/carpasses/", response_model=schemas.Carpass)
+def create_carpass(data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)  
+    return crud.create_carpass(db=db, item=data_none_values_redefined)
+
+
+#########################################################    UPDATE ITEM ENDPOINTS
+@app.put('/carpasses/{item_id}', response_model=schemas.Carpass)
+def update_carpass(item_id: int, data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)
+    item = schemas.CarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_carpass(db=db, item_id=item_id, item=item)
+
+
+@app.put('/exitcarpasses/{item_id}', response_model=schemas.Exitcarpass)
+def update_exitcarpass(item_id: int, data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)
+    item = schemas.ExitcarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_exitcarpass(db=db, item_id=item_id, item=item)
+
+
+@app.put('/entry_requests/{item_id}', response_model=schemas.EntryRequest)
+def update_entry_request(item_id: int, data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
+    item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_entry_request(db=db, item_id=item_id, item=item)
+
+
+#########################################################    DELETE ITEM ENDPOINTS
+@app.delete('/carpasses/{item_id}')
+def delete_carpass(item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.delete_carpass(db=db, item_id=item_id)
 
 
 @app.delete('/exitcarpasses/{id}')
-def delete_carpass(id: int, db: Session = Depends(get_db)):
+def delete_exitcarpass(id: int, db: Session = Depends(get_db)):
     #
     return crud.delete_exitcarpass(db=db, carpass_id=id)
+
+
+@app.delete('/entry_requests/{item_id}')
+def delete_entry_request(item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.delete_entry_request(db=db, item_id=item_id)
 
 
 @app.put('/carpasses_deactivate/{carpass_id}')
@@ -487,19 +385,25 @@ def deactivate_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.deactivate_exitcarpass(db=db, carpass_id=carpass_id)
 
-
-@app.put('/carpasses_posting/{carpass_id}')
-def posting_carpass(carpass_id: int, db: Session = Depends(get_db)):
+#########################################################    POSTING ENDPOINTS
+@app.put('/carpasses_posting/{item_id}')
+def posting_carpass(item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_carpass(db=db, carpass_id=carpass_id)
+    return crud.posting_carpass(db=db, item_id=item_id)
 
 
-@app.put('/exitcarpasses_posting/{carpass_id}')
-def posting_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
+@app.put('/exitcarpasses_posting/{item_id}')
+def posting_exitcarpass(item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_exitcarpass(db=db, carpass_id=carpass_id)
+    return crud.posting_exitcarpass(db=db, item_id=item_id)
 
 
+@app.put('/entry_requests_posting/{item_id}')
+def posting_entry_request(item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_entry_request(db=db, item_id=item_id)
+
+#########################################################    ROLLBACK ENDPOINTS
 @app.put('/carpasses_rollback/{carpass_id}')
 def rollback_carpass(carpass_id: int, db: Session = Depends(get_db)):
     #
@@ -512,6 +416,13 @@ def rollback_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
     return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id)
 
 
+@app.put('/entry_requests_rollback/{item_id}')
+def rollback_entry_requests(item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.rollback_entry_requests(db=db, item_id=item_id)
+
+
+#########################################################    STATUS MANAGING ENDPOINTS
 @app.put('/car_exit_permit/{carpass_id}')
 def car_exit_permit(carpass_id: int, db: Session = Depends(get_db)):
     #
@@ -530,6 +441,7 @@ def exit_prohibited(carpass_id: int, db: Session = Depends(get_db)):
     return crud.exit_prohibited(db=db, carpass_id=carpass_id)
 
 
+#########################################################    USERS ENDPOINTS
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_login(db, login=user.login)
@@ -542,14 +454,6 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
-
-
-@app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
-def read_carpass(carpass_id_enter: str, db: Session = Depends(get_db)):
-    db_carpass = crud.get_carpass(db, carpass_id_enter=carpass_id_enter)
-    if db_carpass is None:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return db_carpass
 
 
 @app.get("/users/{user_id}", response_model=schemas.User)
@@ -571,7 +475,6 @@ def create_item_for_user(
 def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
-
 
 
 ####################### chat
