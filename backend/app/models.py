@@ -61,8 +61,11 @@ class Carpass(Base):
     ntir_date = Column(Date)
     customs_doc = Column(String(length=50))
     customs_doc_date = Column(Date)
-    # nkont = Column(String(length=50))
-    # driver = Column(String(length=150))
+    
+    nseal = Column(String(length=50))
+    nkont = Column(String(length=50))
+    driver = Column(String(length=150))
+    
     driver_fio = Column(String(length=50))
     driver_phone = Column(String(length=15))
     driver_licence = Column(String)
@@ -76,6 +79,9 @@ class Carpass(Base):
     radiation = Column(Boolean, default=False)
     brokenAwning = Column(Boolean, default=False)
     brokenSeal = Column(Boolean, default=False)
+
+    comment = Column(String(length=250))
+
     dateex = Column(Date)
     timeex = Column(Time)
     status = Column(String())

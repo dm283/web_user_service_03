@@ -78,6 +78,9 @@ const itemFields = [
     'ntir_date',
     'customs_doc',
     'customs_doc_date',
+    'nseal',
+    'nkont',
+    'driver',
     'driver_fio',
     'driver_phone',
     'driver_licence',
@@ -88,6 +91,7 @@ const itemFields = [
     'radiation',
     'brokenAwning',
     'brokenSeal',
+    'comment',
     'dateex',
     'timeex',
   ]
@@ -338,6 +342,21 @@ async function downloadFile(document_id) {
       </div>
 
       <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Наименование перевозчика</label>
+          <input type="text" v-model="form.driver" :class="[errField['driver']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер контейнера</label>
+          <input type="text" v-model="form.nkont" :class="[errField['nkont']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер пломбы</label>
+          <input type="text" v-model="form.nseal" :class="[errField['nseal']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
+      </div>
+
+      <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>ФИО водителя</label>
           <input type="text" v-model="form.driver_fio" :class="[errField['driver_fio']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
@@ -361,6 +380,9 @@ async function downloadFile(document_id) {
           <input type="text" v-model="form.place_n" :class="[errField['place_n']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Примечание</label>
+          <input type="text" v-model="form.comment" :class=formInputStyle :disabled="isCard" />
+        </div>
       </div>
 
       <div class="flex">
@@ -378,14 +400,13 @@ async function downloadFile(document_id) {
         </div>
       </div>
 
-
-      <div v-if="props.isCard || props.itemData">
+      <div сlass="" v-if="props.isCard || props.itemData">
       <!-- Show loading spinner while loading is true -->
       <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
         <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
       </div>
       <!-- Show when loading is done -->
-      <div class="ml-6" v-if="!state.isLoading && state.documents.length>0">
+      <div class="border-t border-slate-300 mx-6 pt-3" v-if="!state.isLoading && state.documents.length>0">
         <label class=formLabelStyle>Документы</label>
         <div class="flex space-x-3 mt-3">
         <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">

@@ -68,7 +68,8 @@ def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
 
 def get_entry_requests_posted(db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active==True, models.EntryRequest.posted==True).\
+    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active==True, models.EntryRequest.posted==True, \
+                                                models.EntryRequest.carpass_created==False).\
         order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
         offset(skip).limit(limit).all()
 
