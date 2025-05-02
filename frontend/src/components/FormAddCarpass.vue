@@ -87,6 +87,7 @@ const itemFields = [
     'car_model',
     'entry_type',
     'contact',
+    'contact_name',
     'place_n',
     'radiation',
     'brokenAwning',
@@ -296,6 +297,17 @@ async function downloadFile(document_id) {
           <input type="text" v-model="form.ncar" :class="[errField['ncar']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="isCard" />
         </div>
+
+        <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
+          <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Наименование клиента</label>
+          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="isCard" />
+        </div>
+
+
       </div>
 
       <div class="flex">
@@ -372,10 +384,7 @@ async function downloadFile(document_id) {
       </div>
 
       <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
-          <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
+
         <div class=formInputDiv>   <label class=formLabelStyle>Номер стоянки</label>
           <input type="text" v-model="form.place_n" :class="[errField['place_n']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />

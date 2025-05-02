@@ -11,27 +11,23 @@ class CarpassCreate(BaseModel):
     ntir_date: date | str | None = None
     customs_doc: str | None = None
     customs_doc_date: date | str | None = None
-
     nseal: str | None = None
     nkont: str | None = None
     driver: str | None = None
-
     driver_fio: str | None = None
     driver_phone: str | None = None
     driver_licence: str | None = None
     car_model: str | None = None
     entry_type: str | None = None
     contact: int | str | None = None
-    # contact_name: str | None = None
+    contact_name: str | None = None
     # contact_broker: int | str | None = None
     # broker_name: str | None = None
     place_n: str | None = None
     radiation: bool
     brokenAwning: bool
     brokenSeal: bool
-
     comment: str | None = None
-    
     dateex: date | str | None = None
     timeex: time | str | None = None
     status: str = 'parking'
@@ -46,7 +42,6 @@ class CarpassValidation(BaseModel):
     ntir_date: date
     customs_doc: str
     customs_doc_date: date
-    
     nseal: str
     nkont: str
     driver: str
@@ -56,7 +51,7 @@ class CarpassValidation(BaseModel):
     car_model: str
     entry_type: str
     contact: int
-    # contact_name: str
+    contact_name: str
     # contact_broker: int
     # broker_name: str
     place_n: str

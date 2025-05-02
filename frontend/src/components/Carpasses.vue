@@ -63,7 +63,7 @@ const itemName = ref('')
 if (props.view_type == 'enter') {
   state.query = `http://${backendIpAddress}:${backendPort}/carpasses/`;
   state.listTableColumns = {
-    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact':'Клиент', 
+    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Клиент', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {
