@@ -29,6 +29,7 @@ coverage
 
 *.tsbuildinfo
 
+backend/__pycache__/
 backend/app/__pycache__/
 backend/venv/
 backend/logs/
