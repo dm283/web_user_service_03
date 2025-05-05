@@ -185,9 +185,6 @@ class DocumentBase(BaseModel):
 
 class DocumentCreate(DocumentBase):
     filecontent: bytes | None = None
-    # filename: str
-    # filepath: str
-    # file: UploadFile
 
 
 class Document(DocumentBase):
@@ -238,6 +235,5 @@ class User(UserBase):
     updated: datetime | None
 
     class Config:
-        # orm_mode = True
         from_attributes = True
         
