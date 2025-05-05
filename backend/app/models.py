@@ -61,31 +61,28 @@ class Carpass(Base):
     ntir_date = Column(Date)
     customs_doc = Column(String(length=50))
     customs_doc_date = Column(Date)
-    
     nseal = Column(String(length=50))
     nkont = Column(String(length=50))
     driver = Column(String(length=150))
-    
     driver_fio = Column(String(length=50))
     driver_phone = Column(String(length=15))
     driver_licence = Column(String)
     car_model = Column(String)
     entry_type = Column(String)
     contact = Column(Integer)
-    # contact_name = Column(String(length=150))
+    contact_name = Column(String(length=150))
     # contact_broker = Column(Integer)
     # broker_name = Column(String(length=150))
     place_n = Column(String(length=250), unique=True)
     radiation = Column(Boolean, default=False)
     brokenAwning = Column(Boolean, default=False)
     brokenSeal = Column(Boolean, default=False)
-
     comment = Column(String(length=250))
-
     dateex = Column(Date)
     timeex = Column(Time)
     status = Column(String())
     exitcarpass_created = Column(Boolean, default=False)
+    
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)
@@ -111,6 +108,7 @@ class Exitcarpass(Base):
     dateex = Column(Date)
     timeex = Column(Time)
     status = Column(String())
+
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)
@@ -141,6 +139,7 @@ class EntryRequest(Base):
     customs_doc_date = Column(Date)
     comment = Column(String(length=250))
     status = Column(String)
+    
     carpass_created = Column(Boolean, default=False)
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)

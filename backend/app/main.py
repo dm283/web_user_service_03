@@ -9,16 +9,10 @@ from urllib.parse import quote
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from uuid import uuid4
+
 from app import crud, models, schemas, views
 from app.database import SessionLocal, engine
-
-from reportlab.pdfgen import canvas 
-from reportlab.pdfbase.ttfonts import TTFont 
-from reportlab.pdfbase import pdfmetrics 
-from reportlab.lib import colors
-
-import qrcode
-
+from service_functions import *
 
 app = FastAPI()
 
@@ -119,84 +113,6 @@ def document_download(document_id: int,  db: Session = Depends(get_db)):
     return response
 
 
-
-def create_document_carpass(carpass, filepath, filename):
-    # creates carpass pdf file for printing
-    title = 'Пропуск ТС на въезд'
-    subTitle = f'Рег. № ТС:  {carpass.ncar}'
-    textLines = [ 
-        f'Перевозчик:  {carpass.driver}', 
-        f'ФИО водителя:  {carpass.drv_man}', 
-        f'Телефон водителя:  {carpass.dev_phone}', 
-        f'Номер стоянки:  {carpass.place_n}', 
-    ] 
-
-    # QR code creating
-    qrcode_data = f'GUID: {carpass.uuid}\n' \
-        f'Регистрационный № ТС: {carpass.ncar}\n' \
-        f'ФИО водителя: {carpass.drv_man}\n' \
-        f'Телефон водителя: {carpass.dev_phone}\n'
-    qr = qrcode.QRCode(box_size=5)
-    qr.add_data(qrcode_data)
-    qr.make()
-    image = qr.make_image()
-
-    pdf = canvas.Canvas(filepath) 
-    pdf.setTitle(filename) 
-    pdfmetrics.registerFont(TTFont('Arial', 'verdana.ttf')) 
-    pdf.setFont('Arial', 30) 
-    pdf.drawCentredString(300, 770, title) 
-    # pdf.setFillColorRGB(0, 0, 255) 
-    pdf.setFont("Arial", 24) 
-    pdf.drawCentredString(290, 720, subTitle) 
-    pdf.line(30, 710, 550, 710) 
-    text = pdf.beginText(40, 680) 
-    text.setFont("Arial", 18) 
-    for line in textLines: 
-        text.textLine(line) 
-    pdf.drawText(text) 
-    pdf.drawInlineImage(image, 155, 200) #x.y
-    pdf.save()
-
-
-def create_document_exitcarpass(carpass, filepath, filename):
-    # creates exitcarpass pdf file for printing
-    title = 'Пропуск ТС на выезд'
-    subTitle = f'Рег. № ТС:  {carpass.ncar}'
-    textLines = [ 
-        f'ФИО водителя:  {carpass.drv_man}', 
-        f'Телефон водителя:  {carpass.dev_phone}', 
-        f'№ документа выпуска:  {carpass.ndexit}', 
-    ] 
-
-    # QR code creating
-    qrcode_data = f'GUID: {carpass.uuid}\n' \
-        f'Регистрационный № ТС: {carpass.ncar}\n' \
-        f'ФИО водителя: {carpass.drv_man}\n' \
-        f'Телефон водителя: {carpass.dev_phone}\n'
-    qr = qrcode.QRCode(box_size=5)
-    qr.add_data(qrcode_data)
-    qr.make()
-    image = qr.make_image()
-
-    pdf = canvas.Canvas(filepath) 
-    pdf.setTitle(filename) 
-    pdfmetrics.registerFont(TTFont('Arial', 'verdana.ttf')) 
-    pdf.setFont('Arial', 30) 
-    pdf.drawCentredString(300, 770, title) 
-    # pdf.setFillColorRGB(0, 0, 255) 
-    pdf.setFont("Arial", 24) 
-    pdf.drawCentredString(290, 720, subTitle) 
-    pdf.line(30, 710, 550, 710) 
-    text = pdf.beginText(40, 680) 
-    text.setFont("Arial", 18) 
-    for line in textLines: 
-        text.textLine(line) 
-    pdf.drawText(text) 
-    pdf.drawInlineImage(image, 155, 200) #x.y
-    pdf.save()
-
-
 @app.get('/download_carpass/{section}/{carpass_id}')
 def carpass_download(section: str, carpass_id: int,  db: Session = Depends(get_db)):
     # create and download carpass pdf file
@@ -208,13 +124,13 @@ def carpass_download(section: str, carpass_id: int,  db: Session = Depends(get_d
         filename = f'пропуск_{carpass_from_db.id_enter}.pdf'
         create_document_carpass(carpass_from_db, filepath, filename)
 
-    elif section == 'Пропуска ТС на выезд':
-        carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
-        if carpass_from_db is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-        filepath = f'saved_files/пропуск_на_выезд_{carpass_from_db.id_enter}.pdf'
-        filename = f'пропуск_на_выезд_{carpass_from_db.id_enter}.pdf'
-        create_document_exitcarpass(carpass_from_db, filepath, filename)
+    # elif section == 'Пропуска ТС на выезд':
+    #     carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
+    #     if carpass_from_db is None:
+    #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    #     filepath = f'saved_files/пропуск_на_выезд_{carpass_from_db.id_enter}.pdf'
+    #     filename = f'пропуск_на_выезд_{carpass_from_db.id_enter}.pdf'
+    #     create_document_exitcarpass(carpass_from_db, filepath, filename)
     
 
     response = FileResponse(path=filepath,
