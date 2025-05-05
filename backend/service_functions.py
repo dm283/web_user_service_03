@@ -9,7 +9,7 @@ import PIL
 
 
 def create_document_carpass(carpass, filepath, filename):
-    # creates carpass pdf file for printing
+    # creates enter carpass pdf file for printing
 
     # QR code creating
     qrcode_data = f'GUID: {carpass.uuid}\n' \
