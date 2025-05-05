@@ -14,14 +14,6 @@ from app import crud, models, schemas, views
 from app.database import SessionLocal, engine
 from service_functions import *
 
-# from reportlab.pdfgen import canvas 
-# from reportlab.pdfbase.ttfonts import TTFont 
-# from reportlab.pdfbase import pdfmetrics 
-# from reportlab.lib import colors
-
-# import qrcode
-
-
 app = FastAPI()
 
 origins = [
