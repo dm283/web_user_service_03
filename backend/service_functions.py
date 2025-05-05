@@ -182,10 +182,10 @@ def create_document_carpass(carpass, filepath, filename):
     pdf.drawString(20, 500, 'Подпись ответ. лица СВХ')
     pdf.drawString(20, 497, '__________________________________________________________')
     
-    pdf.line(30, 477, 560, 477)
-
-    parking_map_image = PIL.Image.open('saved_files/parking_map.jpg')
-    pdf.drawInlineImage(parking_map_image, 20, 25, 550, 440) #x.y parking map
+    pdf.line(30, 482, 560, 482)
+    pdf.setFont("Arial", 14); pdf.drawString(230, 462, 'ПЛАН СТОЯНКИ ТС')
+    parking_map_image = PIL.Image.open('saved_files/parking-map.png')
+    pdf.drawInlineImage(parking_map_image, 20, 60, 550, 380) #x.y parking map
     
 
     pdf.save()
