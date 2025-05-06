@@ -504,11 +504,15 @@ def create_user(db: Session, user: schemas.UserCreate):
     # creates a user in database
     password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+    hashed_password=password_context.hash(user.password)
+
     db_user = models.User(
         **user.model_dump(exclude='password'),
-        uuid=str(uuid4()),
-        hashed_password=password_context.hash(user.password), 
-        created=datetime.datetime.now()
+        uuid=uuid,
+        hashed_password=hashed_password, 
+        created_datetime=created_datetime
         )
     db.add(db_user)
     db.commit()

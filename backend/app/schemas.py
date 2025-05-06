@@ -219,6 +219,7 @@ class UserBase(BaseModel):
     login: str
     email: str
     name: str
+    inn: str
     type: str
 
 
@@ -231,8 +232,8 @@ class User(UserBase):
     is_active: bool
     items: list[Item] = []
     uuid: str
-    created: datetime
-    updated: datetime | None
+    created_datetime: datetime
+    updated_datetime: datetime | None
 
     class Config:
         from_attributes = True

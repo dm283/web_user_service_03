@@ -9,14 +9,20 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    uuid = Column(String)
+    uuid = Column(String, unique=True)
     name = Column(String)
+    inn = Column(String)
     type = Column(String)
     login = Column(String, unique=True, index=True)
     email = Column(String)
     hashed_password = Column(String)
-    created = Column(DateTime)
-    updated = Column(DateTime, nullable=True)
+
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)
+    was_posted = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
 
     items = relationship("Item", back_populates="owner")
