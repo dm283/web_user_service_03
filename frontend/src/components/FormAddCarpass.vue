@@ -32,7 +32,7 @@ const selectedItem = ref('')
 const devSelected = ref({});
 const showDropDownSelect = ref({});
 
-if (!props.itemData) {
+if (!props.isCard) {
 onMounted(async () => {
     try {
       state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_posted/`;
@@ -107,8 +107,6 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
   for (let rec of state[entity]) {
-    console.log('rec=', rec)
-    // if ( rec[field].toString().toUpperCase().indexOf(devSelected.value[field]) > -1 ) {
     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
       state.filteredList.push(rec);
     };
@@ -119,7 +117,6 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
       state.filteredList.push(clonedObj);
     };
   }
-  console.log('list=', state.filteredList)
 };
 
 const setFormValues = () => {
@@ -172,7 +169,10 @@ const initEmptyForm = () => {
 }
 
 if (props.itemData) {
-  for (let field of itemFields) {form[field] = props.itemData[field]}
+  for (let field of itemFields) {
+    form[field] = props.itemData[field]
+    form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+  }
 } else {
   initEmptyForm();
 };
@@ -309,7 +309,7 @@ async function downloadFile(document_id) {
             </div>
           </div>
         </div> -->
-        <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Номер машины</label>
+        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Номер машины</label>
           <div :class=formInputStyle class="flex" @click="setFilter('ncar', 'entiryRequests', 'ncar'); 
               showDropDownSelect.ncar ? showDropDownSelect.ncar=false : showDropDownSelect.ncar=true;">
             <input class="w-64 focus:outline-none" type="text" v-model="form.ncar" @keyup="setFilter('ncar', 'entiryRequests', 'ncar')" 
@@ -323,23 +323,23 @@ async function downloadFile(document_id) {
             </div>
           </div>
         </div>
-
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Номер машины</label>
           <input type="text" v-model="form.ncar" :class="[errField['ncar']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="isCard" />
         </div>
 
-
-        <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Клиент</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('contact_name', 'contacts', 'name'); 
-              showDropDownSelect.contact_name ? showDropDownSelect.contact_name=false : showDropDownSelect.contact_name=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name" 
-              @keyup="setFilter('contact_name', 'contacts', 'name')" :required="true"/>
+        
+        <!-- fake field 'contact_name_input' for dropdown list -->
+        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Клиент</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
+              showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
+              @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
-          <div v-if="showDropDownSelect.contact_name" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+          <div v-if="showDropDownSelect.contact_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="form.contact=item.id; showDropDownSelect.contact_name=false; form.contact_name=item.name;" >
+              @click="form.contact=item.id; showDropDownSelect.contact_name_input=false; form.contact_name=item.name;form.contact_name_input=item.name;" >
               {{ item.name }}
             </div>
           </div>
