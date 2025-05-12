@@ -25,6 +25,7 @@ const state = reactive({
   isLoading: true,
   filteredList: [],
   entiryRequests: [],
+  contacts: [],
 })
 
 const selectedItem = ref('')
@@ -37,6 +38,10 @@ onMounted(async () => {
       state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_posted/`;
       const response = await axios.get(state.query);
       state.entiryRequests = response.data;
+
+      state.query = `http://${backendIpAddress}:${backendPort}/contacts/`;
+      const response_2 = await axios.get(state.query);
+      state.contacts = response_2.data;
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -97,27 +102,52 @@ const itemFields = [
     'timeex',
   ]
 
-const setFilter = (field) => {
+const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
   state.filteredList = [];
-  for (let rec of state.entiryRequests) {
+  if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
+  for (let rec of state[entity]) {
+    console.log('rec=', rec)
     // if ( rec[field].toString().toUpperCase().indexOf(devSelected.value[field]) > -1 ) {
-    if ( rec[field].toString().toUpperCase().indexOf(form[field]) > -1 ) {
+    if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
       state.filteredList.push(rec);
     };
   };
   if (state.filteredList.length == 0) {
-    for (let xobj of state.entiryRequests) {
+    for (let xobj of state[entity]) {
       let clonedObj = {...xobj};
       state.filteredList.push(clonedObj);
     };
   }
+  console.log('list=', state.filteredList)
 };
 
 const setFormValues = () => {
   for (let field of itemFields) {form[field] = selectedItem.value[field]}
   form.radiation = false; form.brokenAwning = false; form.brokenSeal = false;
 }
+
+// const setFilter = (field) => {
+//   // filter setting
+//   state.filteredList = [];
+//   for (let rec of state.entiryRequests) {
+//     // if ( rec[field].toString().toUpperCase().indexOf(devSelected.value[field]) > -1 ) {
+//     if ( rec[field].toString().toUpperCase().indexOf(form[field]) > -1 ) {
+//       state.filteredList.push(rec);
+//     };
+//   };
+//   if (state.filteredList.length == 0) {
+//     for (let xobj of state.entiryRequests) {
+//       let clonedObj = {...xobj};
+//       state.filteredList.push(clonedObj);
+//     };
+//   }
+// };
+
+// const setFormValues = () => {
+//   for (let field of itemFields) {form[field] = selectedItem.value[field]}
+//   form.radiation = false; form.brokenAwning = false; form.brokenSeal = false;
+// }
 
 
 const initEmptyForm = () => {
@@ -280,9 +310,10 @@ async function downloadFile(document_id) {
           </div>
         </div> -->
         <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Номер машины</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('ncar'); 
+          <div :class=formInputStyle class="flex" @click="setFilter('ncar', 'entiryRequests', 'ncar'); 
               showDropDownSelect.ncar ? showDropDownSelect.ncar=false : showDropDownSelect.ncar=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.ncar" @keyup="setFilter('ncar')" :required="true"/>
+            <input class="w-64 focus:outline-none" type="text" v-model="form.ncar" @keyup="setFilter('ncar', 'entiryRequests', 'ncar')" 
+              :required="true"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
           <div v-if="showDropDownSelect.ncar" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
@@ -298,14 +329,36 @@ async function downloadFile(document_id) {
             :required="true" :disabled="isCard" />
         </div>
 
-        <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
+
+        <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Клиент</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('contact_name', 'contacts', 'name'); 
+              showDropDownSelect.contact_name ? showDropDownSelect.contact_name=false : showDropDownSelect.contact_name=true;">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name" 
+              @keyup="setFilter('contact_name', 'contacts', 'name')" :required="true"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect.contact_name" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+              @click="form.contact=item.id; showDropDownSelect.contact_name=false; form.contact_name=item.name;" >
+              {{ item.name }}
+            </div>
+          </div>
+        </div>
+
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
+          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
+
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
           <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Наименование клиента</label>
           <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="isCard" />
-        </div>
+        </div> -->
 
 
       </div>

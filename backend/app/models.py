@@ -5,13 +5,31 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 
+class Contact(Base):
+    __tablename__ = 'contacts'
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    name = Column(String)
+    inn = Column(String(12), unique=True)
+
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)
+    was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+
+
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
-    name = Column(String)
-    inn = Column(String)
+
+    contact_id = Column(Integer)
+    # name = Column(String)
+    # inn = Column(String)
     type = Column(String)
     login = Column(String, unique=True, index=True)
     email = Column(String)
@@ -139,6 +157,7 @@ class EntryRequest(Base):
     car_model = Column(String)
     entry_type = Column(String)
     contact = Column(Integer)
+    contact_name = Column(String(length=150))
     ntir = Column(String(length=50))
     ntir_date = Column(Date)
     customs_doc = Column(String(length=50))

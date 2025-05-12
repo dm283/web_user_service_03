@@ -488,6 +488,7 @@ def get_carpass(db: Session, carpass_id_enter: str):
     return db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_id_enter).first()
 
 
+#########################################################    USER FUNCTIONS
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
@@ -521,6 +522,33 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
+#########################################################    CONTACT FUNCTIONS
+def create_contact(db: Session, contact: schemas.ContactCreate):
+    # creates a contact in database
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_contact = models.Contact(
+        **contact.model_dump(),
+        uuid=uuid,
+        created_datetime=created_datetime
+        )
+    db.add(db_contact)
+    db.commit()
+    db.refresh(db_contact)
+
+    return db_contact
+
+
+def get_contact(db: Session, contact_id: int):
+    return db.query(models.Contact).filter(models.Contact.id == contact_id).first()
+
+
+def get_contacts(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Contact).offset(skip).limit(limit).all()
+
+
+#########################################################    ITEM FUNCTIONS ???
 def get_items(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Item).offset(skip).limit(limit).all()
 
