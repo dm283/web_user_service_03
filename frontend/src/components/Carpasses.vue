@@ -13,7 +13,6 @@ import FormSetDefaultStatus from './FormSetDefaultStatus.vue';
 import FormExitProhibited from './FormExitProhibited.vue';
 import FormEntryRequest from './FormEntryRequest.vue';
 
-
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
 let parser = new ConfigIniParser(); //Use default delimiter
@@ -58,6 +57,12 @@ const showUpdateEntryRequest = ref(false)
 
 const selectedItem = ref('')
 const itemName = ref('')
+
+
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
 
 
 if (props.view_type == 'enter') {
@@ -119,7 +124,7 @@ else if (props.view_type == 'entryRequest') {
 async function getData() {
     state.isLoading = true;
     try {     
-      const response = await axios.get(state.query);
+      const response = await axios.get(state.query, {headers: authHeader()});
       state.records = response.data;
     } catch (error) {
       console.error('Error fetching', error);
@@ -149,7 +154,8 @@ async function downloadFile(document_id, section) {
   //
   // const document_id = 28;  
   
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${section}/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${section}/${document_id}`, 
+    {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));

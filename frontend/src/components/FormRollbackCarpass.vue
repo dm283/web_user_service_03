@@ -23,6 +23,16 @@ const state = reactive({
   query: '',
 });
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
+}
+
+
 if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/carpasses_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Пропуска ТС на выезд') {
@@ -35,7 +45,7 @@ if (props.itemName == 'Пропуска ТС на въезд') {
 const handleSubmit = async () => {
   //
   try {
-    const response = await axios.put(state.query);
+    const response = await axios.put(state.query, '', {headers: authHeader()});
     toast.success('Проводка отменена');      
     emit('docCreated'); emit('closeModal');
   } catch (error) {
@@ -45,6 +55,8 @@ const handleSubmit = async () => {
 };
 
 </script>
+
+
 
 <template>
   <div class="w-74 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">

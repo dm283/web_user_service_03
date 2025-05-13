@@ -28,10 +28,20 @@ const state = reactive({
 
 const showDropDownSelect = ref({});
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
+}
+
+
 if (!props.isCard) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts/`);
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts/`, {headers: authHeader()});
       state.contacts = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -45,7 +55,9 @@ onMounted(async () => {
 if (props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`);
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
+        {headers: authHeader()}
+      );
       state.documents = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -120,15 +132,6 @@ const setInitialForm = () => {
 
 setInitialForm();
 
-// if (props.itemData) {
-//   for (let field of itemFields) {
-//     form[field] = props.itemData[field]
-//     form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
-//   }
-// } else {
-//   setInitialForm();
-// };
-
 const file = ref(null)
 const toast = useToast();
 
@@ -137,7 +140,8 @@ const postingItem = async () => {
   //
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/entry_requests_posting/${props.itemData.id}`);
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/entry_requests_posting/${props.itemData.id}`,
+        '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else {
       return;
@@ -167,7 +171,7 @@ const handleSubmit = async () => {
     formData.append('contact_name', form.contact_name);
     try {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.uuid}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
     } catch (error) {
       console.error('Error uploading file', error);
       toast.error('File has not been uploaded');
@@ -181,11 +185,11 @@ const handleSubmit = async () => {
   try {
     if (!props.itemData) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/entry_requests/`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Новая запись добавлена');
     } else {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Запись обновлёна');      
     }
     emit('docCreated'); emit('closeModal');
@@ -198,7 +202,8 @@ const handleSubmit = async () => {
 
 async function downloadFile(document_id) {
   // downloads file
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, 
+    {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -300,28 +305,6 @@ async function downloadFile(document_id) {
             :required="true" :disabled="true" />
         </div>
 
-        <!-- <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Клиент</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('contact_name', 'contacts', 'name'); 
-              showDropDownSelect.contact_name ? showDropDownSelect.contact_name=false : showDropDownSelect.contact_name=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name" 
-              @keyup="setFilter('contact_name', 'contacts', 'name')" :required="true"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect.contact_name" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="form.contact=item.id; showDropDownSelect.contact_name=false; form.contact_name=item.name;" >
-              {{ item.name }}
-            </div>
-          </div>
-        </div> -->
-
-
-
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
-          <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div> -->
       </div>
 
       <div class="flex">
@@ -376,7 +359,7 @@ async function downloadFile(document_id) {
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="formBtn" type="button" @click="setInitialForm()">ОТМЕНИТЬ</button>
+          <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
           <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="props.itemData">

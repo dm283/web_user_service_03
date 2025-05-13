@@ -23,6 +23,12 @@ const state = reactive({
   query: '',
 });
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+
 if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`;
 } 
@@ -38,7 +44,7 @@ const toast = useToast();
 const handleSubmit = async () => {
 
   try {
-    const response = await axios.delete(state.query);
+    const response = await axios.delete(state.query, {headers: authHeader()});
     // const response = await axios.delete(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`);
     toast.success('Запись удалёна');      
     emit('docCreated')

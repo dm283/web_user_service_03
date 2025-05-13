@@ -28,16 +28,27 @@ const state = reactive({
   responseItem: {},
 })
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
+}
+
 // !!! if 'isCreate' - itemData=Carpass;  if 'not isCreate' (card/update) - itemData=Exitcarpass !!!
 
 if (!props.isCreate && props.itemData) {
 onMounted(async () => {
     try {
       // load info about parental Carpass
-      const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id_enter}`);
+      const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id_enter}`, 
+        {headers: authHeader()});
       state.relatedCarpass = response1.data;
       // load related documents
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`);
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`, 
+        {headers: authHeader()});
       state.documents = response2.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -47,11 +58,6 @@ onMounted(async () => {
 });
 };
 
-// const formInputStyle20 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500'
-// const formInputStyle21 = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-// const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-// const formInputStyle2 = props.isCard ? formInputStyle20 : formInputStyle21
-// const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
@@ -82,20 +88,8 @@ if (props.isCreate) {
   form.driver_fio = props.itemData.driver_fio
   form.driver_phone = props.itemData.driver_phone
   form.driver_licence = props.itemData.driver_licence
-  // form.ndexit = ''
-  // form.comment = ''
-  // form.dateex = ''
-  // form.timeex = ''
 } else if (!props.isCreate) {
   for (let field of itemFields) {form[field] = props.itemData[field]}
-  // form.id_enter = props.itemData.id_enter;
-  // form.ncar = props.itemData.ncar;
-  // form.drv_man = props.itemData.drv_man
-  // form.dev_phone = props.itemData.dev_phone
-  // form.ndexit = props.itemData.ndexit
-  // form.comment = props.itemData.comment
-  // form.dateex = props.itemData.dateex
-  // form.timeex = props.itemData.timeex
 };
 
 const file = ref(null)
@@ -105,7 +99,9 @@ const postingItem = async () => {
   //
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses_posting/${props.itemData.id}`);
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses_posting/${props.itemData.id}`,
+        '', {headers: authHeader()}
+      );
       toast.success('Запись проведена');
     } else {
       return;
@@ -137,25 +133,16 @@ const handleSubmit = async () => {
     
   // item updating
   for (let field of itemFields) { formData.append(field, form[field]) };
-  // carpass upgrading
-  // formData.append('id_enter', form.id_enter);
-  // formData.append('ncar', form.ncar);
-  // formData.append('drv_man', form.drv_man);
-  // formData.append('dev_phone', form.dev_phone);
-  // formData.append('ndexit', form.ndexit);
-  // formData.append('comment', form.comment);
-  // formData.append('dateex', form.dateex);
-  // formData.append('timeex', form.timeex);
 
   try {
     if (props.isCreate) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/exitcarpasses/`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Пропуск на выезд добавлен');
       state.responseItem = response.data;
     } else {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Пропуск на выезд обновлён');
       state.responseItem = response.data;  
     }
@@ -167,7 +154,7 @@ const handleSubmit = async () => {
         formData.append('contact_name', form.contact_name);
         try {
           const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`,
-            formData, {headers: {'Content-Type': 'multipart/form-data'}});
+            formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
         } catch (error) {
           console.error('Error uploading file', error);
           toast.error('File has not been uploaded');
@@ -179,7 +166,6 @@ const handleSubmit = async () => {
     emit('closeModal');
   } catch (error) {
     console.error('Error adding item', error);
-    //console.error('Error adding item', error);
     toast.error('Item has not added');
   };
 };
@@ -187,7 +173,8 @@ const handleSubmit = async () => {
 
 async function downloadFile(document_id) {
   // downloads file
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, 
+    {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
