@@ -100,7 +100,7 @@ else if (props.view_type == 'entryRequest') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/`;
   state.listTableColumns = {
     'dateen':'Дата въезда','timeen':'Время въезда с','plan_timeen_to':'Время въезда по','ncar':'№ ТС',
-    'contact':'Клиент','entry_type':'Тип въезда'
+    'contact_name':'Клиент','entry_type':'Тип въезда'
   };
   state.additionalColumns = {
       // 'drv_man':'ФИО водителя',

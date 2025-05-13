@@ -25,18 +25,23 @@ const state = reactive({
   isLoading: true,
   filteredList: [],
   entiryRequests: [],
+  contacts: [],
 })
 
 const selectedItem = ref('')
 const devSelected = ref({});
 const showDropDownSelect = ref({});
 
-if (!props.itemData) {
+if (!props.isCard) {
 onMounted(async () => {
     try {
       state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_posted/`;
       const response = await axios.get(state.query);
       state.entiryRequests = response.data;
+
+      state.query = `http://${backendIpAddress}:${backendPort}/contacts/`;
+      const response_2 = await axios.get(state.query);
+      state.contacts = response_2.data;
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -97,17 +102,17 @@ const itemFields = [
     'timeex',
   ]
 
-const setFilter = (field) => {
+const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
   state.filteredList = [];
-  for (let rec of state.entiryRequests) {
-    // if ( rec[field].toString().toUpperCase().indexOf(devSelected.value[field]) > -1 ) {
-    if ( rec[field].toString().toUpperCase().indexOf(form[field]) > -1 ) {
+  if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
+  for (let rec of state[entity]) {
+    if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
       state.filteredList.push(rec);
     };
   };
   if (state.filteredList.length == 0) {
-    for (let xobj of state.entiryRequests) {
+    for (let xobj of state[entity]) {
       let clonedObj = {...xobj};
       state.filteredList.push(clonedObj);
     };
@@ -119,33 +124,66 @@ const setFormValues = () => {
   form.radiation = false; form.brokenAwning = false; form.brokenSeal = false;
 }
 
+// const setFilter = (field) => {
+//   // filter setting
+//   state.filteredList = [];
+//   for (let rec of state.entiryRequests) {
+//     // if ( rec[field].toString().toUpperCase().indexOf(devSelected.value[field]) > -1 ) {
+//     if ( rec[field].toString().toUpperCase().indexOf(form[field]) > -1 ) {
+//       state.filteredList.push(rec);
+//     };
+//   };
+//   if (state.filteredList.length == 0) {
+//     for (let xobj of state.entiryRequests) {
+//       let clonedObj = {...xobj};
+//       state.filteredList.push(clonedObj);
+//     };
+//   }
+// };
 
-const initEmptyForm = () => {
-    form.ncar = '_234РА23'
-    // form.dateen = ''
-    // form.timeen = ''
-    // form.ntir = '14'
-    // form.nkont = '16'
-    // form.driver = 'ООО Перевозчик'
-    // form.drv_man = 'Иванов Сидор'
-    // form.dev_phone = '322-223-322'
-    // form.contact = 111
-    // form.contact_name = 'ООО Контакт'
-    // form.contact_broker = 222
-    // form.broker_name = 'ООО Брокер'
-    // form.place_n = '13'
+// const setFormValues = () => {
+//   for (let field of itemFields) {form[field] = selectedItem.value[field]}
+//   form.radiation = false; form.brokenAwning = false; form.brokenSeal = false;
+// }
+
+
+const setInitialForm = () => {
+  //
+  if (props.itemData) { // card and update
+    for (let field of itemFields) {
+      form[field] = props.itemData[field]
+      form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+    }
+  } else {  // create
+    for (let field of itemFields) {
+      form[field] = null
+      form['contact_name_input'] = null  // fake form field for dropdown list
+    }
+    form.ncar = '_234РА23' // template for 'ncar'
     form.radiation = false
     form.brokenAwning = false
     form.brokenSeal = false
-    // form.dateex = ''
-    // form.timeex = ''
-}
-
-if (props.itemData) {
-  for (let field of itemFields) {form[field] = props.itemData[field]}
-} else {
-  initEmptyForm();
+  };
 };
+
+setInitialForm();
+
+
+// const initEmptyForm = () => {
+//     form.ncar = '_234РА23'
+//     form.radiation = false
+//     form.brokenAwning = false
+//     form.brokenSeal = false
+// }
+
+// if (props.itemData) {
+//   for (let field of itemFields) {
+//     form[field] = props.itemData[field]
+//     form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+//   }
+// } else {
+//   initEmptyForm();
+// };
 
 const file = ref(null)
 const toast = useToast();
@@ -279,10 +317,11 @@ async function downloadFile(document_id) {
             </div>
           </div>
         </div> -->
-        <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Номер машины</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('ncar'); 
+        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Номер машины</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('ncar', 'entiryRequests', 'ncar'); 
               showDropDownSelect.ncar ? showDropDownSelect.ncar=false : showDropDownSelect.ncar=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.ncar" @keyup="setFilter('ncar')" :required="true"/>
+            <input class="w-64 focus:outline-none" type="text" v-model="form.ncar" @keyup="setFilter('ncar', 'entiryRequests', 'ncar')" 
+              :required="true"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
           <div v-if="showDropDownSelect.ncar" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
@@ -292,20 +331,42 @@ async function downloadFile(document_id) {
             </div>
           </div>
         </div>
-
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Номер машины</label>
           <input type="text" v-model="form.ncar" :class="[errField['ncar']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="isCard" />
         </div>
 
-        <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
+        
+        <!-- fake field 'contact_name_input' for dropdown list -->
+        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Клиент</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
+              showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
+              @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect.contact_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+              @click="form.contact=item.id; showDropDownSelect.contact_name_input=false; form.contact_name=item.name;form.contact_name_input=item.name;" >
+              {{ item.name }}
+            </div>
+          </div>
+        </div>
+
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
+          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
+
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
           <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Наименование клиента</label>
           <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="isCard" />
-        </div>
+        </div> -->
 
 
       </div>
@@ -428,10 +489,9 @@ async function downloadFile(document_id) {
 
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
-      <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="formBtn" type="reset" @click="form.ncar=''">ОЧИСТИТЬ</button>
+          <button class="formBtn" type="button" @click="setInitialForm();">ОТМЕНИТЬ</button>
           <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="props.itemData">

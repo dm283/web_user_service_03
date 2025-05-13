@@ -130,6 +130,7 @@ class EntryRequestCreate(BaseModel):
     car_model: str | None = None
     entry_type: str | None = None
     contact: int | str | None = None
+    contact_name: str | None = None
     ntir: str | None = None
     ntir_date: date | str | None = None
     customs_doc: str | None = None
@@ -149,6 +150,7 @@ class EntryRequestValidation(BaseModel):
     car_model: str
     entry_type: str
     contact: int
+    contact_name: str
     ntir: str
     ntir_date: date
     customs_doc: str
@@ -218,8 +220,9 @@ class Item(ItemBase):
 class UserBase(BaseModel):
     login: str
     email: str
-    name: str
-    inn: str
+    contact_id: int
+    # name: str
+    # inn: str
     type: str
 
 
@@ -238,3 +241,20 @@ class User(UserBase):
     class Config:
         from_attributes = True
         
+#####
+class ContactBase(BaseModel):
+    name: str
+    inn: str
+
+class ContactCreate(ContactBase):
+    pass
+
+class Contact(ContactBase):
+    id: int
+    uuid: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    is_active: bool
+
+    class Config:
+        from_attributes = True
