@@ -1,18 +1,23 @@
 import os, random, ast
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect, Depends, File # HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Annotated, Union
 from urllib.parse import quote
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from uuid import uuid4
+import jwt
+from jwt.exceptions import InvalidTokenError
+from pydantic import BaseModel
 
 from app import crud, models, schemas, views
 from app.database import SessionLocal, engine
 from service_functions import *
+
 
 app = FastAPI()
 
@@ -28,19 +33,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get('/')
-async def index():
-    return {'message': 'fastapi server is working'}
-
 app.include_router(views.router, prefix='/dashboard', tags=['dashboard'])
 
+models.Base.metadata.create_all(bind=engine)
+
+# to get a string like this run:
+# openssl rand -hex 32
+SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+class UserAuth(BaseModel):
+    username: str
+    email: str | None = None
+    full_name: str | None = None
+    is_active: bool | None = None
+
+class UserInDB(UserAuth):
+    hashed_password: str
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 #############################
-models.Base.metadata.create_all(bind=engine)
 
-# Dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -48,6 +72,88 @@ def get_db():
     finally:
         db.close()
 
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+def get_user(username: str, db: Session):
+    db_user = crud.get_user_by_login(db=db, login=username)
+    if db_user:
+        return db_user
+    
+
+def authenticate_user(username: str, password: str, db: Session):
+    user = get_user(db=db, username=username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except InvalidTokenError:
+        raise credentials_exception
+    user = get_user(username=token_data.username, db=db)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_active_user(current_user: Annotated[UserAuth, Depends(get_current_user)]):
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+@app.post("/token")
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
+                                 db: Session=Depends(get_db)) -> Token:
+    user = authenticate_user(username=form_data.username, password=form_data.password, db=db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.login}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")
+
+
+########################################################   CHECK ENDPOINT
+@app.get('/')
+async def index():
+    return {'message': 'fastapi server is working'}
 
 #########################################################    SERVICE FUNCTIONS
 def redefine_schema_values_to_none(data, schema_obj):
@@ -61,7 +167,8 @@ def redefine_schema_values_to_none(data, schema_obj):
 
 #########################################################    ENDPOINTS
 @app.post("/document/")
-async def upload_file(doc_name: Annotated[str, Form()], 
+async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                      doc_name: Annotated[str, Form()], 
                       related_doc_uuid: Annotated[str, Form()],
                       customer_name: Annotated[str, Form()],
                       file: UploadFile,
@@ -81,7 +188,8 @@ async def upload_file(doc_name: Annotated[str, Form()],
 
 
 @app.get('/get-file-name/{document_id}')
-def document_get_filename(document_id: int, db: Session = Depends(get_db)):
+def document_get_filename(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          document_id: int, db: Session = Depends(get_db)):
     # get name of downloading file
     document = db.query(models.Document).filter(models.Document.id == document_id).first()
     document_filename = document.filename
@@ -90,7 +198,8 @@ def document_get_filename(document_id: int, db: Session = Depends(get_db)):
 
 
 @app.get('/download-file/{document_id}')
-def document_download(document_id: int,  db: Session = Depends(get_db)):
+def document_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                      document_id: int,  db: Session = Depends(get_db)):
     # download file
 
     print('downloading file!')
@@ -114,7 +223,8 @@ def document_download(document_id: int,  db: Session = Depends(get_db)):
 
 
 @app.get('/download_carpass/{section}/{carpass_id}')
-def carpass_download(section: str, carpass_id: int,  db: Session = Depends(get_db)):
+def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                     section: str, carpass_id: int,  db: Session = Depends(get_db)):
     # create and download carpass pdf file
     if section == 'Пропуска ТС на въезд':
         carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
@@ -149,7 +259,9 @@ def carpass_download(section: str, carpass_id: int,  db: Session = Depends(get_d
 
 
 @app.put("/upload_file_for_carpass/{related_doc_uuid}")
-async def upload_file_for_carpass(related_doc_uuid: str, contact_name: Annotated[str, Form()],  file: UploadFile, db: Session = Depends(get_db)):
+async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                                  related_doc_uuid: str, contact_name: Annotated[str, Form()],  
+                                  file: UploadFile, db: Session = Depends(get_db)):
     # file upload for carpass
     document = schemas.DocumentCreate(
         doc_name = 'тест_пропуск',
@@ -164,7 +276,8 @@ async def upload_file_for_carpass(related_doc_uuid: str, contact_name: Annotated
 
 #########################################################    GET ITEM ENDPOINTS
 @app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
-def read_carpass(carpass_id_enter: str, db: Session = Depends(get_db)):
+def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                 carpass_id_enter: str, db: Session = Depends(get_db)):
     db_carpass = crud.get_carpass(db, carpass_id_enter=carpass_id_enter)
     if db_carpass is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -173,49 +286,57 @@ def read_carpass(carpass_id_enter: str, db: Session = Depends(get_db)):
 
 #########################################################    GET LIST OF ITEMS ENDPOINTS
 @app.get('/documents/', response_model=list[schemas.Document])
-def read_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     documents = crud.get_documents(db, skip=skip, limit=limit)
     return documents
 
 
 @app.get('/carpasses/', response_model=list[schemas.Carpass])
-def read_carpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_carpasses(db, skip=skip, limit=limit)
     return items
 
 
 @app.get('/car_terminal/', response_model=list[schemas.Carpass])
-def read_car_at_terminal(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_car_at_terminal(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_cars_at_terminal(db, skip=skip, limit=limit)
     return items
 
 
 @app.get('/car_terminal_for_exit/')
-def read_car_at_terminal_for_exit(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_car_at_terminal_for_exit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_cars_at_terminal_for_exit(db, skip=skip, limit=limit)
     return items
 
 
 @app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
-def read_exitcarpasses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_exitcarpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
     return items
 
 
 @app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
-def read_entry_requests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_entry_requests(db, skip=skip, limit=limit)
     return items
 
 
 @app.get('/entry_requests_posted/', response_model=list[schemas.EntryRequest])
-def read_entry_requests_posted(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_entry_requests_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                               skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_entry_requests_posted(db, skip=skip, limit=limit)
     return items
 
 
 @app.get('/entity_documents/{related_doc_uuid}', response_model=list[schemas.Document])
-def get_entity_documents(related_doc_uuid: str, db: Session = Depends(get_db)):
+def get_entity_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         related_doc_uuid: str, db: Session = Depends(get_db)):
     # get entity documents from db table documents
     documents =  db.query(models.Document).filter(models.Document.related_doc_uuid == related_doc_uuid).\
         order_by(models.Document.created_datetime.desc()).all()
@@ -224,21 +345,24 @@ def get_entity_documents(related_doc_uuid: str, db: Session = Depends(get_db)):
 
 #########################################################    CREATE ITEM ENDPOINTS
 @app.post("/exitcarpasses/", response_model=schemas.Exitcarpass)
-def create_exitcarpass(data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
+def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)  
     return crud.create_exitcarpass(db=db, item=data_none_values_redefined)
 
 
 @app.post("/entry_requests/", response_model=schemas.EntryRequest)
-def create_entry_request(data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
+def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)  
     return crud.create_entry_request(db=db, item=data_none_values_redefined)
 
 
 @app.post("/carpasses/", response_model=schemas.Carpass)
-def create_carpass(data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
+def create_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)  
     return crud.create_carpass(db=db, item=data_none_values_redefined)
@@ -246,7 +370,8 @@ def create_carpass(data: Annotated[schemas.CarpassCreate, Form()], db: Session =
 
 #########################################################    UPDATE ITEM ENDPOINTS
 @app.put('/carpasses/{item_id}', response_model=schemas.Carpass)
-def update_carpass(item_id: int, data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
+def update_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   item_id: int, data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
     #
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)
@@ -255,7 +380,8 @@ def update_carpass(item_id: int, data: Annotated[schemas.CarpassCreate, Form()],
 
 
 @app.put('/exitcarpasses/{item_id}', response_model=schemas.Exitcarpass)
-def update_exitcarpass(item_id: int, data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
+def update_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       item_id: int, data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)
     item = schemas.ExitcarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
@@ -263,7 +389,8 @@ def update_exitcarpass(item_id: int, data: Annotated[schemas.ExitcarpassCreate, 
 
 
 @app.put('/entry_requests/{item_id}', response_model=schemas.EntryRequest)
-def update_entry_request(item_id: int, data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
+def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
     #
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
@@ -273,104 +400,121 @@ def update_entry_request(item_id: int, data: Annotated[schemas.EntryRequestCreat
 
 #########################################################    DELETE ITEM ENDPOINTS
 @app.delete('/carpasses/{item_id}')
-def delete_carpass(item_id: int, db: Session = Depends(get_db)):
+def delete_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   item_id: int, db: Session = Depends(get_db)):
     #
     return crud.delete_carpass(db=db, item_id=item_id)
 
 
 @app.delete('/exitcarpasses/{id}')
-def delete_exitcarpass(id: int, db: Session = Depends(get_db)):
+def delete_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       id: int, db: Session = Depends(get_db)):
     #
     return crud.delete_exitcarpass(db=db, carpass_id=id)
 
 
 @app.delete('/entry_requests/{item_id}')
-def delete_entry_request(item_id: int, db: Session = Depends(get_db)):
+def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
     #
     return crud.delete_entry_request(db=db, item_id=item_id)
 
 
 @app.put('/carpasses_deactivate/{carpass_id}')
-def deactivate_carpass(carpass_id: int, db: Session = Depends(get_db)):
+def deactivate_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.deactivate_carpass(db=db, carpass_id=carpass_id)
 
 
 @app.put('/exitcarpasses_deactivate/{carpass_id}')
-def deactivate_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
+def deactivate_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                           carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.deactivate_exitcarpass(db=db, carpass_id=carpass_id)
 
 #########################################################    POSTING ENDPOINTS
 @app.put('/carpasses_posting/{item_id}')
-def posting_carpass(item_id: int, db: Session = Depends(get_db)):
+def posting_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    item_id: int, db: Session = Depends(get_db)):
     #
     return crud.posting_carpass(db=db, item_id=item_id)
 
 
 @app.put('/exitcarpasses_posting/{item_id}')
-def posting_exitcarpass(item_id: int, db: Session = Depends(get_db)):
+def posting_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        item_id: int, db: Session = Depends(get_db)):
     #
     return crud.posting_exitcarpass(db=db, item_id=item_id)
 
 
 @app.put('/entry_requests_posting/{item_id}')
-def posting_entry_request(item_id: int, db: Session = Depends(get_db)):
+def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_id: int, db: Session = Depends(get_db)):
     #
     return crud.posting_entry_request(db=db, item_id=item_id)
 
 #########################################################    ROLLBACK ENDPOINTS
 @app.put('/carpasses_rollback/{carpass_id}')
-def rollback_carpass(carpass_id: int, db: Session = Depends(get_db)):
+def rollback_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                     carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.rollback_carpass(db=db, carpass_id=carpass_id)
 
 
 @app.put('/exitcarpasses_rollback/{carpass_id}')
-def rollback_exitcarpass(carpass_id: int, db: Session = Depends(get_db)):
+def rollback_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id)
 
 
 @app.put('/entry_requests_rollback/{item_id}')
-def rollback_entry_requests(item_id: int, db: Session = Depends(get_db)):
+def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_id: int, db: Session = Depends(get_db)):
     #
     return crud.rollback_entry_requests(db=db, item_id=item_id)
 
 
 #########################################################    STATUS MANAGING ENDPOINTS
 @app.put('/car_exit_permit/{carpass_id}')
-def car_exit_permit(carpass_id: int, db: Session = Depends(get_db)):
+def car_exit_permit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.car_exit_permit(db=db, carpass_id=carpass_id)
 
 
 @app.put('/set_default_car_status/{carpass_id}')
-def set_default_car_status(carpass_id: int, db: Session = Depends(get_db)):
+def set_default_car_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                           carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.set_default_car_status(db=db, carpass_id=carpass_id)
 
 
 @app.put('/exit_prohibited/{carpass_id}')
-def exit_prohibited(carpass_id: int, db: Session = Depends(get_db)):
+def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    carpass_id: int, db: Session = Depends(get_db)):
     #
     return crud.exit_prohibited(db=db, carpass_id=carpass_id)
 
 
 #########################################################    CONTACTS ENDPOINTS
 @app.post("/contacts/", response_model=schemas.Contact)
-def create_contact(contact: schemas.ContactCreate, db: Session = Depends(get_db)):
+def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   contact: schemas.ContactCreate, db: Session = Depends(get_db)):
     return crud.create_contact(db=db, contact=contact)
 
 
 @app.get("/contacts/", response_model=list[schemas.Contact])
-def read_contacts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     contacts = crud.get_contacts(db, skip=skip, limit=limit)
     return contacts
 
 
 @app.get("/contacts/{contact_id}", response_model=schemas.Contact)
-def read_contact(contact_id: int, db: Session = Depends(get_db)):
+def read_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                 contact_id: int, db: Session = Depends(get_db)):
     db_contact = crud.get_contact(db, contact_id=contact_id)
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Contact not found")
@@ -379,7 +523,8 @@ def read_contact(contact_id: int, db: Session = Depends(get_db)):
 
 #########################################################    USERS ENDPOINTS
 @app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_login(db, login=user.login)
     if db_user:
         raise HTTPException(status_code=400, detail="Login alreay registered")
@@ -387,13 +532,15 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/users/", response_model=list[schemas.User])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_users(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
+               skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
 
 @app.get("/users/{user_id}", response_model=schemas.User)
-def read_user(user_id: int, db: Session = Depends(get_db)):
+def read_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+              user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")

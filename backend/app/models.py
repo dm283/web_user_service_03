@@ -26,10 +26,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
-
     contact_id = Column(Integer)
-    # name = Column(String)
-    # inn = Column(String)
     type = Column(String)
     login = Column(String, unique=True, index=True)
     email = Column(String)
