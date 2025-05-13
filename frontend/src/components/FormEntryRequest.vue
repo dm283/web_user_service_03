@@ -89,8 +89,6 @@ const itemFields = [
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
   for (let rec of state[entity]) {
-    // console.log('rec=', rec)
-    // if ( rec[field].toString().toUpperCase().indexOf(devSelected.value[field]) > -1 ) {
     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
       state.filteredList.push(rec);
     };
@@ -104,31 +102,32 @@ const itemFields = [
 };
 
 
-const initEmptyForm = () => {
-    form.ncar = '_234РА23'
-    // form.plan_dateen = ''
-    // form.plan_timeen_from = ''
-    // form.plan_timeen_to = ''
-    // form.drv_man = 'Иванов Сидор'
-    // form.drv_licence = 'Р456НВ'
-    // form.car_model = 'Volvo F7'
-    // form.entry_type = 'Привоз груза'
-    // form.contact = 111
-    // form.ntir = 'К345НГ32'
-    // form.ntir_date = ''
-    // form.customs_doc = 'П34КНР23'
-    // form.customs_doc_date = ''
-    // form.comment = ''
+const setInitialForm = () => {
+  //
+  if (props.itemData) { // card and update
+    for (let field of itemFields) {
+      form[field] = props.itemData[field]
+      form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+    }
+  } else {  // create
+    for (let field of itemFields) {
+      form[field] = null
+      form['contact_name_input'] = null  // fake form field for dropdown list
+    }
+    form.ncar = '_234РА23' // template for 'ncar'
+  };
 };
 
-if (props.itemData) {
-  for (let field of itemFields) {
-    form[field] = props.itemData[field]
-    form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
-  }
-} else {
-  initEmptyForm();
-};
+setInitialForm();
+
+// if (props.itemData) {
+//   for (let field of itemFields) {
+//     form[field] = props.itemData[field]
+//     form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+//   }
+// } else {
+//   setInitialForm();
+// };
 
 const file = ref(null)
 const toast = useToast();
@@ -377,7 +376,7 @@ async function downloadFile(document_id) {
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="formBtn" type="reset">ОЧИСТИТЬ</button>
+          <button class="formBtn" type="button" @click="setInitialForm()">ОТМЕНИТЬ</button>
           <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="props.itemData">

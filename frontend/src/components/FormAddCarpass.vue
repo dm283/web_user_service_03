@@ -147,35 +147,43 @@ const setFormValues = () => {
 // }
 
 
-const initEmptyForm = () => {
-    form.ncar = '_234РА23'
-    // form.dateen = ''
-    // form.timeen = ''
-    // form.ntir = '14'
-    // form.nkont = '16'
-    // form.driver = 'ООО Перевозчик'
-    // form.drv_man = 'Иванов Сидор'
-    // form.dev_phone = '322-223-322'
-    // form.contact = 111
-    // form.contact_name = 'ООО Контакт'
-    // form.contact_broker = 222
-    // form.broker_name = 'ООО Брокер'
-    // form.place_n = '13'
+const setInitialForm = () => {
+  //
+  if (props.itemData) { // card and update
+    for (let field of itemFields) {
+      form[field] = props.itemData[field]
+      form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+    }
+  } else {  // create
+    for (let field of itemFields) {
+      form[field] = null
+      form['contact_name_input'] = null  // fake form field for dropdown list
+    }
+    form.ncar = '_234РА23' // template for 'ncar'
     form.radiation = false
     form.brokenAwning = false
     form.brokenSeal = false
-    // form.dateex = ''
-    // form.timeex = ''
-}
-
-if (props.itemData) {
-  for (let field of itemFields) {
-    form[field] = props.itemData[field]
-    form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
-  }
-} else {
-  initEmptyForm();
+  };
 };
+
+setInitialForm();
+
+
+// const initEmptyForm = () => {
+//     form.ncar = '_234РА23'
+//     form.radiation = false
+//     form.brokenAwning = false
+//     form.brokenSeal = false
+// }
+
+// if (props.itemData) {
+//   for (let field of itemFields) {
+//     form[field] = props.itemData[field]
+//     form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+//   }
+// } else {
+//   initEmptyForm();
+// };
 
 const file = ref(null)
 const toast = useToast();
@@ -481,10 +489,9 @@ async function downloadFile(document_id) {
 
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
-      <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="formBtn" type="reset" @click="form.ncar=''">ОЧИСТИТЬ</button>
+          <button class="formBtn" type="button" @click="setInitialForm();">ОТМЕНИТЬ</button>
           <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="props.itemData">
