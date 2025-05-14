@@ -82,15 +82,36 @@ const itemFields = [
   'timeex',
 ]
 
-if (props.isCreate) {
-  form.id_enter = props.itemData.id_enter;
-  form.ncar = props.itemData.ncar;
-  form.driver_fio = props.itemData.driver_fio
-  form.driver_phone = props.itemData.driver_phone
-  form.driver_licence = props.itemData.driver_licence
-} else if (!props.isCreate) {
-  for (let field of itemFields) {form[field] = props.itemData[field]}
+
+const setInitialForm = () => {
+  //
+  if (!props.isCreate) { // card and update
+    for (let field of itemFields) {
+      form[field] = props.itemData[field]
+    }
+  } else {  // create
+    for (let field of itemFields) { 
+      form[field] = null
+    }
+    form.id_enter = props.itemData.id_enter;
+    form.ncar = props.itemData.ncar;
+    form.driver_fio = props.itemData.driver_fio
+    form.driver_phone = props.itemData.driver_phone
+    form.driver_licence = props.itemData.driver_licence
+  };
 };
+
+setInitialForm();
+
+// if (props.isCreate) {
+//   form.id_enter = props.itemData.id_enter;
+//   form.ncar = props.itemData.ncar;
+//   form.driver_fio = props.itemData.driver_fio
+//   form.driver_phone = props.itemData.driver_phone
+//   form.driver_licence = props.itemData.driver_licence
+// } else if (!props.isCreate) {
+//   for (let field of itemFields) {form[field] = props.itemData[field]}
+// };
 
 const file = ref(null)
 const toast = useToast();
@@ -278,7 +299,7 @@ async function downloadFile(document_id) {
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="formBtn" type="reset">ОЧИСТИТЬ</button>
+          <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
           <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="!props.isCreate">
