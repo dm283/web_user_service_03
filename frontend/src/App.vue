@@ -39,13 +39,19 @@ const showMessengerBar = ref(false);
 const showMenuBar = ref(true);
 
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+
 async function getData() {
   //
   try {
     state.users = [];
 
     let query_users = `http://${backendIpAddress}:${backendPort}/users/`
-    const response_users = await axios.get(query_users)
+    const response_users = await axios.get(query_users, {headers: authHeader()})
     for (let u of response_users.data) {
       state.users.push(u['login'])
     }
@@ -62,40 +68,73 @@ async function getData() {
 
 const authSubmit = async () => {
   //
+  let formData = new FormData();
+  formData.append('username', login.value);
+  formData.append('password', password.value);
+
   try {
     const response = await axios.post(
-      `http://${backendIpAddress}:${backendPort}/signin?` + 'login=' + login.value + '&password=' + password.value
-    );
-    token.value = response.data.your_new_token;
-
-    if (response.status == 202) {
+      `http://${backendIpAddress}:${backendPort}/token`,
+      formData, {headers: {'Content-Type': 'multipart/form-data'}});
+    if (response.data.access_token) {
+      localStorage.setItem('user', JSON.stringify(response.data));
       isAuthorized.value = true;
-    };
-
-    state.isLoading = true;
-    await getData();
+      state.isLoading = true;
+      await getData();
+    }
   } catch (error) {
-    // console.error('unaccepted', error);
     authFormMessage.value = 'Некорректный логин или пароль.'
     isAuthorized.value = false;
   };
-};
+}
 
 const signOut = async () => {
   //
-  try {
-    let query = `http:///${backendIpAddress}:${backendPort}/dashboard/signout` + '?token=' + token.value
-    const response = await axios.post(query);
-  
-    if (response.data.message == 'signed out') {
-      login.value = '';
-      password.value = '';
-      isAuthorized.value = false;
-    }
-  } catch (error) {
-    console.error('unable to sign out', error);
-  }
+  localStorage.removeItem('user');
+  login.value = '';
+  password.value = '';
+  isAuthorized.value = false;
+  await getData();
 };
+
+
+
+// const authSubmit = async () => {
+//   //
+//   try {
+//     const response = await axios.post(
+//       `http://${backendIpAddress}:${backendPort}/signin?` + 'login=' + login.value + '&password=' + password.value
+//     );
+//     token.value = response.data.your_new_token;
+
+//     if (response.status == 202) {
+//       isAuthorized.value = true;
+//     };
+
+//     state.isLoading = true;
+//     await getData();
+//   } catch (error) {
+//     // console.error('unaccepted', error);
+//     authFormMessage.value = 'Некорректный логин или пароль.'
+//     isAuthorized.value = false;
+//   };
+// };
+
+// const signOut = async () => {
+//   //
+//   try {
+//     let query = `http:///${backendIpAddress}:${backendPort}/dashboard/signout` + '?token=' + token.value
+//     const response = await axios.post(query);
+  
+//     if (response.data.message == 'signed out') {
+//       login.value = '';
+//       password.value = '';
+//       isAuthorized.value = false;
+//     }
+//   } catch (error) {
+//     console.error('unable to sign out', error);
+//   }
+// };
 
 </script>
 
@@ -227,16 +266,6 @@ const signOut = async () => {
       :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
       />
     </RouterLink>
-    <!-- <RouterLink to="/documents">
-      <MenuSection :label="'Документы'" :icon="'file'" :description="'Загрузка документов'"
-      :selected="state.selectedMenu=='docsSec' ? '1' : '0'" @click="state.selectedMenu='docsSec'"
-      />
-    </RouterLink>
-    <RouterLink to="/dashboard">  
-      <MenuSection :label="'Дашборд'" :icon="'th-large'" :description="'Информация о состоянии склада'"
-      :selected="state.selectedMenu=='dashSec' ? '1' : '0'" @click="state.selectedMenu='dashSec'"
-      />
-    </RouterLink> -->
   </div>
 </div>
 

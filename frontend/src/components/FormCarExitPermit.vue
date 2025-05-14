@@ -20,10 +20,16 @@ const props = defineProps({
 
 const toast = useToast();
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
 const handleSubmit = async () => {
 
   try {
-    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/car_exit_permit/${props.itemData.id}`);
+    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/car_exit_permit/${props.itemData.id}`, 
+      '', {headers: authHeader()});
     toast.success('Выезд разрешён');      
     emit('docCreated'); // emit
     emit('closeModal')

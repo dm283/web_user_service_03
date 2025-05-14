@@ -20,10 +20,16 @@ const props = defineProps({
 
 const toast = useToast();
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
 const handleSubmit = async () => {
 
   try {
-    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/set_default_car_status/${props.itemData.id}`);
+    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/set_default_car_status/${props.itemData.id}`,
+      '', {headers: authHeader()});
     toast.success('Установлен дефолтный статус');      
     emit('docCreated'); // emit
     emit('closeModal')

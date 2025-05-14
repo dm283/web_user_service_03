@@ -29,10 +29,16 @@ const selectedItem = ref('')
 const devSelected = ref({});
 const showDropDownSelect = ref({});
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+
 onMounted(async () => {
     try {
       state.query = `http://${backendIpAddress}:${backendPort}/car_terminal_for_exit/`;
-      const response = await axios.get(state.query);
+      const response = await axios.get(state.query, {headers: authHeader()});
       state.documents = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -120,14 +126,6 @@ const setFilter = (field) => {
           </div>
         </div>
 
-        <!-- <div class=formInputDiv>
-          <label class=formLabelStyle>Номер машины</label>
-          <select class="formInputStyle bg-white" v-model="selectedItem">
-            <option v-for="document in state.documents" :value="document">
-              {{ document.ncar }}
-            </option>
-          </select>
-        </div> -->
       </div>
 
       <div class="mt-3 mb-5 py-3 px-5 text-center overflow-auto">

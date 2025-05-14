@@ -32,15 +32,26 @@ const selectedItem = ref('')
 const devSelected = ref({});
 const showDropDownSelect = ref({});
 
+
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
+}
+
+
 if (!props.isCard) {
 onMounted(async () => {
     try {
       state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_posted/`;
-      const response = await axios.get(state.query);
+      const response = await axios.get(state.query, {headers: authHeader()});
       state.entiryRequests = response.data;
 
       state.query = `http://${backendIpAddress}:${backendPort}/contacts/`;
-      const response_2 = await axios.get(state.query);
+      const response_2 = await axios.get(state.query, {headers: authHeader()});
       state.contacts = response_2.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -54,7 +65,8 @@ onMounted(async () => {
 if (props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`);
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`, 
+        {headers: authHeader()});
       state.documents = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -124,28 +136,6 @@ const setFormValues = () => {
   form.radiation = false; form.brokenAwning = false; form.brokenSeal = false;
 }
 
-// const setFilter = (field) => {
-//   // filter setting
-//   state.filteredList = [];
-//   for (let rec of state.entiryRequests) {
-//     // if ( rec[field].toString().toUpperCase().indexOf(devSelected.value[field]) > -1 ) {
-//     if ( rec[field].toString().toUpperCase().indexOf(form[field]) > -1 ) {
-//       state.filteredList.push(rec);
-//     };
-//   };
-//   if (state.filteredList.length == 0) {
-//     for (let xobj of state.entiryRequests) {
-//       let clonedObj = {...xobj};
-//       state.filteredList.push(clonedObj);
-//     };
-//   }
-// };
-
-// const setFormValues = () => {
-//   for (let field of itemFields) {form[field] = selectedItem.value[field]}
-//   form.radiation = false; form.brokenAwning = false; form.brokenSeal = false;
-// }
-
 
 const setInitialForm = () => {
   //
@@ -168,23 +158,6 @@ const setInitialForm = () => {
 
 setInitialForm();
 
-
-// const initEmptyForm = () => {
-//     form.ncar = '_234РА23'
-//     form.radiation = false
-//     form.brokenAwning = false
-//     form.brokenSeal = false
-// }
-
-// if (props.itemData) {
-//   for (let field of itemFields) {
-//     form[field] = props.itemData[field]
-//     form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
-//   }
-// } else {
-//   initEmptyForm();
-// };
-
 const file = ref(null)
 const toast = useToast();
 
@@ -192,12 +165,13 @@ const postingItem = async () => {
   //
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`);
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`,
+        '', {headers: authHeader()}
+      );
       toast.success('Запись проведена');
     } else {
       return;
     }
-
     emit('docCreated'); emit('closeModal');
   } catch (error) {
     let err = error.response.data.detail;
@@ -230,7 +204,7 @@ const handleSubmit = async () => {
     formData.append('contact_name', form.contact_name);
     try {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.uuid}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
     } catch (error) {
       console.error('Error uploading file', error);
       toast.error('File has not been uploaded');
@@ -244,11 +218,11 @@ const handleSubmit = async () => {
   try {
     if (!props.itemData) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Новый запись добавлена');
     } else {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data'}});
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Запись обновлена');      
     }
     emit('docCreated'); // emit
@@ -262,7 +236,8 @@ const handleSubmit = async () => {
 
 async function downloadFile(document_id) {
   // downloads file
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, {responseType: "blob"});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, 
+    {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -304,19 +279,6 @@ async function downloadFile(document_id) {
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       
       <div class="flex">
-        <!-- <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Номер машины</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('ncar'); 
-              showDropDownSelect.ncar ? showDropDownSelect.ncar=false : showDropDownSelect.ncar=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="devSelected.ncar" @keyup="setFilter('ncar')" :required="true"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect.ncar" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="devSelected.ncar=item.ncar; selectedItem=item; showDropDownSelect.ncar=false; setFormValues()" >
-              {{ item.ncar }}
-            </div>
-          </div>
-        </div> -->
         <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Номер машины</label>
           <div :class=formInputStyle class="flex" @click="setFilter('ncar', 'entiryRequests', 'ncar'); 
               showDropDownSelect.ncar ? showDropDownSelect.ncar=false : showDropDownSelect.ncar=true;">
@@ -491,7 +453,7 @@ async function downloadFile(document_id) {
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="formBtn" type="button" @click="setInitialForm();">ОТМЕНИТЬ</button>
+          <button class="formBtn" type="button" @click="setInitialForm();">СБРОСИТЬ</button>
           <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
         </div>
         <div class="float-right" v-if="props.itemData">
