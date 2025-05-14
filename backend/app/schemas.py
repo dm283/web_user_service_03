@@ -221,8 +221,6 @@ class UserBase(BaseModel):
     login: str
     email: str
     contact_id: int
-    # name: str
-    # inn: str
     type: str
 
 

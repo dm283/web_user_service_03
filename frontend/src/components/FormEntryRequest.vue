@@ -13,6 +13,8 @@ var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
 
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
 const emit = defineEmits(['docCreated', 'closeModal'])
 
 const props = defineProps({
@@ -128,6 +130,13 @@ const setInitialForm = () => {
     }
     form.ncar = '_234РА23' // template for 'ncar'
   };
+
+  if (userInfo.contact_id!=0) {  // for the client service
+    form.contact = userInfo.contact_id
+    form.contact_name = userInfo.contact_name
+    form.contact_name_input = userInfo.contact_name
+  }
+
 };
 
 setInitialForm();
@@ -286,7 +295,7 @@ async function downloadFile(document_id) {
         </div>
 
         <!-- fake field 'contact_name_input' for dropdown list -->
-        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Клиент</label>
+        <div class="formInputDiv" v-if="!props.isCard & userInfo.contact_id==0">   <label class=formLabelStyle>Клиент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
               showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 

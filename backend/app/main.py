@@ -292,10 +292,33 @@ def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_
     return documents
 
 
+@app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
+def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_entry_requests(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/entry_requests_client/{contact_id}', response_model=list[schemas.EntryRequest])
+def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        contact_id: int,
+                        skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_entry_requests_client(contact_id=contact_id, db=db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/carpasses/', response_model=list[schemas.Carpass])
 def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_carpasses(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/carpasses_client/{contact_id}', response_model=list[schemas.Carpass])
+def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   contact_id: int,
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_carpasses_client(contact_id=contact_id, db=db, skip=skip, limit=limit)
     return items
 
 
@@ -317,13 +340,6 @@ def read_car_at_terminal_for_exit(current_user: Annotated[UserAuth, Depends(get_
 def read_exitcarpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                        skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
-    return items
-
-
-@app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
-def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                        skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_entry_requests(db, skip=skip, limit=limit)
     return items
 
 
@@ -545,6 +561,18 @@ def read_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+
+@app.get("/users/by_name/{username}", response_model=schemas.User)
+def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+              username: str, db: Session = Depends(get_db)):
+    db_user = get_user(username=username, db=db)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+# def get_user(username: str, db: Session):
+
 
 
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)

@@ -28,6 +28,7 @@ const state = reactive({
   data: [],
   isLoading: true,
   selectedMenu: 'carEnter',
+  userInfo: {},
 })
 
 const token = ref('')
@@ -48,8 +49,16 @@ const authHeader = () => {
 async function getData() {
   //
   try {
-    state.users = [];
+    const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/users/by_name/${login.value}`, {headers: authHeader()})
+    state.userInfo = response1.data  // contact_id, type
+    if (state.userInfo.contact_id != 0) {
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts/${state.userInfo.contact_id}`, {headers: authHeader()})
+      state.userInfo.contact_name = response2.data.name  // append 'name' of contact
+    }
+    localStorage.setItem('userInfo', JSON.stringify(state.userInfo));
+    
 
+    state.users = [];
     let query_users = `http://${backendIpAddress}:${backendPort}/users/`
     const response_users = await axios.get(query_users, {headers: authHeader()})
     for (let u of response_users.data) {
@@ -224,6 +233,7 @@ const signOut = async () => {
       <i class="pi pi-bars" style="font-size: 1.3rem" @click="showMenuBar=(showMenuBar) ? false:true"></i>
     </div>
     <div class="inline-block mt-3 px-4 border-r-2">{{ companyName }}</div>
+    <div v-if="state.userInfo.contact_id != 0" class="inline-block mt-3 px-4 border-r-2">{{ state.userInfo.contact_name }}</div>
     <div class="inline-block mt-3 px-4">Управление терминалом</div>
   </div>
   <div class="mt-3.5 text-center md:flex md:float-right">
@@ -251,17 +261,17 @@ const signOut = async () => {
       :selected="state.selectedMenu=='carEnter' ? '1' : '0'" @click="state.selectedMenu='carEnter'"
       />
     </RouterLink>
-    <RouterLink to="/car_terminal">
+    <RouterLink to="/car_terminal" v-if="state.userInfo.contact_id == 0">
       <MenuSection :label="'ТС на терминале'" :icon="'car'" :description="'Информация о ТС на терминале'"
       :selected="state.selectedMenu=='carTerminal' ? '1' : '0'" @click="state.selectedMenu='carTerminal'"
       />
     </RouterLink>
-    <RouterLink to="/exitcarpasses">
+    <RouterLink to="/exitcarpasses" v-if="state.userInfo.contact_id == 0">
       <MenuSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'"
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
       />
     </RouterLink>
-    <RouterLink to="/parking_map">
+    <RouterLink to="/parking_map" v-if="state.userInfo.contact_id == 0">
       <MenuSection :label="'План стоянки ТС'" :icon="'th-large'" :description="'План стоянки ТС'"
       :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
       />
