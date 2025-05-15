@@ -38,6 +38,8 @@ const password = ref('');
 const authFormMessage = ref('')
 const showMessengerBar = ref(false);
 const showMenuBar = ref(true);
+const headerColor = ref('')
+const sidebarColor = ref('')
 
 
 const authHeader = () => {
@@ -57,6 +59,9 @@ async function getData() {
     }
     localStorage.setItem('userInfo', JSON.stringify(state.userInfo));
     
+    headerColor.value = state.userInfo.contact_id == 0 ? "bg-gradient-to-r from-sky-800 to-sky-600" : 
+      "bg-gradient-to-r from-teal-800 to-teal-600"
+    sidebarColor.value = state.userInfo.contact_id == 0 ? "bg-sky-700" : "bg-teal-700"
 
     state.users = [];
     let query_users = `http://${backendIpAddress}:${backendPort}/users/`
@@ -226,7 +231,8 @@ const signOut = async () => {
 
 
 <!-- **************   HEADER    ******************* -->
-<nav class="bg-gradient-to-r from-sky-800 to-sky-600 px-5 h-14 text-white overflow-auto">  
+<nav :class=headerColor class="px-5 h-14 text-white overflow-auto">
+<!-- <nav class="bg-gradient-to-r from-sky-800 to-sky-600 px-5 h-14 text-white overflow-auto"> -->
   <div class="text-center md:flex md:float-left text-xl">
     <div class="inline-block w-10 h-10 rounded-full pt-1.5 mt-2 mr-5 cursor-pointer 
       text-cyan-300 hover:bg-sky-700 active:text-cyan-100">
@@ -249,7 +255,7 @@ const signOut = async () => {
 
 
 <!-- **************   MAIN MENU SIDEBAR    ******************* -->
-<div v-if="showMenuBar" class="w-60 h-full fixed bg-sky-700 text-white">
+<div v-if="showMenuBar" :class=sidebarColor class="w-60 h-full fixed text-white">
   <div class="">
     <RouterLink to="/entry_requests">
       <MenuSection :label="'Заявки на въезд ТС'" :icon="'pen-to-square'" :description="'Информация о заявках на въезд ТС'"
