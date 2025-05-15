@@ -288,7 +288,8 @@ async function downloadFile(document_id) {
           </div>
           <div v-if="showDropDownSelect.ncar" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="form.ncar=item.ncar; selectedItem=item; showDropDownSelect.ncar=false; setFormValues()" >
+              @click="form.ncar=item.ncar; form.contact_name_input=item.contact_name; 
+                selectedItem=item; showDropDownSelect.ncar=false; setFormValues()" >
               {{ item.ncar }}
             </div>
           </div>

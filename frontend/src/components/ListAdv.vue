@@ -5,6 +5,9 @@ import 'primeicons/primeicons.css';
 import axios from 'axios';
 import { utils, writeFileXLSX, writeFile } from 'xlsx';
 
+
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
 const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit',
   'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited'
 ]) // emit
@@ -558,7 +561,8 @@ const rowClick = (index, item) => {
     <!-- добавить запись -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
       @click="emit('btnAdd', props.name)" 
-      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'"
+      v-if="(props.name=='Пропуска ТС на въезд' & userInfo.contact_id==0) | 
+        props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'"
     >
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
@@ -566,7 +570,8 @@ const rowClick = (index, item) => {
     <!-- редактировать -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnEdit', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
-      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'"
+      v-if="(props.name=='Пропуска ТС на въезд' & userInfo.contact_id==0) | 
+        props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'"
     >
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
@@ -574,7 +579,8 @@ const rowClick = (index, item) => {
     <!-- удалить -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnDelete', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
-      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'">
+      v-if="(props.name=='Пропуска ТС на въезд' & userInfo.contact_id==0) | 
+        props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'">
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>
 
@@ -589,7 +595,8 @@ const rowClick = (index, item) => {
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnRollback', selectedItem, props.name)" 
       :disabled="!selectedItem | !selectedItem.posted | selectedItem.exitcarpass_created | selectedItem.carpass_created" 
-      v-if="props.name=='Пропуска ТС на въезд' | props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'">
+      v-if="(props.name=='Пропуска ТС на въезд' & userInfo.contact_id==0) | 
+        props.name=='Пропуска ТС на выезд' | props.name=='Заявки на въезд ТС'">
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>
     </button>
 

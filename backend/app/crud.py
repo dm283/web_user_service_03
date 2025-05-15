@@ -39,6 +39,13 @@ def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
         offset(skip).limit(limit).all()
 
 
+def get_carpasses_client(contact_id: int, db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Carpass).filter(models.Carpass.contact==contact_id).\
+        filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
 def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.is_active==True, models.Carpass.posted==True, models.Carpass.dateex==None).\
@@ -62,6 +69,14 @@ def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
 def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.EntryRequest).filter(models.EntryRequest.is_active == True).\
+        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
+        offset(skip).limit(limit).all()
+
+
+def get_entry_requests_client(contact_id: int, db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.EntryRequest).filter(models.EntryRequest.contact==contact_id).\
+        filter(models.EntryRequest.is_active == True).\
         order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
         offset(skip).limit(limit).all()
 

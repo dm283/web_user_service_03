@@ -20,7 +20,9 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
-  
+
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
 const props = defineProps({
   view_type: String,
   list_title: String,
@@ -58,65 +60,57 @@ const showUpdateEntryRequest = ref(false)
 const selectedItem = ref('')
 const itemName = ref('')
 
-
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
   if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
 }
 
+// queries
+const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/carpasses/`:
+  `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.contact_id}`
+
+const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
+  `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.contact_id}`
+
+const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
+const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
+
 
 if (props.view_type == 'enter') {
-  state.query = `http://${backendIpAddress}:${backendPort}/carpasses/`;
+  state.query = query_carpass;
   state.listTableColumns = {
     'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Клиент', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
-  state.additionalColumns = {
-      // 'ntir':'№ документа доставки','ntir_date':'','customs_doc':'','customs_doc_date':'',
-      // 'driver_fio':'ФИО водителя','driver_phone':'Телефон водителя для связи','driver_licence':'',
-      // 'car_model':'','entry_type':''
-  };
+  state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 } 
 else if (props.view_type == 'terminal') {
-  state.query = `http://${backendIpAddress}:${backendPort}/car_terminal/`;
+  state.query = query_car_terminal;
   state.listTableColumns = {
     'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact':'Клиент', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
-  state.additionalColumns = {
-      // 'ntir':'№ документа доставки', 'driver':'Перевозчик','drv_man':'ФИО водителя','dev_phone':'Телефон водителя для связи'
-  };
+  state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 } 
 else if (props.view_type == 'exitCarpass') {
-  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`;
+  state.query = query_exitcarpass;
   state.listTableColumns = {
     'id_exit':'№', 'id_enter':'№ пропуска на въезд', 'ncar':'№ ТС', 'driver_fio':'ФИО водителя','driver_phone':'Телефон водителя для связи',
     'ndexit':'№ документа выпуска', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
-  state.additionalColumns = {
-      // 'comment':'Примечание'
-  };
+  state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 
 else if (props.view_type == 'entryRequest') {
-  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/`;
+  state.query = query_entry_requests;
   state.listTableColumns = {
     'dateen':'Дата въезда','timeen':'Время въезда с','plan_timeen_to':'Время въезда по','ncar':'№ ТС',
     'contact_name':'Клиент','entry_type':'Тип въезда'
   };
-  state.additionalColumns = {
-      // 'drv_man':'ФИО водителя',
-      // 'drv_licence':'№ водительских прав',
-      // 'car_model':'Модель автомобиля',
-      // 'ntir':'№ транспортного документа',
-      // 'ntir_date':'Дата транспортного документа',
-      // 'customs_doc':'№ таможенного документа',
-      // 'customs_doc_date':'Дата таможенного документа',
-      // 'comment':'Примечание'
-  };
+  state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 
