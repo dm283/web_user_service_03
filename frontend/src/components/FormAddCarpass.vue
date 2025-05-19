@@ -197,20 +197,7 @@ const handleSubmit = async () => {
   // form submit handling (carpass create or update)
   let formData = new FormData();
 
-  // files uploading
-  if (files.value) {
-    for (let file of files.value.files) {
-    formData.append('file', file);
-    formData.append('contact_name', form.contact_name);
-    try {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.uuid}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-    } catch (error) {
-      console.error('Error uploading file', error);
-      toast.error('File has not been uploaded');
-    };
-  };
-  };
+
             
   // item updating
   for (let field of itemFields) { formData.append(field, form[field]) };
@@ -220,11 +207,29 @@ const handleSubmit = async () => {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Новый запись добавлена');
+      state.responseItem = response.data;
     } else {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-      toast.success('Запись обновлена');      
+      toast.success('Запись обновлена');
+      state.responseItem = response.data;
     }
+
+    // files uploading
+    if (files.value) {
+      for (let file of files.value.files) {
+        formData.append('file', file);
+        formData.append('contact_name', form.contact_name);
+        try {
+          const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
+            formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+        } catch (error) {
+          console.error('Error uploading file', error);
+          toast.error('File has not been uploaded');
+        };
+      };
+    };
+
     emit('docCreated'); // emit
     emit('closeModal')
   } catch (error) {
@@ -455,7 +460,8 @@ async function downloadFile(document_id) {
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm();">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
+          <input ref="files" name="files" type="file" multiple class="formInputFile"/>
+          <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
