@@ -137,6 +137,20 @@ const setFormValues = () => {
 }
 
 
+const getDocs = async () => {
+  console.log('getting docs for entryRequest =', selectedItem.value['uuid'])
+  let uuid = selectedItem.value['uuid']
+  try {
+    const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${uuid}`, 
+      {headers: authHeader()});
+    state.entry_request_docs = response.data;
+  } catch (error) {
+    console.error('Error fetching entry_request_docs', error);
+  }
+  console.log('entry_request_docs =', state.entry_request_docs)
+}
+
+
 const setInitialForm = () => {
   //
   if (props.itemData) { // card and update
@@ -153,6 +167,7 @@ const setInitialForm = () => {
     form.radiation = false
     form.brokenAwning = false
     form.brokenSeal = false
+    state.entry_request_docs = null
   };
 };
 
@@ -197,8 +212,6 @@ const handleSubmit = async () => {
   // form submit handling (carpass create or update)
   let formData = new FormData();
 
-
-            
   // item updating
   for (let field of itemFields) { formData.append(field, form[field]) };
 
@@ -229,6 +242,20 @@ const handleSubmit = async () => {
         };
       };
     };
+
+    // attaching files of initial entry_request into creating carpass
+    if (state.entry_request_docs) {
+      for (let doc of state.entry_request_docs) {
+        formData.append('doc_id', doc.id);
+        formData.append('entity_uuid', state.responseItem.uuid);
+        try {
+          const response = await axios.put(`http://${backendIpAddress}:${backendPort}/attach_doc_to_additional_entity/`, 
+            formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+        } catch (error) {
+          console.error('Error uploading file', error);
+        };        
+      }
+    }
 
     emit('docCreated'); // emit
     emit('closeModal')
@@ -294,7 +321,7 @@ async function downloadFile(document_id) {
           <div v-if="showDropDownSelect.ncar" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
               @click="form.ncar=item.ncar; form.contact_name_input=item.contact_name; 
-                selectedItem=item; showDropDownSelect.ncar=false; setFormValues()" >
+                selectedItem=item; showDropDownSelect.ncar=false; setFormValues(); getDocs()" >
               {{ item.ncar }}
             </div>
           </div>
@@ -454,6 +481,18 @@ async function downloadFile(document_id) {
         </div>
         </div>
       </div>
+
+
+      <!-- Show when carpass is creating fron entry_request and the last one has documents -->
+      <div class="border-t border-slate-300 mx-6 pt-3" v-if="state.entry_request_docs">
+        <label class=formLabelStyle>Документы</label>
+        <div class="flex space-x-3 mt-3">
+        <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.entry_request_docs">
+          <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.id)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
+          <div class="">{{ document.filename }}</div>
+        </div>
+        </div>
+        </div>  
 
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
