@@ -13,7 +13,7 @@ var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
 
-const emit = defineEmits(['docCreated', 'closeModal']) // emit
+const emit = defineEmits(['docCreated', 'closeModal'])
 
 const props = defineProps({
   itemData: Object,
@@ -29,7 +29,6 @@ const state = reactive({
 })
 
 const selectedItem = ref('')
-const devSelected = ref({});
 const showDropDownSelect = ref({});
 
 
@@ -257,8 +256,7 @@ const handleSubmit = async () => {
       }
     }
 
-    emit('docCreated'); // emit
-    emit('closeModal')
+    emit('docCreated'); emit('closeModal');
   } catch (error) {
     console.error('Error adding item', error);
     toast.error('Item has not added');
@@ -352,17 +350,6 @@ async function downloadFile(document_id) {
           <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
-
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
-          <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Наименование клиента</label>
-          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="isCard" />
-        </div> -->
-
 
       </div>
 
@@ -492,7 +479,7 @@ async function downloadFile(document_id) {
           <div class="">{{ document.filename }}</div>
         </div>
         </div>
-        </div>  
+      </div>  
 
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
