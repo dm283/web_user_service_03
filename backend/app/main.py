@@ -274,6 +274,16 @@ async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_
     return crud.create_n_save_document(db=db, file=file, document=document)
 
 
+
+@app.put("/attach_doc_to_additional_entity/")
+async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                                  doc_id: Annotated[int, Form()], entity_uuid: Annotated[str, Form()],
+                                  db: Session = Depends(get_db)):
+    return crud.attach_doc_to_additional_entity(db=db, doc_id=doc_id, entity_uuid=entity_uuid)
+    
+
+
+
 #########################################################    GET ITEM ENDPOINTS
 @app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
 def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -354,8 +364,10 @@ def read_entry_requests_posted(current_user: Annotated[UserAuth, Depends(get_cur
 def get_entity_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          related_doc_uuid: str, db: Session = Depends(get_db)):
     # get entity documents from db table documents
-    documents =  db.query(models.Document).filter(models.Document.related_doc_uuid == related_doc_uuid).\
+    documents =  db.query(models.Document).filter(models.Document.related_doc_uuid.contains(related_doc_uuid)).\
         order_by(models.Document.created_datetime.desc()).all()
+    # documents =  db.query(models.Document).filter(models.Document.related_doc_uuid == related_doc_uuid).\
+    #     order_by(models.Document.created_datetime.desc()).all()
     return documents
 
 
@@ -570,9 +582,6 @@ def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_acti
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-
-# def get_user(username: str, db: Session):
-
 
 
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)

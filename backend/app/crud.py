@@ -7,6 +7,22 @@ from uuid import uuid4
 from app import models, schemas
 
 
+
+def attach_doc_to_additional_entity(db: Session, doc_id: int, entity_uuid: str):
+    #
+    db_document = db.query(models.Document).filter(models.Document.id==doc_id).first()
+    if db_document is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    related_doc_uuid = db_document.related_doc_uuid
+    new_related_doc_uuid = related_doc_uuid + ',' + entity_uuid
+
+    setattr(db_document, 'related_doc_uuid', new_related_doc_uuid)
+    db.commit()
+
+    return db_document.id
+
+
 def create_n_save_document(db: Session, file: UploadFile, document: schemas.DocumentCreate):
     # 
     # add filecontent as blob 

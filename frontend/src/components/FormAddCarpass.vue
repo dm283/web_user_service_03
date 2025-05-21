@@ -13,7 +13,7 @@ var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
 
-const emit = defineEmits(['docCreated', 'closeModal']) // emit
+const emit = defineEmits(['docCreated', 'closeModal'])
 
 const props = defineProps({
   itemData: Object,
@@ -29,7 +29,6 @@ const state = reactive({
 })
 
 const selectedItem = ref('')
-const devSelected = ref({});
 const showDropDownSelect = ref({});
 
 
@@ -137,6 +136,20 @@ const setFormValues = () => {
 }
 
 
+const getDocs = async () => {
+  console.log('getting docs for entryRequest =', selectedItem.value['uuid'])
+  let uuid = selectedItem.value['uuid']
+  try {
+    const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${uuid}`, 
+      {headers: authHeader()});
+    state.entry_request_docs = response.data;
+  } catch (error) {
+    console.error('Error fetching entry_request_docs', error);
+  }
+  console.log('entry_request_docs =', state.entry_request_docs)
+}
+
+
 const setInitialForm = () => {
   //
   if (props.itemData) { // card and update
@@ -153,6 +166,7 @@ const setInitialForm = () => {
     form.radiation = false
     form.brokenAwning = false
     form.brokenSeal = false
+    state.entry_request_docs = null
   };
 };
 
@@ -197,21 +211,6 @@ const handleSubmit = async () => {
   // form submit handling (carpass create or update)
   let formData = new FormData();
 
-  // files uploading
-  if (files.value) {
-    for (let file of files.value.files) {
-    formData.append('file', file);
-    formData.append('contact_name', form.contact_name);
-    try {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${props.itemData.uuid}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-    } catch (error) {
-      console.error('Error uploading file', error);
-      toast.error('File has not been uploaded');
-    };
-  };
-  };
-            
   // item updating
   for (let field of itemFields) { formData.append(field, form[field]) };
 
@@ -220,13 +219,44 @@ const handleSubmit = async () => {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Новый запись добавлена');
+      state.responseItem = response.data;
     } else {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-      toast.success('Запись обновлена');      
+      toast.success('Запись обновлена');
+      state.responseItem = response.data;
     }
-    emit('docCreated'); // emit
-    emit('closeModal')
+
+    // files uploading
+    if (files.value) {
+      for (let file of files.value.files) {
+        formData.append('file', file);
+        formData.append('contact_name', form.contact_name);
+        try {
+          const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
+            formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+        } catch (error) {
+          console.error('Error uploading file', error);
+          toast.error('File has not been uploaded');
+        };
+      };
+    };
+
+    // attaching files of initial entry_request into creating carpass
+    if (state.entry_request_docs) {
+      for (let doc of state.entry_request_docs) {
+        formData.append('doc_id', doc.id);
+        formData.append('entity_uuid', state.responseItem.uuid);
+        try {
+          const response = await axios.put(`http://${backendIpAddress}:${backendPort}/attach_doc_to_additional_entity/`, 
+            formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+        } catch (error) {
+          console.error('Error uploading file', error);
+        };        
+      }
+    }
+
+    emit('docCreated'); emit('closeModal');
   } catch (error) {
     console.error('Error adding item', error);
     toast.error('Item has not added');
@@ -289,7 +319,7 @@ async function downloadFile(document_id) {
           <div v-if="showDropDownSelect.ncar" class="bg-slate-100 border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
               @click="form.ncar=item.ncar; form.contact_name_input=item.contact_name; 
-                selectedItem=item; showDropDownSelect.ncar=false; setFormValues()" >
+                selectedItem=item; showDropDownSelect.ncar=false; setFormValues(); getDocs()" >
               {{ item.ncar }}
             </div>
           </div>
@@ -320,17 +350,6 @@ async function downloadFile(document_id) {
           <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
-
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Клиент (код)</label>
-          <input type="number" v-model="form.contact" :class="[errField['contact']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Наименование клиента</label>
-          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="isCard" />
-        </div> -->
-
 
       </div>
 
@@ -451,11 +470,24 @@ async function downloadFile(document_id) {
       </div>
 
 
+      <!-- Show when carpass is creating fron entry_request and the last one has documents -->
+      <div class="border-t border-slate-300 mx-6 pt-3" v-if="state.entry_request_docs">
+        <label class=formLabelStyle>Документы</label>
+        <div class="flex space-x-3 mt-3">
+        <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.entry_request_docs">
+          <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.id)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
+          <div class="">{{ document.filename }}</div>
+        </div>
+        </div>
+      </div>  
+
+
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm();">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/>
+          <input ref="files" name="files" type="file" multiple class="formInputFile"/>
+          <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>

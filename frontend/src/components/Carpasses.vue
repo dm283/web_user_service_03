@@ -88,7 +88,7 @@ if (props.view_type == 'enter') {
 else if (props.view_type == 'terminal') {
   state.query = query_car_terminal;
   state.listTableColumns = {
-    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact':'Клиент', 
+    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Клиент', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {  };
