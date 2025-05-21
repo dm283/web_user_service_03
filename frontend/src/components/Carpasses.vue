@@ -74,6 +74,7 @@ const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress
 
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
+const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 
 
 if (props.view_type == 'enter') {
@@ -103,12 +104,19 @@ else if (props.view_type == 'exitCarpass') {
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
-
 else if (props.view_type == 'entryRequest') {
   state.query = query_entry_requests;
   state.listTableColumns = {
     'dateen':'Дата въезда','timeen':'Время въезда с','plan_timeen_to':'Время въезда по','ncar':'№ ТС',
     'contact_name':'Клиент','entry_type':'Тип въезда'
+  };
+  state.additionalColumns = {  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+else if (props.view_type == 'contacts') {
+  state.query = query_contacts;
+  state.listTableColumns = {
+    'name':'Наименование','inn':'ИНН'
   };
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};

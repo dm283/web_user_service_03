@@ -282,6 +282,11 @@ const signOut = async () => {
       :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
       />
     </RouterLink>
+    <RouterLink to="/catalogs" v-if="state.userInfo.contact_id == 0">
+      <MenuSection :label="'Справочники'" :icon="'server'" :description="'Каталоги данных'"
+      :selected="state.selectedMenu=='catalogs' ? '1' : '0'" @click="state.selectedMenu='catalogs'"
+      />
+    </RouterLink>
   </div>
 </div>
 
