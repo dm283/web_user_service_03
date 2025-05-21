@@ -12,6 +12,8 @@ import FormInitAddExitcarpass from './FormInitAddExitcarpass.vue';
 import FormSetDefaultStatus from './FormSetDefaultStatus.vue';
 import FormExitProhibited from './FormExitProhibited.vue';
 import FormEntryRequest from './FormEntryRequest.vue';
+import FormContact from './FormContact.vue';
+
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -56,6 +58,10 @@ const showExitProhibited = ref(false)
 const showCardEntryRequest = ref(false)
 const showAddEntryRequest = ref(false)
 const showUpdateEntryRequest = ref(false)
+
+const showCardContact = ref(false)
+const showAddContact = ref(false)
+const showUpdateContact = ref(false)
 
 const selectedItem = ref('')
 const itemName = ref('')
@@ -186,6 +192,7 @@ const editItem = (item, name) => {
   if (name == 'Пропуска ТС на въезд') { showUpdateItem.value = true } 
   else if (name == 'Пропуска ТС на выезд') { showUpdateExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
+  else if (name == 'Клиенты') { showUpdateContact.value = true }
 };
 
 const deleteItem = (item, name) => {
@@ -201,6 +208,7 @@ const itemCard = (item, name) => {
   if (name == 'Пропуска ТС на въезд' || name == 'ТС на терминале') { showItemCard.value = true }
   else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
+  else if (name == 'Клиенты') { showCardContact.value = true }
 };
 
 const rollbackItem = (item, section) => {
@@ -241,15 +249,10 @@ const createExitCarpass = (item) => {
 
 const addItem = (section) => {
   //
-  if (section == 'Пропуска ТС на въезд') {
-    showAddItem.value = true;
-  } 
-  else if (section == 'Пропуска ТС на выезд') {
-    showAddExitcarpass.value = true;
-  }
-  else if (section == 'Заявки на въезд ТС') {
-    showAddEntryRequest.value = true;
-  }
+  if (section == 'Пропуска ТС на въезд') { showAddItem.value = true; } 
+  else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
+  else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
+  else if (section == 'Клиенты') { showAddContact.value = true; }
 }
 
 </script>
@@ -333,6 +336,20 @@ const addItem = (section) => {
   <!-- **********************   MODAL ENTRY_REQUEST EDIT  ************************** -->
   <div v-if="showUpdateEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormEntryRequest @close-modal="showUpdateEntryRequest=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
+  <!-- **********************   MODAL CONTACT CARD   ************************** -->
+  <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormContact @close-modal="showCardContact=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL CONTACT ADD   ************************** -->
+  <div v-if="showAddContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormContact @close-modal="showAddContact=false" @doc-created="getData" />
+  </div>
+  <!-- **********************   MODAL CONTACT EDIT  ************************** -->
+  <div v-if="showUpdateContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormContact @close-modal="showUpdateContact=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
 

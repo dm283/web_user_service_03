@@ -10,7 +10,7 @@ class Contact(Base):
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
     name = Column(String)
-    inn = Column(String(12), unique=True)
+    inn = Column(String, unique=True)  # check digits number via pydantic schemas
 
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
