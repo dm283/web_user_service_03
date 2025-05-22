@@ -122,7 +122,7 @@ else if (props.view_type == 'entryRequest') {
 else if (props.view_type == 'contacts') {
   state.query = query_contacts;
   state.listTableColumns = {
-    'name':'Наименование','inn':'ИНН'
+    'name':'Наименование','inn':'ИНН', 'fio':'ФИО','email':'email','idtelegram':'idtelegram'
   };
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};

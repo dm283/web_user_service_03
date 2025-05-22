@@ -317,6 +317,13 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
     return contacts
 
 
+@app.get("/contacts_posted/", response_model=list[schemas.Contact])
+def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    contacts = crud.get_contacts_posted(db, skip=skip, limit=limit)
+    return contacts
+
+
 @app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

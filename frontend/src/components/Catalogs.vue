@@ -48,17 +48,17 @@ const authHeader = () => {
     </div>
     <div class="inline-block mt-5 ml-5">
       <RouterLink to="/brokers">
-        <CatalogSection :label="'Брокеры'" :icon="'pen-to-square'" :description="'Информация о брокерах'" />
+        <CatalogSection :label="'Брокеры'" :icon="'pen-to-square'" :description="'в работе'" />
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
       <RouterLink to="/carriers">
-        <CatalogSection :label="'Перевозчики'" :icon="'truck'" :description="'Информация о перевозчиках'" />
+        <CatalogSection :label="'Перевозчики'" :icon="'truck'" :description="'в работе'" />
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
       <RouterLink to="/drivers">
-        <CatalogSection :label="'Водители'" :icon="'users'" :description="'Информация о водителях'" />
+        <CatalogSection :label="'Водители'" :icon="'users'" :description="'в работе'" />
       </RouterLink>
     </div>
   </div>

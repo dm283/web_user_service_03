@@ -12,7 +12,7 @@ const props = defineProps({
 
 
 <template>
-  <div class="bg-white border rounded-lg shadow-md w-96 h-20 py-3 px-5 text-blue-400 cursor-pointer hover:shadow-lg hover:text-indigo-500">
+  <div class="bg-white border rounded-lg shadow-md w-96 h-20 py-3 px-5 text-blue-400 cursor-pointer hover:shadow-lg hover:text-indigo-600">
     <div class="float-left mt-1 mr-5">
       <i :class="`pi pi-${icon}`" style="font-size: 2.5rem"></i>
     </div>

@@ -49,7 +49,7 @@ onMounted(async () => {
       const response = await axios.get(state.query, {headers: authHeader()});
       state.entiryRequests = response.data;
 
-      state.query = `http://${backendIpAddress}:${backendPort}/contacts/`;
+      state.query = `http://${backendIpAddress}:${backendPort}/contacts_posted/`;
       const response_2 = await axios.get(state.query, {headers: authHeader()});
       state.contacts = response_2.data;
     } catch (error) {

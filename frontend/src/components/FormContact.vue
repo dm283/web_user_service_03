@@ -82,6 +82,11 @@ const files = ref(null)
 const itemFields = [
     'name',
     'inn',
+    'type',
+    'fio',
+    'email',
+    'idtelegram',
+    'comment',
   ]
 
   const setFilter = (fieldForm, entity, fieldEntity) => {
@@ -107,14 +112,14 @@ const setInitialForm = () => {
   if (props.itemData) { // card and update
     for (let field of itemFields) {
       form[field] = props.itemData[field]
-      //form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+      //form['type'] = 'V'  // fake form field for dropdown list
     }
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
       //form['contact_name_input'] = null  // fake form field for dropdown list
     }
-    //form.ncar = '_234РА23' // template for 'ncar'
+    form['type'] = 'V' // template for 'ncar'
   };
 
   // if (userInfo.contact_id!=0) {  // for the client service
@@ -240,8 +245,28 @@ async function downloadFile(document_id) {
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>ИНН</label>
           <input type="number" v-model="form.inn" :class="[errField['inn']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="true" :disabled="isCard" />
+          :required="false" :disabled="isCard" />
         </div>        
+      </div>
+      <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>ФИО</label>
+          <input type="text" v-model="form.fio" :class="[errField['fio']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>email</label>
+          <input type="email" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>idtelegram</label>
+          <input type="text" v-model="form.idtelegram" :class="[errField['idtelegram']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>    
+      </div>
+      <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
+          <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>    
       </div>
 
       <div v-if="props.isCard || props.itemData">
@@ -250,7 +275,7 @@ async function downloadFile(document_id) {
           <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
         </div>
         <!-- Show when loading is done -->
-        <div class="ml-6" v-if="!state.isLoading && state.documents.length>0">
+        <div class="border-t border-slate-300 mx-6 pt-3" v-if="!state.isLoading && state.documents.length>0">
           <label class=formLabelStyle>Документы</label>
           <div class="flex space-x-3 mt-3">
           <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">

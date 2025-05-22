@@ -1,6 +1,6 @@
 from datetime import date, datetime, time, timedelta
 from typing import Annotated
-from pydantic import BaseModel, StringConstraints
+from pydantic import BaseModel, StringConstraints, EmailStr
 from fastapi import UploadFile
 
 
@@ -244,10 +244,20 @@ class User(UserBase):
 class ContactCreate(BaseModel):
     name: str
     inn: str | None = None
+    type: str | None = None
+    fio: str | None = None
+    email: str | None = None
+    idtelegram: str | None = None
+    comment: str | None = None
 
 class ContactValidation(BaseModel):
     name: str
     inn: Annotated[str, StringConstraints(min_length=10, max_length=12)]
+    type: str
+    fio: str
+    email: EmailStr
+    idtelegram: str | None = None
+
 
 class ContactUpdate(ContactCreate):
     updated_datetime: datetime
@@ -255,6 +265,7 @@ class ContactUpdate(ContactCreate):
 class Contact(ContactCreate):
     id: int
     uuid: str
+    related_obj_uuid: str | None
     created_datetime: datetime
     updated_datetime: datetime | None
     post_date: datetime | None

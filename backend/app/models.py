@@ -11,6 +11,12 @@ class Contact(Base):
     uuid = Column(String, unique=True)
     name = Column(String)
     inn = Column(String, unique=True)  # check digits number via pydantic schemas
+    type = Column(String)
+    fio = Column(String)
+    email = Column(String)
+    idtelegram = Column(String)
+    related_obj_uuid = Column(String)
+    comment = Column(String)
 
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
