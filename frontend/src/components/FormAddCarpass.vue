@@ -49,7 +49,7 @@ onMounted(async () => {
       const response = await axios.get(state.query, {headers: authHeader()});
       state.entiryRequests = response.data;
 
-      state.query = `http://${backendIpAddress}:${backendPort}/contacts/`;
+      state.query = `http://${backendIpAddress}:${backendPort}/contacts_posted/`;
       const response_2 = await axios.get(state.query, {headers: authHeader()});
       state.contacts = response_2.data;
     } catch (error) {
@@ -104,6 +104,7 @@ const itemFields = [
     'entry_type',
     'contact',
     'contact_name',
+    'contact_uuid',
     'place_n',
     'radiation',
     'brokenAwning',
@@ -340,7 +341,8 @@ async function downloadFile(document_id) {
           </div>
           <div v-if="showDropDownSelect.contact_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="form.contact=item.id; showDropDownSelect.contact_name_input=false; form.contact_name=item.name;form.contact_name_input=item.name;" >
+              @click="form.contact=item.id; showDropDownSelect.contact_name_input=false; 
+                form.contact_name=item.name;form.contact_name_input=item.name;form.contact_uuid=item.uuid;" >
               {{ item.name }}
             </div>
           </div>

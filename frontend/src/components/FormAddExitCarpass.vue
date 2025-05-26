@@ -284,7 +284,7 @@ async function downloadFile(document_id) {
         <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
       </div>
       <!-- Show when loading is done -->
-      <div class="ml-6" v-if="!state.isLoading && state.documents.length>0">
+      <div class="border-t border-slate-300 mx-6 pt-3" v-if="!state.isLoading && state.documents.length>0">
         <label class=formLabelStyle>Документы</label>
         <div class="flex space-x-3 mt-3">
         <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">

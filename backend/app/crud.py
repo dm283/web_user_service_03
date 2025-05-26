@@ -2,6 +2,7 @@ import datetime
 from fastapi import UploadFile, HTTPException, Depends, status
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
 from uuid import uuid4
 from app import models, schemas
@@ -47,6 +48,14 @@ def create_n_save_document(db: Session, file: UploadFile, document: schemas.Docu
 def get_documents(db: Session, skip: int = 0, limit: int = 100):
     # retrives all documents from database
     return db.query(models.Document).order_by(models.Document.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
+def get_contacts(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Contact).filter(models.Contact.is_active==True).offset(skip).limit(limit).all()
+
+
+def get_contacts_posted(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Contact).filter(models.Contact.is_active==True, models.Contact.posted==True).offset(skip).limit(limit).all()
 
 
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
@@ -135,6 +144,31 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     
     return db_item
 
+#########################################################    RELATED OBJECTS FUNCTIONS
+# def create_rec_related_objects(primary_obj_uuid, secondary_obj_uuid, db: Session):
+#     # creates record in table related_objects
+#     db_ro = models.RelatedObjects(
+#         primary_obj_uuid=primary_obj_uuid, secondary_obj_uuid=secondary_obj_uuid, created_datetime=datetime.datetime.now()
+#     )
+#     try:
+#         db.add(db_ro); db.commit(); db.refresh(db_ro)
+#     except Exception as err:
+#         print(err)
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+
+# def delete_rec_related_objects(primary_obj_uuid, secondary_obj_uuid, db: Session):
+#     # delete record in table related_objects
+#     db_ro =  db.query(models.RelatedObjects).filter(models.RelatedObjects.primary_obj_uuid==primary_obj_uuid, 
+#                 models.RelatedObjects.secondary_obj_uuid==secondary_obj_uuid).first()
+#     if db_ro is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+#     db.delete(db_ro)
+#     db.commit()
+
+
+
 
 def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
     #
@@ -146,6 +180,9 @@ def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
     db_item = models.EntryRequest(**item.model_dump(), uuid=uuid, id_entry_request=id_entry_request, created_datetime=created_datetime)
     try:
         db.add(db_item); db.commit(); db.refresh(db_item)
+        # create records in related_objects
+        # if db_item.contact_uuid:
+        #     create_rec_related_objects(db_item.contact_uuid, uuid, db=db)
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
@@ -176,6 +213,20 @@ def create_carpass(db: Session, item: schemas.CarpassCreate):
 
     return db_item
 
+
+def create_contact(db: Session, item: schemas.ContactCreate):
+    # creates a contact in database
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_contact = models.Contact(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    try:
+        db.add(db_contact); db.commit(); db.refresh(db_contact)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    return db_contact
 
 #########################################################    UPDATE FUNCTIONS
 def update_carpass(db: Session, item_id: int, item: schemas.CarpassUpdate):
@@ -209,6 +260,25 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    contact_uuid_from_db = item_from_db.contact_uuid
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    # create records in related_objects
+    # if contact_uuid_from_db != item.contact_uuid:
+    #     delete_rec_related_objects(contact_uuid_from_db, item_from_db.uuid, db=db)
+    #     create_rec_related_objects(item.contact_uuid, item_from_db.uuid, db=db)
+
+    return item_from_db
+
+
+def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate):
+    #
+    item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
     for field, value in item.model_dump(exclude_unset=True).items():
         setattr(item_from_db, field, value)
@@ -218,6 +288,26 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
 
 
 #########################################################    DELETE FUNCTIONS
+def delete_contact(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        print(msg_detail)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+    db.commit()
+
+    return {"message": f"Contact id {item_id} deleted successfully"}
+
+
 def delete_carpass(db: Session, item_id: int):
     #
     item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
@@ -242,8 +332,15 @@ def delete_entry_request(db: Session, item_id: int):
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    db.delete(item_from_db)
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+
     db.commit()
+
+    # create records in related_objects
+    # delete_rec_related_objects(item_from_db.contact_uuid, item_from_db.uuid, db=db)
 
     return {"message": f"Carpass id {item_id} deleted successfully"}
 
@@ -364,6 +461,26 @@ def posting_carpass(db: Session, item_id: int):
     return item_from_db
 
 
+def posting_contact(db: Session, item_id: int):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.Contact, 
+                               schema_obj=schemas.ContactValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    return item_from_db
+
+
 def posting_entry_request(db: Session, item_id: int):
     #
     def foo_fields_validation(item_from_db):
@@ -470,6 +587,22 @@ def rollback_entry_requests(db: Session, item_id: int):
 
     return item_from_db.id
 
+
+def rollback_contact(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False)
+    setattr(item_from_db, 'post_date', None)
+    setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    return item_from_db.id
+
 #########################################################    STATUS MANAGING FUNCTIONS
 def car_exit_permit(db: Session, carpass_id: int):
     #
@@ -554,30 +687,8 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 
 #########################################################    CONTACT FUNCTIONS
-def create_contact(db: Session, contact: schemas.ContactCreate):
-    # creates a contact in database
-    created_datetime = datetime.datetime.now()
-    uuid=str(uuid4())
-
-    db_contact = models.Contact(
-        **contact.model_dump(),
-        uuid=uuid,
-        created_datetime=created_datetime
-        )
-    db.add(db_contact)
-    db.commit()
-    db.refresh(db_contact)
-
-    return db_contact
-
-
 def get_contact(db: Session, contact_id: int):
     return db.query(models.Contact).filter(models.Contact.id == contact_id).first()
-
-
-def get_contacts(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Contact).offset(skip).limit(limit).all()
-
 
 #########################################################    ITEM FUNCTIONS ???
 def get_items(db: Session, skip: int = 0, limit: int = 100):

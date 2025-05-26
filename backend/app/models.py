@@ -5,12 +5,27 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 
+class RelatedObjects(Base):
+    __tablename__ = 'related_objects'
+    id = Column(Integer, primary_key=True)
+    primary_obj_uuid = Column(String)
+    secondary_obj_uuid = Column(String)
+    created_datetime = Column(DateTime)
+    is_active = Column(Boolean, default=True)
+
+
 class Contact(Base):
     __tablename__ = 'contacts'
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
     name = Column(String)
-    inn = Column(String(12), unique=True)
+    inn = Column(String, unique=True)  # check digits number via pydantic schemas
+    type = Column(String)
+    fio = Column(String)
+    email = Column(String)
+    idtelegram = Column(String)
+    related_obj_uuid = Column(String)
+    comment = Column(String)
 
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
@@ -92,6 +107,7 @@ class Carpass(Base):
     entry_type = Column(String)
     contact = Column(Integer)
     contact_name = Column(String(length=150))
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
     # contact_broker = Column(Integer)
     # broker_name = Column(String(length=150))
     place_n = Column(String(length=250), unique=True)
@@ -153,8 +169,11 @@ class EntryRequest(Base):
     driver_licence = Column(String)
     car_model = Column(String)
     entry_type = Column(String)
+
     contact = Column(Integer)
     contact_name = Column(String(length=150))
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+    
     ntir = Column(String(length=50))
     ntir_date = Column(Date)
     customs_doc = Column(String(length=50))

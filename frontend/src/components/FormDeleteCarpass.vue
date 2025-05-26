@@ -30,14 +30,13 @@ const authHeader = () => {
 
 
 if (props.itemName == 'Пропуска ТС на въезд') {
-  state.query = `http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`;
-} 
+  state.query = `http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`; } 
 else if (props.itemName == 'Пропуска ТС на выезд') {
-  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`;
-}
+  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`; }
 else if (props.itemName == 'Заявки на въезд ТС') {
-  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`;
-}
+  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`; }
+else if (props.itemName == 'Клиенты') {
+  state.query = `http://${backendIpAddress}:${backendPort}/contacts/${props.itemData.id}`; }
 
 const toast = useToast();
 
@@ -51,7 +50,7 @@ const handleSubmit = async () => {
     emit('closeModal')
   } catch (error) {
     console.error('Error deleting item', error);
-    toast.error('Item has not deleted');
+    toast.error(error.response.data.detail);
   };
 };
 

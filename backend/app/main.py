@@ -294,12 +294,34 @@ def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return db_carpass
 
 
+@app.get("/contacts/{contact_id}", response_model=schemas.Contact)
+def read_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                 contact_id: int, db: Session = Depends(get_db)):
+    db_contact = crud.get_contact(db, contact_id=contact_id)
+    if db_contact is None:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    return db_contact
+
 #########################################################    GET LIST OF ITEMS ENDPOINTS
 @app.get('/documents/', response_model=list[schemas.Document])
 def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     documents = crud.get_documents(db, skip=skip, limit=limit)
     return documents
+
+
+@app.get("/contacts/", response_model=list[schemas.Contact])
+def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    contacts = crud.get_contacts(db, skip=skip, limit=limit)
+    return contacts
+
+
+@app.get("/contacts_posted/", response_model=list[schemas.Contact])
+def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    contacts = crud.get_contacts_posted(db, skip=skip, limit=limit)
+    return contacts
 
 
 @app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
@@ -384,7 +406,7 @@ def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_act
 def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
     #
-    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)  
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate) 
     return crud.create_entry_request(db=db, item=data_none_values_redefined)
 
 
@@ -394,6 +416,13 @@ def create_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)  
     return crud.create_carpass(db=db, item=data_none_values_redefined)
+
+
+@app.post("/contacts/", response_model=schemas.Contact)
+def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   data: Annotated[schemas.ContactCreate, Form()], db: Session = Depends(get_db)):
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
+    return crud.create_contact(db=db, item=data_none_values_redefined)
 
 
 #########################################################    UPDATE ITEM ENDPOINTS
@@ -426,7 +455,23 @@ def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     return crud.update_entry_request(db=db, item_id=item_id, item=item)
 
 
+@app.put('/contacts/{item_id}', response_model=schemas.Contact)
+def update_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.ContactCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
+    item = schemas.ContactUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_contact(db=db, item_id=item_id, item=item)
+
 #########################################################    DELETE ITEM ENDPOINTS
+@app.delete('/contacts/{item_id}')
+def delete_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.delete_contact(db=db, item_id=item_id)
+
+
 @app.delete('/carpasses/{item_id}')
 def delete_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    item_id: int, db: Session = Depends(get_db)):
@@ -482,6 +527,14 @@ def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_
     #
     return crud.posting_entry_request(db=db, item_id=item_id)
 
+
+@app.put('/contacts_posting/{item_id}')
+def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_contact(db=db, item_id=item_id)
+
+
 #########################################################    ROLLBACK ENDPOINTS
 @app.put('/carpasses_rollback/{carpass_id}')
 def rollback_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -502,6 +555,13 @@ def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_curren
                             item_id: int, db: Session = Depends(get_db)):
     #
     return crud.rollback_entry_requests(db=db, item_id=item_id)
+
+
+@app.put('/contacts_rollback/{item_id}')
+def rollback_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.rollback_contact(db=db, item_id=item_id)
 
 
 #########################################################    STATUS MANAGING ENDPOINTS
@@ -527,26 +587,13 @@ def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active
 
 
 #########################################################    CONTACTS ENDPOINTS
-@app.post("/contacts/", response_model=schemas.Contact)
-def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   contact: schemas.ContactCreate, db: Session = Depends(get_db)):
-    return crud.create_contact(db=db, contact=contact)
 
 
-@app.get("/contacts/", response_model=list[schemas.Contact])
-def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    contacts = crud.get_contacts(db, skip=skip, limit=limit)
-    return contacts
 
 
-@app.get("/contacts/{contact_id}", response_model=schemas.Contact)
-def read_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                 contact_id: int, db: Session = Depends(get_db)):
-    db_contact = crud.get_contact(db, contact_id=contact_id)
-    if db_contact is None:
-        raise HTTPException(status_code=404, detail="Contact not found")
-    return db_contact
+
+
+
 
 
 #########################################################    USERS ENDPOINTS
