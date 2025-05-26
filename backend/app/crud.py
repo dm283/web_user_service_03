@@ -2,6 +2,7 @@ import datetime
 from fastapi import UploadFile, HTTPException, Depends, status
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
 from uuid import uuid4
 from app import models, schemas
@@ -143,6 +144,31 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     
     return db_item
 
+#########################################################    RELATED OBJECTS FUNCTIONS
+# def create_rec_related_objects(primary_obj_uuid, secondary_obj_uuid, db: Session):
+#     # creates record in table related_objects
+#     db_ro = models.RelatedObjects(
+#         primary_obj_uuid=primary_obj_uuid, secondary_obj_uuid=secondary_obj_uuid, created_datetime=datetime.datetime.now()
+#     )
+#     try:
+#         db.add(db_ro); db.commit(); db.refresh(db_ro)
+#     except Exception as err:
+#         print(err)
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+
+# def delete_rec_related_objects(primary_obj_uuid, secondary_obj_uuid, db: Session):
+#     # delete record in table related_objects
+#     db_ro =  db.query(models.RelatedObjects).filter(models.RelatedObjects.primary_obj_uuid==primary_obj_uuid, 
+#                 models.RelatedObjects.secondary_obj_uuid==secondary_obj_uuid).first()
+#     if db_ro is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+#     db.delete(db_ro)
+#     db.commit()
+
+
+
 
 def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
     #
@@ -154,6 +180,9 @@ def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
     db_item = models.EntryRequest(**item.model_dump(), uuid=uuid, id_entry_request=id_entry_request, created_datetime=created_datetime)
     try:
         db.add(db_item); db.commit(); db.refresh(db_item)
+        # create records in related_objects
+        # if db_item.contact_uuid:
+        #     create_rec_related_objects(db_item.contact_uuid, uuid, db=db)
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
@@ -231,10 +260,16 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    contact_uuid_from_db = item_from_db.contact_uuid
     
     for field, value in item.model_dump(exclude_unset=True).items():
         setattr(item_from_db, field, value)
     db.commit()
+
+    # create records in related_objects
+    # if contact_uuid_from_db != item.contact_uuid:
+    #     delete_rec_related_objects(contact_uuid_from_db, item_from_db.uuid, db=db)
+    #     create_rec_related_objects(item.contact_uuid, item_from_db.uuid, db=db)
 
     return item_from_db
 
@@ -259,9 +294,15 @@ def delete_contact(db: Session, item_id: int):
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    # Добавить проверку что нет связанных объектов! (добавить поле related_objects_uuids)
-
-    db.delete(item_from_db)
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        print(msg_detail)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
     db.commit()
 
     return {"message": f"Contact id {item_id} deleted successfully"}
@@ -291,8 +332,15 @@ def delete_entry_request(db: Session, item_id: int):
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    db.delete(item_from_db)
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+
     db.commit()
+
+    # create records in related_objects
+    # delete_rec_related_objects(item_from_db.contact_uuid, item_from_db.uuid, db=db)
 
     return {"message": f"Carpass id {item_id} deleted successfully"}
 

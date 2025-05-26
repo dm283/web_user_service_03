@@ -56,6 +56,7 @@ async function getData() {
     if (state.userInfo.contact_id != 0) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts/${state.userInfo.contact_id}`, {headers: authHeader()})
       state.userInfo.contact_name = response2.data.name  // append 'name' of contact
+      state.userInfo.contact_uuid = response2.data.uuid  // append 'name' of contact
     }
     localStorage.setItem('userInfo', JSON.stringify(state.userInfo));
     
@@ -277,14 +278,14 @@ const signOut = async () => {
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
       />
     </RouterLink>
-    <RouterLink to="/parking_map" v-if="state.userInfo.contact_id == 0">
-      <MenuSection :label="'План стоянки ТС'" :icon="'th-large'" :description="'План стоянки ТС'"
-      :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
-      />
-    </RouterLink>
     <RouterLink to="/catalogs" v-if="state.userInfo.contact_id == 0">
       <MenuSection :label="'Справочники'" :icon="'server'" :description="'Каталоги данных'"
       :selected="state.selectedMenu=='catalogs' ? '1' : '0'" @click="state.selectedMenu='catalogs'"
+      />
+    </RouterLink>
+    <RouterLink to="/parking_map" v-if="state.userInfo.contact_id == 0">
+      <MenuSection :label="'План стоянки ТС'" :icon="'th-large'" :description="'в работе'"
+      :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
       />
     </RouterLink>
   </div>

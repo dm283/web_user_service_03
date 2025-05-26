@@ -91,6 +91,7 @@ const itemFields = [
     'entry_type',
     'contact',
     'contact_name',
+    'contact_uuid',
     'ntir',
     'ntir_date',
     'customs_doc',
@@ -134,6 +135,7 @@ const setInitialForm = () => {
   if (userInfo.contact_id!=0) {  // for the client service
     form.contact = userInfo.contact_id
     form.contact_name = userInfo.contact_name
+    form.contact_uuid = userInfo.contact_uuid
     form.contact_name_input = userInfo.contact_name
   }
 
@@ -258,6 +260,35 @@ async function downloadFile(document_id) {
           <input type="text" v-model="form.ncar" :class="[errField['ncar']==1 ? formInputStyleErr : formInputStyle]" 
           :required="true" :disabled="isCard" />
         </div>
+
+        <!-- fake field 'contact_name_input' for dropdown list -->
+        <div class="formInputDiv" v-if="(!props.isCard) & userInfo.contact_id==0">   <label class=formLabelStyle>Клиент</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
+              showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
+              @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect.contact_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+              @click="form.contact=item.id; showDropDownSelect.contact_name_input=false; 
+                form.contact_name=item.name;form.contact_name_input=item.name;form.contact_uuid=item.uuid" >
+              {{ item.name }}
+            </div>
+          </div>
+        </div>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
+          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
+        <div class=formInputDiv>   <label class=formLabelStyle>Тип въезда</label>
+          <select :class="[errField['entry_type']==1 ? formInputStyleErr : formInputStyle]"
+            v-model="form.entry_type" :required="false" :disabled="isCard">
+            <option v-for="type in ['Привоз груза', 'Вывоз груза']" :value="type">{{ type }}</option>
+          </select>
+        </div>
+
       </div>
 
       <div class="flex">
@@ -290,35 +321,7 @@ async function downloadFile(document_id) {
         </div>
       </div>
 
-      <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Тип въезда</label>
-          <select :class="[errField['entry_type']==1 ? formInputStyleErr : formInputStyle]"
-            v-model="form.entry_type" :required="false" :disabled="isCard">
-            <option v-for="type in ['Привоз груза', 'Вывоз груза']" :value="type">{{ type }}</option>
-          </select>
-        </div>
 
-        <!-- fake field 'contact_name_input' for dropdown list -->
-        <div class="formInputDiv" v-if="!props.isCard & userInfo.contact_id==0">   <label class=formLabelStyle>Клиент</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
-              showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
-              @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect.contact_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="form.contact=item.id; showDropDownSelect.contact_name_input=false; form.contact_name=item.name;form.contact_name_input=item.name;" >
-              {{ item.name }}
-            </div>
-          </div>
-        </div>
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
-          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="true" />
-        </div>
-
-      </div>
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>№ транспортного документа</label>

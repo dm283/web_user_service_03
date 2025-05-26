@@ -50,7 +50,7 @@ const handleSubmit = async () => {
     emit('closeModal')
   } catch (error) {
     console.error('Error deleting item', error);
-    toast.error('Item has not deleted');
+    toast.error(error.response.data.detail);
   };
 };
 

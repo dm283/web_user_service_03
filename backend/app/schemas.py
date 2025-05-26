@@ -22,6 +22,7 @@ class CarpassCreate(BaseModel):
     entry_type: str | None = None
     contact: int | str | None = None
     contact_name: str | None = None
+    contact_uuid: str | None = None
     # contact_broker: int | str | None = None
     # broker_name: str | None = None
     place_n: str | None = None
@@ -53,6 +54,7 @@ class CarpassValidation(BaseModel):
     entry_type: str
     contact: int
     contact_name: str
+    contact_uuid: str
     # contact_broker: int
     # broker_name: str
     place_n: str
@@ -132,6 +134,7 @@ class EntryRequestCreate(BaseModel):
     entry_type: str | None = None
     contact: int | str | None = None
     contact_name: str | None = None
+    contact_uuid: str | None = None
     ntir: str | None = None
     ntir_date: date | str | None = None
     customs_doc: str | None = None
@@ -152,6 +155,7 @@ class EntryRequestValidation(BaseModel):
     entry_type: str
     contact: int
     contact_name: str
+    contact_uuid: str
     ntir: str
     ntir_date: date
     customs_doc: str
@@ -244,7 +248,7 @@ class User(UserBase):
 class ContactCreate(BaseModel):
     name: str
     inn: str | None = None
-    type: str | None = None
+    type: str
     fio: str | None = None
     email: str | None = None
     idtelegram: str | None = None
@@ -254,9 +258,7 @@ class ContactValidation(BaseModel):
     name: str
     inn: Annotated[str, StringConstraints(min_length=10, max_length=12)]
     type: str
-    fio: str
-    email: EmailStr
-    idtelegram: str | None = None
+    email: EmailStr | None = None
 
 
 class ContactUpdate(ContactCreate):
