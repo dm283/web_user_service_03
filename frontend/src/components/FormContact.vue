@@ -39,7 +39,7 @@ const state = reactive({
   brokers: [],
 })
 
-const showDropDownSelect = ref({});
+const showDropDownSelect = reactive({});
 const errField = reactive({});
 const form = reactive({});
 const files = ref(null)
@@ -98,6 +98,26 @@ onMounted(async () => {
 });
 };
 
+// const setFilter = (fieldForm, entity, fieldEntity) => {
+//   // filter setting
+//   state.filteredList = [];
+//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
+//   for (let rec of state[entity]) {
+//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
+//       state.filteredList.push(rec);
+//     };
+//   };
+//   if (state.filteredList.length == 0) {
+//     for (let xobj of state[entity]) {
+//       let clonedObj = {...xobj};
+//       state.filteredList.push(clonedObj);
+//     };
+//   }
+//   console.log('state.filteredList=',state.filteredList)
+// };
+
+//'linked_broker_name_input', 'brokers', 'name'
+
 const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
   state.filteredList = [];
@@ -107,15 +127,30 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
       state.filteredList.push(rec);
     };
   };
-  if (state.filteredList.length == 0) {
-    for (let xobj of state[entity]) {
-      let clonedObj = {...xobj};
-      state.filteredList.push(clonedObj);
-    };
-  }
-  console.log('state.filteredList=',state.filteredList)
+
+  // if (state.filteredList.length == 0) {
+  //   for (let xobj of state[entity]) {
+  //     let clonedObj = {...xobj};
+  //     state.filteredList.push(clonedObj);
+  //   };
+  // }
 };
 
+
+const setVars = (inputField, reserveField) => {
+  //
+  if (!form[reserveField]) {
+    form[reserveField] = form[inputField]
+  }
+  if (showDropDownSelect[inputField]) { 
+    showDropDownSelect[inputField]=false 
+    form[inputField]=form[reserveField]
+  }
+  else { 
+    showDropDownSelect[inputField]=true 
+    form[inputField]=null
+  };
+};
 
 const setInitialForm = () => {
   //
@@ -265,8 +300,24 @@ async function downloadFile(document_id) {
           :required="false" :disabled="isCard" />
         </div>    
       </div>
+
       <div class="flex">
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
+                @keyup="setFilter('linked_broker_name_input', 'brokers', 'name')" :required="false"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect['linked_broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['linked_broker_name_input']=false; 
+                  form['reserve_1']=item.name;form['linked_broker_name_input']=item.name;form['linked_broker_uuid']=item.uuid" >
+                {{ item.name }}
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
           <div :class=formInputStyle class="flex" @click="setFilter('linked_broker_name_input', 'brokers', 'name'); 
                 showDropDownSelect.linked_broker_name_input ? showDropDownSelect.linked_broker_name_input=false : showDropDownSelect.linked_broker_name_input=true;">
             <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
@@ -280,7 +331,8 @@ async function downloadFile(document_id) {
                 {{ item.name }}
             </div>
           </div>
-        </div>
+        </div> -->
+        
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
           <input type="text" v-model="form.linked_broker_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
