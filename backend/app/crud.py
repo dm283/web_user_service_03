@@ -51,11 +51,21 @@ def get_documents(db: Session, skip: int = 0, limit: int = 100):
 
 
 def get_contacts(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Contact).filter(models.Contact.is_active==True).offset(skip).limit(limit).all()
+    return db.query(models.Contact).filter(models.Contact.type=='V', models.Contact.is_active==True).offset(skip).limit(limit).all()
 
 
 def get_contacts_posted(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Contact).filter(models.Contact.is_active==True, models.Contact.posted==True).offset(skip).limit(limit).all()
+    return db.query(models.Contact).filter(models.Contact.type=='V', models.Contact.is_active==True, models.Contact.posted==True).\
+        offset(skip).limit(limit).all()
+
+
+def get_brokers(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True).offset(skip).limit(limit).all()
+
+
+def get_brokers_posted(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True, models.Contact.posted==True).\
+        offset(skip).limit(limit).all()
 
 
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):

@@ -13,6 +13,7 @@ import FormSetDefaultStatus from './FormSetDefaultStatus.vue';
 import FormExitProhibited from './FormExitProhibited.vue';
 import FormEntryRequest from './FormEntryRequest.vue';
 import FormContact from './FormContact.vue';
+import FormBroker from './FormBroker.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -39,21 +40,20 @@ const state = reactive({
   listItemFileds: {},
 })
   
-const showItemCard = ref(false)
-const showAddItem = ref(false)
-const showUpdateItem = ref(false)
-
 const showDeleteItem = ref(false)
 const showRollbackItem = ref(false)
 const showCarExitPermit = ref(false)
+const showSetDefaultStatus = ref(false)
+const showExitProhibited = ref(false)
+
+const showItemCard = ref(false)
+const showAddItem = ref(false)
+const showUpdateItem = ref(false)
 
 const showCardExitCarpass = ref(false)
 const showCreateExitCarpass = ref(false)
 const showUpdateExitCarpass = ref(false)
 const showAddExitcarpass = ref(false)
-
-const showSetDefaultStatus = ref(false)
-const showExitProhibited = ref(false)
 
 const showCardEntryRequest = ref(false)
 const showAddEntryRequest = ref(false)
@@ -63,8 +63,13 @@ const showCardContact = ref(false)
 const showAddContact = ref(false)
 const showUpdateContact = ref(false)
 
+const showCardBroker = ref(false)
+const showAddBroker = ref(false)
+const showUpdateBroker = ref(false)
+
 const selectedItem = ref('')
 const itemName = ref('')
+const file = ref(null)
 
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
@@ -81,6 +86,7 @@ const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
+const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 
 
 if (props.view_type == 'enter') {
@@ -127,6 +133,14 @@ else if (props.view_type == 'contacts') {
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
+else if (props.view_type == 'brokers') {
+  state.query = query_brokers;
+  state.listTableColumns = {
+    'name':'Наименование','inn':'ИНН', 'fio':'ФИО','email':'email','idtelegram':'idtelegram'
+  };
+  state.additionalColumns = {  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
 
 
 async function getData() {
@@ -146,22 +160,8 @@ onMounted(async () => {
 });
 
 
-/////////
-const file = ref(null)
-
-// async function formFileSave() {
-//   console.log("selected file", file.value.files[0])
-//   let formData = new FormData();
-//   formData.append('file', file.value.files[0]);
-//   const response = await axios.post(`http://${backendIpAddress}:${backendPort}/single-file/`, 
-//     formData, {headers: {'Content-Type': 'multipart/form-data'}});
-// }
-
-
 async function downloadFile(document_id, section) {
   //
-  // const document_id = 28;  
-  
   const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download_carpass/${section}/${document_id}`, 
     {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
@@ -177,14 +177,24 @@ async function downloadFile(document_id, section) {
 };
 
 
-// async function downloadFile(document_id) {
-//   //
-//   const fileDataUrl = `http://${backendIpAddress}:${backendPort}/download_carpass/16`
-//   const pdfFileWindow = window.open(fileDataUrl)
-//   pdfFileWindow.print()
-// };
+const itemCard = (item, name) => {
+  //
+  selectedItem.value = item;
+  if (name == 'Пропуска ТС на въезд' || name == 'ТС на терминале') { showItemCard.value = true }
+  else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
+  else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
+  else if (name == 'Клиенты') { showCardContact.value = true }
+  else if (name == 'Брокеры') { showCardBroker.value = true }
+};
 
-
+const addItem = (section) => {
+  //
+  if (section == 'Пропуска ТС на въезд') { showAddItem.value = true; } 
+  else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
+  else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
+  else if (section == 'Клиенты') { showAddContact.value = true; }
+  else if (section == 'Брокеры') { showAddBroker.value = true; }
+}
 
 const editItem = (item, name) => {
   // opens modal for editing item
@@ -193,6 +203,7 @@ const editItem = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showUpdateExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
   else if (name == 'Клиенты') { showUpdateContact.value = true }
+  else if (name == 'Брокеры') { showUpdateBroker.value = true }
 };
 
 const deleteItem = (item, name) => {
@@ -200,15 +211,6 @@ const deleteItem = (item, name) => {
   selectedItem.value = item;
   itemName.value = name;
   showDeleteItem.value = true;
-};
-
-const itemCard = (item, name) => {
-  //
-  selectedItem.value = item;
-  if (name == 'Пропуска ТС на въезд' || name == 'ТС на терминале') { showItemCard.value = true }
-  else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
-  else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
-  else if (name == 'Клиенты') { showCardContact.value = true }
 };
 
 const rollbackItem = (item, section) => {
@@ -246,14 +248,6 @@ const createExitCarpass = (item) => {
   showCreateExitCarpass.value = true;
   selectedItem.value = item;
 };
-
-const addItem = (section) => {
-  //
-  if (section == 'Пропуска ТС на въезд') { showAddItem.value = true; } 
-  else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
-  else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
-  else if (section == 'Клиенты') { showAddContact.value = true; }
-}
 
 </script>
 
@@ -353,24 +347,26 @@ const addItem = (section) => {
   </div>
 
 
+  <!-- **********************   MODAL BROKER CARD   ************************** -->
+  <div v-if="showCardBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBroker @close-modal="showCardBroker=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL CONTACT ADD   ************************** -->
+  <div v-if="showAddBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBroker @close-modal="showAddBroker=false" @doc-created="getData" />
+  </div>
+  <!-- **********************   MODAL CONTACT EDIT  ************************** -->
+  <div v-if="showUpdateBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBroker @close-modal="showUpdateBroker=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
   <div class="flex flex-col md:flex-row p-3 gap-3 ">
-    <!-- <div class="flex-none w-fit md:w-auto">
-      <div class="flex flex-col gap-3">
-        <div class="">
-          <FormAddCarpass @doc-created="getData" />
-        </div>
-        <div class="text-center">
-          <button @click="downloadFile()" class="border rounded-full p-3 text-white bg-pink-400">
-            DOWNLOAD FILE
-          </button>
-        </div>
-      </div>
-    </div> -->
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-add="addItem" @btn-edit="editItem" @btn-delete="deleteItem" @btn-createexitcarpass="createExitCarpass"
-          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem" @btn-setstatusexit="setStatusExit"
-          @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
+          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem" 
+          @btn-setstatusexit="setStatusExit" @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
           :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
       </div>
     </div>

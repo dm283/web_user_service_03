@@ -39,7 +39,7 @@ if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Заявки на въезд ТС') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_rollback/${props.itemData.id}`;
-} else if (props.itemName == 'Клиенты') {
+} else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts_rollback/${props.itemData.id}`;
 }
 

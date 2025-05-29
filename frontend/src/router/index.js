@@ -8,6 +8,7 @@ import EntryRequestsView from "@/views/EntryRequestsView.vue";
 import ParkingMapView from "@/views/ParkingMapView.vue";
 import CatalogsView from "@/views/CatalogsView.vue";
 import ContactsView from "@/views/ContactsView.vue";
+import BrokersView from "@/views/BrokersView.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
 // import EditItemView from "@/views/EditItemView.vue";
@@ -22,6 +23,7 @@ const router = createRouter({
     { path: '/parking_map', name: 'parking_map', component: ParkingMapView, },
     { path: '/catalogs', name: 'catalogs', component: CatalogsView, },
     { path: '/contacts', name: 'contacts', component: ContactsView, },
+    { path: '/brokers', name: 'brokers', component: BrokersView, },
 
     { path: '/documents', name: 'documents', component: DocumentsView, },
     { path: '/dashboard', name: 'dashboard', component: DashboardView, },
