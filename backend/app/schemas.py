@@ -252,6 +252,7 @@ class ContactCreate(BaseModel):
     fio: str | None = None
     email: str | None = None
     idtelegram: str | None = None
+    linked_broker_uuid: str | None = None
     comment: str | None = None
 
 class ContactValidation(BaseModel):

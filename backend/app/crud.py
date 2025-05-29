@@ -700,6 +700,10 @@ def create_user(db: Session, user: schemas.UserCreate):
 def get_contact(db: Session, contact_id: int):
     return db.query(models.Contact).filter(models.Contact.id == contact_id).first()
 
+
+def get_contact_by_uuid(db: Session, uuid: str):
+    return db.query(models.Contact).filter(models.Contact.uuid == uuid).first()
+
 #########################################################    ITEM FUNCTIONS ???
 def get_items(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Item).offset(skip).limit(limit).all()
