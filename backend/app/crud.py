@@ -238,6 +238,25 @@ def create_contact(db: Session, item: schemas.ContactCreate):
 
     return db_contact
 
+
+def create_user(db: Session, user: schemas.UserCreate):
+    # creates a user in database
+    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+    hashed_password=password_context.hash(user.password)
+
+    db_user = models.User(
+        **user.model_dump(exclude='password'),
+        uuid=uuid,
+        hashed_password=hashed_password, 
+        created_datetime=created_datetime
+        )
+    db.add(db_user); db.commit(); db.refresh(db_user)
+
+    return db_user
+
 #########################################################    UPDATE FUNCTIONS
 def update_carpass(db: Session, item_id: int, item: schemas.CarpassUpdate):
     #
@@ -664,36 +683,21 @@ def get_carpass(db: Session, carpass_id_enter: str):
 
 #########################################################    USER FUNCTIONS
 def get_user(db: Session, user_id: int):
+    #
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 
 def get_user_by_login(db: Session, login: str):
+    #
     return db.query(models.User).filter(models.User.login == login).first()
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):
+    #
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def create_user(db: Session, user: schemas.UserCreate):
-    # creates a user in database
-    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    created_datetime = datetime.datetime.now()
-    uuid=str(uuid4())
-    hashed_password=password_context.hash(user.password)
-
-    db_user = models.User(
-        **user.model_dump(exclude='password'),
-        uuid=uuid,
-        hashed_password=hashed_password, 
-        created_datetime=created_datetime
-        )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-
-    return db_user
 
 
 #########################################################    CONTACT FUNCTIONS
