@@ -41,8 +41,9 @@ if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_rollback/${props.itemData.id}`;
 } else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts_rollback/${props.itemData.id}`;
+} else if (props.itemName == 'Пользователи') {
+  state.query = `http://${backendIpAddress}:${backendPort}/users_rollback/${props.itemData.id}`;
 }
-
 
 
 const handleSubmit = async () => {

@@ -316,6 +316,26 @@ def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate):
     return item_from_db
 
 
+def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd):
+    #
+    item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    # password change
+    if new_pwd:
+        password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        hashed_password=password_context.hash(new_pwd)
+        print(new_pwd, 'hashed_password=',hashed_password)
+        setattr(item_from_db, 'hashed_password', hashed_password)
+        db.commit()
+
+    return item_from_db
+
 #########################################################    DELETE FUNCTIONS
 def delete_contact(db: Session, item_id: int):
     #
@@ -330,11 +350,29 @@ def delete_contact(db: Session, item_id: int):
         db.rollback()
         table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
         msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
-        print(msg_detail)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
     db.commit()
 
     return {"message": f"Contact id {item_id} deleted successfully"}
+
+
+def delete_user(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+    db.commit()
+
+    return {"message": f"User id {item_id} deleted successfully"}
 
 
 def delete_carpass(db: Session, item_id: int):
@@ -510,6 +548,26 @@ def posting_contact(db: Session, item_id: int):
     return item_from_db
 
 
+def posting_user(db: Session, item_id: int):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.User, 
+                               schema_obj=schemas.UserValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    return item_from_db
+
+
 def posting_entry_request(db: Session, item_id: int):
     #
     def foo_fields_validation(item_from_db):
@@ -632,6 +690,22 @@ def rollback_contact(db: Session, item_id: int):
 
     return item_from_db.id
 
+
+def rollback_user(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False)
+    setattr(item_from_db, 'post_date', None)
+    setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    return item_from_db.id
+
 #########################################################    STATUS MANAGING FUNCTIONS
 def car_exit_permit(db: Session, carpass_id: int):
     #
@@ -689,7 +763,7 @@ def get_user(db: Session, user_id: int):
 
 def get_user_by_login(db: Session, login: str):
     #
-    return db.query(models.User).filter(models.User.login == login).first()
+    return db.query(models.User).filter(models.User.login==login, models.User.posted==True, models.User.is_active==True).first()
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):
@@ -709,13 +783,13 @@ def get_contact_by_uuid(db: Session, uuid: str):
     return db.query(models.Contact).filter(models.Contact.uuid == uuid).first()
 
 #########################################################    ITEM FUNCTIONS ???
-def get_items(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Item).offset(skip).limit(limit).all()
+# def get_items(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.Item).offset(skip).limit(limit).all()
 
 
-def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
-    db_item = models.Item(**item.model_dump(), owner_id=user_id)
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
+# def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
+#     db_item = models.Item(**item.model_dump(), owner_id=user_id)
+#     db.add(db_item)
+#     db.commit()
+#     db.refresh(db_item)
+#     return db_item

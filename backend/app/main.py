@@ -448,6 +448,16 @@ def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_
     return crud.create_contact(db=db, item=data_none_values_redefined)
 
 
+@app.post("/users/", response_model=schemas.User)
+def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
+    db_user = crud.get_user_by_login(db, login=data_none_values_redefined.login)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Login already registered")
+    return crud.create_user(db=db, user=data_none_values_redefined)
+
+
 #########################################################    UPDATE ITEM ENDPOINTS
 @app.put('/carpasses/{item_id}', response_model=schemas.Carpass)
 def update_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -487,12 +497,30 @@ def update_contact(current_user: Annotated[UserAuth, Depends(get_current_active_
     item = schemas.ContactUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_contact(db=db, item_id=item_id, item=item)
 
+
+@app.put('/users/{item_id}', response_model=schemas.User)
+def update_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
+    item = schemas.UserUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+
+    return crud.update_user(db=db, item_id=item_id, item=item, new_pwd=data_none_values_redefined.password)
+
 #########################################################    DELETE ITEM ENDPOINTS
 @app.delete('/contacts/{item_id}')
 def delete_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    item_id: int, db: Session = Depends(get_db)):
     #
     return crud.delete_contact(db=db, item_id=item_id)
+
+
+@app.delete('/users/{item_id}')
+def delete_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.delete_user(db=db, item_id=item_id)
 
 
 @app.delete('/carpasses/{item_id}')
@@ -558,6 +586,13 @@ def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active
     return crud.posting_contact(db=db, item_id=item_id)
 
 
+@app.put('/users_posting/{item_id}')
+def posting_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_user(db=db, item_id=item_id)
+
+
 #########################################################    ROLLBACK ENDPOINTS
 @app.put('/carpasses_rollback/{carpass_id}')
 def rollback_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -587,6 +622,13 @@ def rollback_contact(current_user: Annotated[UserAuth, Depends(get_current_activ
     return crud.rollback_contact(db=db, item_id=item_id)
 
 
+@app.put('/users_rollback/{item_id}')
+def rollback_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.rollback_user(db=db, item_id=item_id)
+
+
 #########################################################    STATUS MANAGING ENDPOINTS
 @app.put('/car_exit_permit/{carpass_id}')
 def car_exit_permit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -609,24 +651,8 @@ def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active
     return crud.exit_prohibited(db=db, carpass_id=carpass_id)
 
 
-#########################################################    CONTACTS ENDPOINTS
-
-
-
-
-
-
-
-
-
 #########################################################    USERS ENDPOINTS
-@app.post("/users/", response_model=schemas.User)
-def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_login(db, login=user.login)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Login alreay registered")
-    return crud.create_user(db=db, user=user)
+
 
 
 @app.get("/users/", response_model=list[schemas.User])
@@ -654,17 +680,17 @@ def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_acti
     return db_user
 
 
-@app.post("/users/{user_id}/items/", response_model=schemas.Item)
-def create_item_for_user(
-    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
-):
-    return crud.create_user_item(db=db, item=item, user_id=user_id)
+# @app.post("/users/{user_id}/items/", response_model=schemas.Item)
+# def create_item_for_user(
+#     user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
+# ):
+#     return crud.create_user_item(db=db, item=item, user_id=user_id)
 
 
-@app.get("/items/", response_model=list[schemas.Item])
-def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_items(db, skip=skip, limit=limit)
-    return items
+# @app.get("/items/", response_model=list[schemas.Item])
+# def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     items = crud.get_items(db, skip=skip, limit=limit)
+#     return items
 
 
 ####################### chat

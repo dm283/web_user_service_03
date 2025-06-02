@@ -14,6 +14,7 @@ import FormExitProhibited from './FormExitProhibited.vue';
 import FormEntryRequest from './FormEntryRequest.vue';
 import FormContact from './FormContact.vue';
 import FormBroker from './FormBroker.vue';
+import FormUser from './FormUser.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -67,6 +68,10 @@ const showCardBroker = ref(false)
 const showAddBroker = ref(false)
 const showUpdateBroker = ref(false)
 
+const showCardUser = ref(false)
+const showAddUser = ref(false)
+const showUpdateUser = ref(false)
+
 const selectedItem = ref('')
 const itemName = ref('')
 const file = ref(null)
@@ -87,6 +92,7 @@ const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_termin
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
+const query_users = `http://${backendIpAddress}:${backendPort}/users/`
 
 
 if (props.view_type == 'enter') {
@@ -141,6 +147,14 @@ else if (props.view_type == 'brokers') {
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
+else if (props.view_type == 'users') {
+  state.query = query_users;
+  state.listTableColumns = {
+    'login':'Логин','email':'email', 'contact_id':'Контрагент','type':'Тип контрагента'
+  };
+  state.additionalColumns = {  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
 
 
 async function getData() {
@@ -185,6 +199,7 @@ const itemCard = (item, name) => {
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
+  else if (name == 'Пользователи') { showCardUser.value = true }
 };
 
 const addItem = (section) => {
@@ -194,6 +209,7 @@ const addItem = (section) => {
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
   else if (section == 'Клиенты') { showAddContact.value = true; }
   else if (section == 'Брокеры') { showAddBroker.value = true; }
+  else if (section == 'Пользователи') { showAddUser.value = true; }
 }
 
 const editItem = (item, name) => {
@@ -204,6 +220,7 @@ const editItem = (item, name) => {
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
+  else if (name == 'Пользователи') { showUpdateUser.value = true }
 };
 
 const deleteItem = (item, name) => {
@@ -351,13 +368,27 @@ const createExitCarpass = (item) => {
   <div v-if="showCardBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormBroker @close-modal="showCardBroker=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
   </div>
-  <!-- **********************   MODAL CONTACT ADD   ************************** -->
+  <!-- **********************   MODAL BROKER ADD   ************************** -->
   <div v-if="showAddBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormBroker @close-modal="showAddBroker=false" @doc-created="getData" />
   </div>
-  <!-- **********************   MODAL CONTACT EDIT  ************************** -->
+  <!-- **********************   MODAL BROKER EDIT  ************************** -->
   <div v-if="showUpdateBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormBroker @close-modal="showUpdateBroker=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
+  <!-- **********************   MODAL USER CARD   ************************** -->
+  <div v-if="showCardUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormUser @close-modal="showCardUser=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL USER ADD   ************************** -->
+  <div v-if="showAddUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormUser @close-modal="showAddUser=false" @doc-created="getData" />
+  </div>
+  <!-- **********************   MODAL USER EDIT  ************************** -->
+  <div v-if="showUpdateUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
 
