@@ -22,12 +22,37 @@ const props = defineProps({
   isCard: Boolean,   // card - true
 });
 
+const itemFields = [
+    'linked_broker_uuid',
+    'name',
+    'inn',
+    'type',
+    'fio',
+    'email',
+    'idtelegram',
+    'comment',
+  ]
+
 const state = reactive({
   documents: [],
   isLoading: true,
+  brokers: [],
 })
 
-const showDropDownSelect = ref({});
+const showDropDownSelect = reactive({});
+const errField = reactive({});
+const form = reactive({});
+const files = ref(null)
+const file = ref(null)
+const toast = useToast();
+
+const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
+const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
+const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+
 
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
@@ -38,20 +63,16 @@ const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
 
-
-// if (!props.isCard) {
-// onMounted(async () => {
-//     try {
-//       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts/`, {headers: authHeader()});
-//       state.contacts = response.data;
-//     } catch (error) {
-//       console.error('Error fetching docs', error);
-//     } finally {
-//       state.isLoading = false;
-//     }
-// });
-// };
-
+onMounted(async () => {
+    try {
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/brokers_posted/`, {headers: authHeader()});
+      state.brokers = response.data;
+    } catch (error) {
+      console.error('Error fetching docs', error);
+    } finally {
+      state.isLoading = false;
+    }
+});
 
 if (props.itemData) {
 onMounted(async () => {
@@ -60,6 +81,15 @@ onMounted(async () => {
         {headers: authHeader()}
       );
       state.documents = response.data;
+
+      if (props.itemData.linked_broker_uuid) {
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.linked_broker_uuid}`,
+        {headers: authHeader()}
+      );
+      state.linked_broker_name = response2.data.name;
+      form['linked_broker_name_input'] = response2.data.name
+      }
+      
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -68,28 +98,27 @@ onMounted(async () => {
 });
 };
 
-const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
-const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
-const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+// const setFilter = (fieldForm, entity, fieldEntity) => {
+//   // filter setting
+//   state.filteredList = [];
+//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
+//   for (let rec of state[entity]) {
+//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
+//       state.filteredList.push(rec);
+//     };
+//   };
+//   if (state.filteredList.length == 0) {
+//     for (let xobj of state[entity]) {
+//       let clonedObj = {...xobj};
+//       state.filteredList.push(clonedObj);
+//     };
+//   }
+//   console.log('state.filteredList=',state.filteredList)
+// };
 
-const errField = reactive({});
-const form = reactive({});
-const files = ref(null)
+//'linked_broker_name_input', 'brokers', 'name'
 
-const itemFields = [
-    'name',
-    'inn',
-    'type',
-    'fio',
-    'email',
-    'idtelegram',
-    'comment',
-  ]
-
-  const setFilter = (fieldForm, entity, fieldEntity) => {
+const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
@@ -98,26 +127,41 @@ const itemFields = [
       state.filteredList.push(rec);
     };
   };
-  if (state.filteredList.length == 0) {
-    for (let xobj of state[entity]) {
-      let clonedObj = {...xobj};
-      state.filteredList.push(clonedObj);
-    };
-  }
+
+  // if (state.filteredList.length == 0) {
+  //   for (let xobj of state[entity]) {
+  //     let clonedObj = {...xobj};
+  //     state.filteredList.push(clonedObj);
+  //   };
+  // }
 };
 
+
+const setVars = (inputField, reserveField) => {
+  //
+  if (!form[reserveField]) {
+    form[reserveField] = form[inputField]
+  }
+  if (showDropDownSelect[inputField]) { 
+    showDropDownSelect[inputField]=false 
+    form[inputField]=form[reserveField]
+  }
+  else { 
+    showDropDownSelect[inputField]=true 
+    form[inputField]=null
+  };
+};
 
 const setInitialForm = () => {
   //
   if (props.itemData) { // card and update
     for (let field of itemFields) {
       form[field] = props.itemData[field]
-      //form['type'] = 'V'  // fake form field for dropdown list
     }
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
-      //form['contact_name_input'] = null  // fake form field for dropdown list
+      form['linked_broker_name_input'] = null  // fake form field for dropdown list
     }
     form['type'] = 'V' // template for 'ncar'
   };
@@ -127,14 +171,9 @@ const setInitialForm = () => {
   //   form.contact_name = userInfo.contact_name
   //   form.contact_name_input = userInfo.contact_name
   // }
-
 };
 
 setInitialForm();
-
-const file = ref(null)
-const toast = useToast();
-
 
 const postingItem = async () => {
   //
@@ -237,7 +276,6 @@ async function downloadFile(document_id) {
     </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
-      <!-- types:  text, date, time -->
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Наименование</label>
           <input type="text" v-model="form.name" :class="[errField['name']==1 ? formInputStyleErr : formInputStyle]" 
@@ -262,7 +300,44 @@ async function downloadFile(document_id) {
           :required="false" :disabled="isCard" />
         </div>    
       </div>
+
       <div class="flex">
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
+                @keyup="setFilter('linked_broker_name_input', 'brokers', 'name')" :required="false"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect['linked_broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['linked_broker_name_input']=false; 
+                  form['reserve_1']=item.name;form['linked_broker_name_input']=item.name;form['linked_broker_uuid']=item.uuid" >
+                {{ item.name }}
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('linked_broker_name_input', 'brokers', 'name'); 
+                showDropDownSelect.linked_broker_name_input ? showDropDownSelect.linked_broker_name_input=false : showDropDownSelect.linked_broker_name_input=true;">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
+                @keyup="setFilter('linked_broker_name_input', 'brokers', 'uuid')" :required="false"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect.linked_broker_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect.linked_broker_name_input=false; 
+                  form.linked_broker_name_input=item.name;form.linked_broker_uuid=item.uuid" >
+                {{ item.name }}
+            </div>
+          </div>
+        </div> -->
+        
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
+          <input type="text" v-model="form.linked_broker_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
         <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />

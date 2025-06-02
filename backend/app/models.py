@@ -24,6 +24,7 @@ class Contact(Base):
     fio = Column(String)
     email = Column(String)
     idtelegram = Column(String)
+    linked_broker_uuid = Column(String, ForeignKey('contacts.uuid'))
     related_obj_uuid = Column(String)
     comment = Column(String)
 
@@ -108,7 +109,7 @@ class Carpass(Base):
     contact = Column(Integer)
     contact_name = Column(String(length=150))
     contact_uuid = Column(String, ForeignKey('contacts.uuid'))
-    # contact_broker = Column(Integer)
+    # broker = Column(Integer)
     # broker_name = Column(String(length=150))
     place_n = Column(String(length=250), unique=True)
     radiation = Column(Boolean, default=False)

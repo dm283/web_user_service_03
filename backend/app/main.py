@@ -302,6 +302,15 @@ def read_contact(current_user: Annotated[UserAuth, Depends(get_current_active_us
         raise HTTPException(status_code=404, detail="Contact not found")
     return db_contact
 
+
+@app.get("/contacts_by_uuid/{uuid}", response_model=schemas.Contact)
+def read_contact_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                 uuid: str, db: Session = Depends(get_db)):
+    db_contact = crud.get_contact_by_uuid(db, uuid=uuid)
+    if db_contact is None:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    return db_contact
+
 #########################################################    GET LIST OF ITEMS ENDPOINTS
 @app.get('/documents/', response_model=list[schemas.Document])
 def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -328,6 +337,13 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     brokers = crud.get_brokers(db, skip=skip, limit=limit)
+    return brokers
+
+
+@app.get("/brokers_posted/", response_model=list[schemas.Contact])
+def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    brokers = crud.get_brokers_posted(db, skip=skip, limit=limit)
     return brokers
 
 
