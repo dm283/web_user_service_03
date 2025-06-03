@@ -354,11 +354,11 @@ def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_ac
     return items
 
 
-@app.get('/entry_requests_client/{contact_id}', response_model=list[schemas.EntryRequest])
+@app.get('/entry_requests_client/{contact_uuid}', response_model=list[schemas.EntryRequest])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                        contact_id: int,
+                        contact_uuid: str,
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_entry_requests_client(contact_id=contact_id, db=db, skip=skip, limit=limit)
+    items = crud.get_entry_requests_client(contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
 
@@ -369,11 +369,11 @@ def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_
     return items
 
 
-@app.get('/carpasses_client/{contact_id}', response_model=list[schemas.Carpass])
+@app.get('/carpasses_client/{contact_uuid}', response_model=list[schemas.Carpass])
 def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   contact_id: int,
+                   contact_uuid: str,
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_carpasses_client(contact_id=contact_id, db=db, skip=skip, limit=limit)
+    items = crud.get_carpasses_client(contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
 

@@ -83,10 +83,10 @@ const authHeader = () => {
 
 // queries
 const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/carpasses/`:
-  `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.contact_id}`
+  `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.contact_uuid}`
 
 const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
-  `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.contact_id}`
+  `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.contact_uuid}`
 
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
