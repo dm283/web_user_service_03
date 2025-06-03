@@ -15,9 +15,7 @@ class RelatedObjects(Base):
 
 
 class Contact(Base):
-    __tablename__ = 'contacts'
-    id = Column(Integer, primary_key=True)
-    uuid = Column(String, unique=True)
+    __tablename__ = 'contacts'    
     name = Column(String)
     inn = Column(String, unique=True)  # check digits number via pydantic schemas
     type = Column(String)
@@ -26,8 +24,10 @@ class Contact(Base):
     idtelegram = Column(String)
     linked_broker_uuid = Column(String, ForeignKey('contacts.uuid'))
     related_obj_uuid = Column(String)
+    
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
     comment = Column(String)
-
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)
@@ -39,15 +39,16 @@ class Contact(Base):
 
 class User(Base):
     __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True)
-    uuid = Column(String, unique=True)
-    contact_id = Column(Integer)
+    contact_id = Column(Integer)  # deprecated
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
     type = Column(String)
     login = Column(String, unique=True, index=True)
     email = Column(String)
     hashed_password = Column(String)
 
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    comment = Column(String)
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)

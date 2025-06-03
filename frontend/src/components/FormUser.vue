@@ -24,6 +24,7 @@ const props = defineProps({
 
 const itemFields = [
     'contact_id',
+    'contact_uuid',
     'login',
     'password',
     'email',
@@ -42,7 +43,7 @@ const form = reactive({});
 const files = ref(null)
 const file = ref(null)
 const toast = useToast();
-const isPwdChange = ref(false)
+const isPwdChange = props.itemData ? ref(false) : ref(true)
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
@@ -86,7 +87,7 @@ onMounted(async () => {
       state.documents = response.data;
 
       if (props.itemData.contact_id) {
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts/${props.itemData.contact_id}`,
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
         {headers: authHeader()}
       );
       state.contact_name = response2.data.name;
@@ -294,7 +295,7 @@ async function downloadFile(document_id) {
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['contact_name_input']=false; 
-                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_id']=item.id" >
+                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_id']=item.id;form['contact_uuid']=item.uuid;" >
                 {{ item.name }}
             </div>
           </div>

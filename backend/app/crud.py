@@ -247,6 +247,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     uuid=str(uuid4())
     hashed_password=password_context.hash(user.password)
 
+    print('user.password=',user.password)
     db_user = models.User(
         **user.model_dump(exclude='password'),
         uuid=uuid,
@@ -769,9 +770,6 @@ def get_user_by_login(db: Session, login: str):
 def get_users(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.User).offset(skip).limit(limit).all()
-
-
-
 
 
 #########################################################    CONTACT FUNCTIONS

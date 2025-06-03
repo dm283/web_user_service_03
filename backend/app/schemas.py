@@ -225,8 +225,10 @@ class Document(DocumentBase):
 class UserBase(BaseModel):
     login: str
     email: str | None = None
-    contact_id: int
+    contact_id: int  # deprecated
+    contact_uuid: str | None = None
     type: str
+    comment: str | None = None
 
 class UserCreate(UserBase):
     password: str | None = None
@@ -234,7 +236,8 @@ class UserCreate(UserBase):
 class UserValidation(BaseModel):
     login: str
     email: str | None = None
-    contact_id: int
+    contact_id: int   # deprecated
+    contact_uuid: str | None = None
     type: str 
 
 class UserUpdate(UserBase):
