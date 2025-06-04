@@ -37,6 +37,8 @@ else if (props.itemName == 'Заявки на въезд ТС') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`; }
 else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts/${props.itemData.id}`; }
+else if (props.itemName == 'Пользователи') {
+  state.query = `http://${backendIpAddress}:${backendPort}/users/${props.itemData.id}`; }
 
 const toast = useToast();
 

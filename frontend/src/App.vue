@@ -288,6 +288,11 @@ const signOut = async () => {
       :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
       />
     </RouterLink>
+    <RouterLink to="/administration" v-if="state.userInfo.contact_id == 0">
+      <MenuSection :label="'Администрирование'" :icon="'android'" :description="'Администрирование сервиса'"
+      :selected="state.selectedMenu=='administration' ? '1' : '0'" @click="state.selectedMenu='administration'"
+      />
+    </RouterLink>
   </div>
 </div>
 

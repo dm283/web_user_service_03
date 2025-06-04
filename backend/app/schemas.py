@@ -204,42 +204,38 @@ class Document(DocumentBase):
         from_attributes = True
 
 #####
-class ItemBase(BaseModel):
-    title: str
-    description: str | None = None
-
-
-class ItemCreate(ItemBase):
-    pass
-
-
-class Item(ItemBase):
-    id: int
-    owner_id: int
-
-    class Config:
-        # orm_mode = True
-        from_attributes = True
-
-#####
 class UserBase(BaseModel):
     login: str
-    email: str
-    contact_id: int
+    email: str | None = None
+    contact_id: int  # deprecated
+    contact_uuid: str | None = None
     type: str
-
+    comment: str | None = None
 
 class UserCreate(UserBase):
-    password: str
+    password: str | None = None
 
+class UserValidation(BaseModel):
+    login: str
+    email: str | None = None
+    contact_id: int   # deprecated
+    contact_uuid: str | None = None
+    type: str 
+
+class UserUpdate(UserBase):
+    updated_datetime: datetime
 
 class User(UserBase):
     id: int
     is_active: bool
-    items: list[Item] = []
+    # items: list[Item] = []
     uuid: str
     created_datetime: datetime
     updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
 
     class Config:
         from_attributes = True
