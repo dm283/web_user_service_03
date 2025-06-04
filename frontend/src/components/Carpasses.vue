@@ -15,6 +15,7 @@ import FormEntryRequest from './FormEntryRequest.vue';
 import FormContact from './FormContact.vue';
 import FormBroker from './FormBroker.vue';
 import FormUser from './FormUser.vue';
+import FormDoc from './FormDoc.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -72,6 +73,10 @@ const showCardUser = ref(false)
 const showAddUser = ref(false)
 const showUpdateUser = ref(false)
 
+const showCardDoc = ref(false)
+const showAddDoc = ref(false)
+const showUpdateDoc = ref(false)
+
 const selectedItem = ref('')
 const itemName = ref('')
 const file = ref(null)
@@ -93,6 +98,7 @@ const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpass
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
+const query_documents = `http://${backendIpAddress}:${backendPort}/documents/`
 
 
 if (props.view_type == 'enter') {
@@ -155,6 +161,14 @@ else if (props.view_type == 'users') {
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
+else if (props.view_type == 'documents') {
+  state.query = query_documents;
+  state.listTableColumns = {
+    'doc_name':'Наименование','doc_id':'Номер','doc_date':'Дата','contact_uuid':'Контрагент','created_datetime':'Дата загрузки'
+  };
+  state.additionalColumns = {  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
 
 
 async function getData() {
@@ -200,6 +214,7 @@ const itemCard = (item, name) => {
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
   else if (name == 'Пользователи') { showCardUser.value = true }
+  else if (name == 'Электронный архив') { showCardDoc.value = true }
 };
 
 const addItem = (section) => {
@@ -210,6 +225,7 @@ const addItem = (section) => {
   else if (section == 'Клиенты') { showAddContact.value = true; }
   else if (section == 'Брокеры') { showAddBroker.value = true; }
   else if (section == 'Пользователи') { showAddUser.value = true; }
+  else if (section == 'Электронный архив') { showAddDoc.value = true; }
 }
 
 const editItem = (item, name) => {
@@ -221,6 +237,7 @@ const editItem = (item, name) => {
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
   else if (name == 'Пользователи') { showUpdateUser.value = true }
+  else if (name == 'Электронный архив') { showUpdateDoc.value = true }
 };
 
 const deleteItem = (item, name) => {
@@ -389,6 +406,20 @@ const createExitCarpass = (item) => {
   <!-- **********************   MODAL USER EDIT  ************************** -->
   <div v-if="showUpdateUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
+  <!-- **********************   MODAL DOC CARD   ************************** -->
+  <div v-if="showCardDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormDoc @close-modal="showCardDoc=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL DOC ADD   ************************** -->
+  <div v-if="showAddDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormDoc @close-modal="showAddDoc=false" @doc-created="getData" />
+  </div>
+  <!-- **********************   MODAL DOC EDIT  ************************** -->
+  <div v-if="showUpdateDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormDoc @close-modal="showUpdateDoc=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
 

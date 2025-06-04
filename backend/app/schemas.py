@@ -186,6 +186,8 @@ class DocumentBase(BaseModel):
     doc_name: str
     related_doc_uuid: str
     customer_name: str
+    contact_uuid: str
+    post_user_id: str
     filename: str
     filepath: str
 
@@ -196,7 +198,7 @@ class DocumentCreate(DocumentBase):
 
 class Document(DocumentBase):
     id: int
-    post_user_id: str | None
+    uuid: str
     created_datetime: datetime
     updated_datetime: datetime | None
 

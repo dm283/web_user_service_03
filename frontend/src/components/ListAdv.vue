@@ -562,7 +562,7 @@ const rowClick = (index, item) => {
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
       @click="emit('btnAdd', props.name)" 
       v-if="(props.name=='Пропуска ТС на въезд' & userInfo.contact_id==0) | 
-      ['Пропуска ТС на выезд', 'Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи'].includes(props.name)"
+      ['Пропуска ТС на выезд','Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name)"
     >
       <i class="pi pi-plus" style="font-size: 1rem"></i>
     </button>
@@ -571,7 +571,7 @@ const rowClick = (index, item) => {
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnEdit', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
       v-if="(props.name=='Пропуска ТС на въезд' & userInfo.contact_id==0) | 
-      ['Пропуска ТС на выезд', 'Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи'].includes(props.name)"
+      ['Пропуска ТС на выезд', 'Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name)"
     >
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
     </button>
@@ -580,7 +580,7 @@ const rowClick = (index, item) => {
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnDelete', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
       v-if="(props.name=='Пропуска ТС на въезд' & userInfo.contact_id==0) | 
-      ['Пропуска ТС на выезд', 'Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи'].includes(props.name)"
+      ['Пропуска ТС на выезд', 'Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name)"
     >
       <i class="pi pi-trash" style="font-size: 1rem"></i>
     </button>

@@ -22,13 +22,37 @@ const props = defineProps({
   isCard: Boolean,   // card - true
 });
 
+const itemFields = [
+    'doc_name',
+    'doc_id',
+    'doc_date',
+    'related_doc_uuid',
+    'contact_uuid',
+    'comment',
+    'created_datetime',
+    'post_user_id',
+  ]
+
 const state = reactive({
   documents: [],
   isLoading: true,
   contacts: [],
 })
 
-const showDropDownSelect = ref({});
+const showDropDownSelect = reactive({});
+const errField = reactive({});
+const form = reactive({});
+const files = ref(null)
+const file = ref(null)
+const toast = useToast();
+
+const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
+const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
+const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+
 
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
@@ -39,8 +63,6 @@ const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
 
-
-if (!props.isCard) {
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
@@ -51,16 +73,24 @@ onMounted(async () => {
       state.isLoading = false;
     }
 });
-};
-
 
 if (props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/document_by_uuid/${props.itemData.uuid}`,
         {headers: authHeader()}
       );
       state.documents = response.data;
+      console.log(state.documents)
+
+      if (props.itemData.contact_uuid) {
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
+        {headers: authHeader()}
+      );
+      state.contact_name = response2.data.name;
+      form['contact_name_input'] = response2.data.name
+      }
+      
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -69,37 +99,27 @@ onMounted(async () => {
 });
 };
 
-const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
-const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
-const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+// const setFilter = (fieldForm, entity, fieldEntity) => {
+//   // filter setting
+//   state.filteredList = [];
+//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
+//   for (let rec of state[entity]) {
+//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
+//       state.filteredList.push(rec);
+//     };
+//   };
+//   if (state.filteredList.length == 0) {
+//     for (let xobj of state[entity]) {
+//       let clonedObj = {...xobj};
+//       state.filteredList.push(clonedObj);
+//     };
+//   }
+//   console.log('state.filteredList=',state.filteredList)
+// };
 
-const errField = reactive({});
-const form = reactive({});
-const files = ref(null)
+//'linked_broker_name_input', 'brokers', 'name'
 
-const itemFields = [
-    'ncar',
-    'dateen',
-    'timeen',
-    'plan_timeen_to',
-    'driver_fio',
-    'driver_licence',
-    'car_model',
-    'entry_type',
-    'contact',
-    'contact_name',
-    'contact_uuid',
-    'ntir',
-    'ntir_date',
-    'customs_doc',
-    'customs_doc_date',
-    'comment',
-  ]
-
-  const setFilter = (fieldForm, entity, fieldEntity) => {
+const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
@@ -108,50 +128,60 @@ const itemFields = [
       state.filteredList.push(rec);
     };
   };
-  if (state.filteredList.length == 0) {
-    for (let xobj of state[entity]) {
-      let clonedObj = {...xobj};
-      state.filteredList.push(clonedObj);
-    };
-  }
+
+  // if (state.filteredList.length == 0) {
+  //   for (let xobj of state[entity]) {
+  //     let clonedObj = {...xobj};
+  //     state.filteredList.push(clonedObj);
+  //   };
+  // }
 };
 
+
+const setVars = (inputField, reserveField) => {
+  //
+  if (!form[reserveField]) {
+    form[reserveField] = form[inputField]
+  }
+  if (showDropDownSelect[inputField]) { 
+    showDropDownSelect[inputField]=false 
+    form[inputField]=form[reserveField]
+  }
+  else { 
+    showDropDownSelect[inputField]=true 
+    form[inputField]=null
+  };
+};
 
 const setInitialForm = () => {
   //
   if (props.itemData) { // card and update
     for (let field of itemFields) {
       form[field] = props.itemData[field]
-      form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
     }
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
-      form['contact_name_input'] = null  // fake form field for dropdown list
+      //form['linked_broker_name_input'] = null  // fake form field for dropdown list
     }
-    form.ncar = '_234РА23' // template for 'ncar'
+    //form['type'] = 'V' // template for 'ncar'
   };
 
-  if (userInfo.contact_id!=0) {  // for the client service
-    form.contact = userInfo.contact_id
-    form.contact_name = userInfo.contact_name
-    form.contact_uuid = userInfo.contact_uuid
-    form.contact_name_input = userInfo.contact_name
-  }
-
+  // if (userInfo.contact_id!=0) {  // for the client service
+  //   form.contact = userInfo.contact_id
+  //   form.contact_name = userInfo.contact_name
+  //   form.contact_name_input = userInfo.contact_name
+  // }
+  console.log('created_datetime=', form.created_datetime)
 };
 
 setInitialForm();
-
-const file = ref(null)
-const toast = useToast();
-
 
 const postingItem = async () => {
   //
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/entry_requests_posting/${props.itemData.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/contacts_posting/${props.itemData.id}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else {
@@ -174,19 +204,18 @@ const postingItem = async () => {
 const handleSubmit = async () => {
   // form submit handling (item create or update)
   let formData = new FormData();
-
-            
+  
   // item updating
   for (let field of itemFields) { formData.append(field, form[field]) };
 
   try {
     if (!props.itemData) {
-      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/entry_requests/`, 
+      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Новая запись добавлена');
       state.responseItem = response.data;
     } else {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`, 
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/documents/${props.itemData.id}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Запись обновлёна');      
       state.responseItem = response.data;
@@ -196,9 +225,7 @@ const handleSubmit = async () => {
     if (files.value) {
       for (let file of files.value.files) {
         formData.append('file', file);
-        formData.append('contact_name', form.contact_name); //deprecated
-        formData.append('contact_uuid', form.contact_uuid);
-        formData.append('post_user_id', userInfo.uuid);
+        formData.append('contact_name', form.contact_name);
         try {
           const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
             formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
@@ -239,121 +266,73 @@ async function downloadFile(document_id) {
 <template>
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
-      Заявка на въезд <span v-if="props.itemData">№ {{ props.itemData.id_entry_request }}</span>
+      Документ <span v-if="props.itemData">№ {{ props.itemData.id }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
     </header>
 
     <div class="ml-6 mt-3" v-if="props.isCard">
-      <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-400" v-if="props.itemData.status=='entered'">
-        ТРАНСПОРТ ВЪЕХАЛ</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-500" v-else-if="props.itemData.status=='open'">
-        ЗАЯВКА ОТКРЫТА</div>
-
-      <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
+      <!-- <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div> -->
+      <div class="inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
     </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
-      <!-- types:  text, date, time -->
       <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Номер машины</label>
-          <input type="text" v-model="form.ncar" :class="[errField['ncar']==1 ? formInputStyleErr : formInputStyle]" 
+        <div class=formInputDiv>   <label class=formLabelStyle>Наименование</label>
+          <input type="text" v-model="form.doc_name" :class="[errField['doc_name']==1 ? formInputStyleErr : formInputStyle]" 
           :required="true" :disabled="isCard" />
         </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер</label>
+          <input type="text" v-model="form.doc_id" :class="[errField['doc_id']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>   
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата</label>
+          <input type="date" v-model="form.doc_date" :class="[errField['doc_date']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>
+      </div>
 
-        <!-- fake field 'contact_name_input' for dropdown list -->
-        <div class="formInputDiv" v-if="(!props.isCard) & userInfo.contact_id==0">   <label class=formLabelStyle>Клиент</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
-              showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
+      <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>related_doc_uuid</label>
+          <input type="email" v-model="form.related_doc_uuid" :class="[errField['related_doc_uuid']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="true" />
+        </div>
+
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Контрагент</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
-              @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
+                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="false"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
-          <div v-if="showDropDownSelect.contact_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+          <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="form.contact=item.id; showDropDownSelect.contact_name_input=false; 
-                form.contact_name=item.name;form.contact_name_input=item.name;form.contact_uuid=item.uuid" >
-              {{ item.name }}
+                @click="showDropDownSelect['contact_name_input']=false; 
+                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid" >
+                {{ item.name }}
             </div>
           </div>
         </div>
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
-          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Контрагент</label>
+          <input type="text" v-model="form.contact_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
-        </div>
-
-        <div class=formInputDiv>   <label class=formLabelStyle>Тип въезда</label>
-          <select :class="[errField['entry_type']==1 ? formInputStyleErr : formInputStyle]"
-            v-model="form.entry_type" :required="false" :disabled="isCard">
-            <option v-for="type in ['Привоз груза', 'Вывоз груза']" :value="type">{{ type }}</option>
-          </select>
-        </div>
-
+        </div>   
       </div>
 
       <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата въезда</label>
-          <input type="date" v-model="form.dateen" :class="[errField['dateen']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата загрузки</label>
+          <input type="datetime" v-model="form.created_datetime" :class="[errField['created_datetime']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="true" />
+        </div>   
+        <div class=formInputDiv>   <label class=formLabelStyle>UUID пользователя</label>
+          <input type="text" v-model="form.post_user_id" :class="[errField['post_user_id']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="true" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Время въезда с</label>
-          <input type="time" v-model="form.timeen" :class="[errField['timeen']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Время въезда по</label>
-          <input type="time" v-model="form.plan_timeen_to" :class="[errField['plan_timeen_to']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-      </div>
-
-      <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>ФИО водителя</label>
-          <input type="text" v-model="form.driver_fio" :class="[errField['driver_fio']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>№ водительских прав</label>
-          <input type="text" v-model="form.driver_licence" :class="[errField['driver_licence']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Модель автомобиля</label>
-          <input type="text" v-model="form.car_model" :class="[errField['car_model']==1 ? formInputStyleErr : formInputStyle]"
+        <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
+          <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
         </div>
       </div>
-
-
-
-      <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>№ транспортного документа</label>
-          <input type="text" v-model="form.ntir" :class="[errField['ntir']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата транспортного документа</label>
-          <input type="date" v-model="form.ntir_date" :class="[errField['ntir_date']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-      </div>
-
-      <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>№ таможенного документа</label>
-          <input type="text" v-model="form.customs_doc" :class="[errField['customs_doc']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата таможенного документа</label>
-          <input type="date" v-model="form.customs_doc_date" :class="[errField['customs_doc_date']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-      </div>
-
-      <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Примечание</label>
-          <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-      </div>
-
 
       <div v-if="props.isCard || props.itemData">
         <!-- Show loading spinner while loading is true -->

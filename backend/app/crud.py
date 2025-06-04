@@ -35,14 +35,17 @@ def create_n_save_document(db: Session, file: UploadFile, document: schemas.Docu
         file_object.write(document.filecontent)
 
     # add record into database
-    post_user_id = '1'
+    uuid=str(uuid4())
     created_datetime = datetime.datetime.now()
-    db_document = models.Document(**document.model_dump(), post_user_id=post_user_id, created_datetime=created_datetime)
-    db.add(db_document)
-    db.commit()
-    db.refresh(db_document)
+    db_document = models.Document(**document.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    db.add(db_document); db.commit(); db.refresh(db_document)
     
     return db_document.filename
+
+
+def get_document_by_uuid(db: Session, uuid: str):
+    # returns list with 1 item (for frontend compatibility)
+    return [db.query(models.Document).filter(models.Document.uuid == uuid, models.Document.is_active==True).first()]
 
 
 def get_documents(db: Session, skip: int = 0, limit: int = 100):

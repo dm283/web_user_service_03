@@ -260,13 +260,17 @@ def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_activ
 
 @app.put("/upload_file_for_carpass/{related_doc_uuid}")
 async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                                  related_doc_uuid: str, contact_name: Annotated[str, Form()],  
+                                  related_doc_uuid: str, 
+                                  contact_name: Annotated[str, Form()], #deprecated
+                                  contact_uuid: Annotated[str, Form()], post_user_id: Annotated[str, Form()],
                                   file: UploadFile, db: Session = Depends(get_db)):
     # file upload for carpass
     document = schemas.DocumentCreate(
-        doc_name = 'тест_пропуск',
+        doc_name = 'наименование_дока',
         related_doc_uuid = related_doc_uuid,
         customer_name = contact_name,
+        contact_uuid = contact_uuid,
+        post_user_id = post_user_id,
         filename = file.filename,
         filepath = f"saved_files/{file.filename}",
         filecontent = None
@@ -310,6 +314,15 @@ def read_contact_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_a
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Contact not found")
     return db_contact
+
+
+@app.get('/document_by_uuid/{uuid}', response_model=list[schemas.Document])
+def get_document_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    db_document = crud.get_document_by_uuid(db, uuid=uuid)
+    if db_document is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_document
 
 #########################################################    GET LIST OF ITEMS ENDPOINTS
 @app.get('/documents/', response_model=list[schemas.Document])
