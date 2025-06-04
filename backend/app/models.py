@@ -61,16 +61,26 @@ class User(Base):
 class Document(Base):
     __tablename__ = "documents"
 
-    id = Column(Integer, primary_key=True)
-    doc_name = Column(String(length=24))
+    doc_name = Column(String)
+    doc_id = Column(String)
+    doc_date = Column(String)
     related_doc_uuid = Column(String)
-    customer_name = Column(String(length=24))
+    customer_name = Column(String(length=24))  # deprecated
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
     filename = Column(String)
     filepath = Column(String)
     filecontent = Column(LargeBinary)
-    post_user_id = Column(String(length=36), nullable=True, default=None)
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    comment = Column(String)
     created_datetime = Column(DateTime)
-    updated_datetime = Column(DateTime, nullable=True)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String, nullable=True, default=None)
+    posted = Column(Boolean, default=False)
+    was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
 
 
 class Carpass(Base):
