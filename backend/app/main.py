@@ -652,13 +652,18 @@ def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active
 
 
 #########################################################    USERS ENDPOINTS
-
-
-
 @app.get("/users/", response_model=list[schemas.User])
 def read_users(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
+    return users
+
+
+@app.get("/users_with_contacts/") ########### test
+def read_users(
+    #current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
+               skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users_with_contacts(db, skip=skip, limit=limit)
     return users
 
 
@@ -679,7 +684,7 @@ def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_acti
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-
+################################ items
 # @app.post("/users/{user_id}/items/", response_model=schemas.Item)
 # def create_item_for_user(
 #     user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
