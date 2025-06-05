@@ -48,9 +48,11 @@ def get_document_by_uuid(db: Session, uuid: str):
     return [db.query(models.Document).filter(models.Document.uuid == uuid, models.Document.is_active==True).first()]
 
 
-def get_documents(db: Session, skip: int = 0, limit: int = 100):
-    # retrives all documents from database
-    return db.query(models.Document).order_by(models.Document.created_datetime.desc()).offset(skip).limit(limit).all()
+# def get_documents(db: Session, skip: int = 0, limit: int = 100):
+def get_document_records(db: Session, skip: int = 0, limit: int = 100):
+    # retrives all document_records from database
+    return db.query(models.DocumentRecord).filter(models.DocumentRecord.is_active==True).\
+        order_by(models.DocumentRecord.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_contacts(db: Session, skip: int = 0, limit: int = 100):
@@ -242,6 +244,22 @@ def create_contact(db: Session, item: schemas.ContactCreate):
     return db_contact
 
 
+# def create_document(db: Session, item: schemas.DocumentCreate):
+def create_document_record(db: Session, item: schemas.DocumentRecordCreate):
+    # creates a record in documents table in database
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_doc_rec = models.DocumentRecord(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    try:
+        db.add(db_doc_rec); db.commit(); db.refresh(db_doc_rec)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    return db_doc_rec
+
+
 def create_user(db: Session, user: schemas.UserCreate):
     # creates a user in database
     password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -320,6 +338,19 @@ def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate):
     return item_from_db
 
 
+def update_document_record(db: Session, item_id: int, item: schemas.DocumentRecordUpdate):
+    #
+    item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    return item_from_db
+
+
 def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd):
     #
     item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
@@ -358,6 +389,25 @@ def delete_contact(db: Session, item_id: int):
     db.commit()
 
     return {"message": f"Contact id {item_id} deleted successfully"}
+
+
+def delete_document_records(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+    db.commit()
+
+    return {"message": f"DocumentRecord id {item_id} deleted successfully"}
 
 
 def delete_user(db: Session, item_id: int):
@@ -552,6 +602,26 @@ def posting_contact(db: Session, item_id: int):
     return item_from_db
 
 
+def posting_document_record(db: Session, item_id: int):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.DocumentRecord, 
+                               schema_obj=schemas.DocumentRecordValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    return item_from_db
+
+
 def posting_user(db: Session, item_id: int):
     #
     def foo_fields_validation(item_from_db):
@@ -682,6 +752,22 @@ def rollback_entry_requests(db: Session, item_id: int):
 def rollback_contact(db: Session, item_id: int):
     #
     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False)
+    setattr(item_from_db, 'post_date', None)
+    setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    return item_from_db.id
+
+
+def rollback_document_record(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     if not item_from_db.posted:

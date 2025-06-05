@@ -61,16 +61,38 @@ class User(Base):
 class Document(Base):
     __tablename__ = "documents"
 
-    doc_name = Column(String)
-    doc_id = Column(String)
-    doc_date = Column(String)
-    related_doc_uuid = Column(String)
+    doc_name = Column(String)  ###
+    doc_id = Column(String)    ###
+    doc_date = Column(String)  ###
+    related_doc_uuid = Column(String)  # will be only uuid of document_record
     customer_name = Column(String(length=24))  # deprecated
-    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+    contact_uuid = Column(String)   ###
     filename = Column(String)
     filepath = Column(String)
     filecontent = Column(LargeBinary)
 
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    comment = Column(String)   ###
+    created_datetime = Column(DateTime)
+    # creator_user_uuid = Column(String)
+    updated_datetime = Column(DateTime, nullable=True, default=None)   ###
+    post_date = Column(DateTime, nullable=True, default=None)          ###
+    post_user_id = Column(String, nullable=True, default=None)         ###
+    posted = Column(Boolean, default=False)                            ###
+    was_posted = Column(Boolean, default=False)                        ###
+    is_active = Column(Boolean, default=True)
+
+
+class DocumentRecord(Base):
+    __tablename__ = "document_records"
+
+    doc_name = Column(String)
+    doc_id = Column(String)
+    doc_date = Column(Date)
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+    related_objects_uuid = Column(String)
+    
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
     comment = Column(String)
@@ -135,6 +157,9 @@ class Exitcarpass(Base):
     uuid = Column(String, unique=True)
     id_exit = Column(String(length=8), unique=True)
     id_enter = Column(String(length=8), unique=True)
+
+    contact_uuid = Column(String)
+
     ncar = Column(String(length=255))
     driver_fio = Column(String(length=50))
     driver_phone = Column(String(length=15))

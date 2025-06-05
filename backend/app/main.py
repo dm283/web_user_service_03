@@ -165,8 +165,8 @@ def redefine_schema_values_to_none(data, schema_obj):
     return schema_obj(**data_dict)
 
 
-#########################################################    ENDPOINTS
-@app.post("/document/")
+#########################################################    DOCUMENT (FILE)
+@app.post("/document/")      # check this!!!!!!
 async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                       doc_name: Annotated[str, Form()], 
                       related_doc_uuid: Annotated[str, Form()],
@@ -187,22 +187,20 @@ async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_acti
     return crud.create_n_save_document(db=db, file=file, document=document)
 
 
+# get name of downloading file  -   check is it using!
 @app.get('/get-file-name/{document_id}')
 def document_get_filename(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           document_id: int, db: Session = Depends(get_db)):
-    # get name of downloading file
     document = db.query(models.Document).filter(models.Document.id == document_id).first()
     document_filename = document.filename
 
     return {'filename': document_filename}
 
 
+# download file from object card
 @app.get('/download-file/{document_id}')
 def document_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                       document_id: int,  db: Session = Depends(get_db)):
-    # download file
-
-    print('downloading file!')
     document = db.query(models.Document).filter(models.Document.id == document_id).first()
     filepath = document.filepath
     filename = document.filename
@@ -222,6 +220,37 @@ def document_download(current_user: Annotated[UserAuth, Depends(get_current_acti
     return response
 
 
+
+# upload file (document)
+@app.put("/upload_file_for_carpass/{related_doc_uuid}")
+async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                                  related_doc_uuid: str, 
+                                  customer_name: Annotated[str, Form()], #deprecated
+                                  contact_uuid: Annotated[str, Form()], post_user_id: Annotated[str, Form()],
+                                  file: UploadFile, db: Session = Depends(get_db)):
+    # file upload for carpass
+    document = schemas.DocumentCreate(
+        doc_name = 'наименование_дока',
+        related_doc_uuid = related_doc_uuid,
+        customer_name = customer_name,
+        contact_uuid = contact_uuid,
+        post_user_id = post_user_id,
+        filename = file.filename,
+        filepath = f"saved_files/{file.filename}",
+        filecontent = None
+    )
+    return crud.create_n_save_document(db=db, file=file, document=document)
+
+
+# attach document (file) to additional object
+@app.put("/attach_doc_to_additional_entity/")
+async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                                  doc_id: Annotated[int, Form()], entity_uuid: Annotated[str, Form()],
+                                  db: Session = Depends(get_db)):
+    return crud.attach_doc_to_additional_entity(db=db, doc_id=doc_id, entity_uuid=entity_uuid)
+    
+
+# download enter carpass for printing
 @app.get('/download_carpass/{section}/{carpass_id}')
 def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                      section: str, carpass_id: int,  db: Session = Depends(get_db)):
@@ -256,36 +285,6 @@ def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_activ
     )
 
     return response
-
-
-@app.put("/upload_file_for_carpass/{related_doc_uuid}")
-async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                                  related_doc_uuid: str, 
-                                  contact_name: Annotated[str, Form()], #deprecated
-                                  contact_uuid: Annotated[str, Form()], post_user_id: Annotated[str, Form()],
-                                  file: UploadFile, db: Session = Depends(get_db)):
-    # file upload for carpass
-    document = schemas.DocumentCreate(
-        doc_name = 'наименование_дока',
-        related_doc_uuid = related_doc_uuid,
-        customer_name = contact_name,
-        contact_uuid = contact_uuid,
-        post_user_id = post_user_id,
-        filename = file.filename,
-        filepath = f"saved_files/{file.filename}",
-        filecontent = None
-    )
-    return crud.create_n_save_document(db=db, file=file, document=document)
-
-
-
-@app.put("/attach_doc_to_additional_entity/")
-async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                                  doc_id: Annotated[int, Form()], entity_uuid: Annotated[str, Form()],
-                                  db: Session = Depends(get_db)):
-    return crud.attach_doc_to_additional_entity(db=db, doc_id=doc_id, entity_uuid=entity_uuid)
-    
-
 
 
 #########################################################    GET ITEM ENDPOINTS
@@ -325,10 +324,12 @@ def get_document_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_a
     return db_document
 
 #########################################################    GET LIST OF ITEMS ENDPOINTS
-@app.get('/documents/', response_model=list[schemas.Document])
+# @app.get('/documents/', response_model=list[schemas.Document])
+@app.get('/document_records/', response_model=list[schemas.DocumentRecord])
 def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    documents = crud.get_documents(db, skip=skip, limit=limit)
+    # documents = crud.get_documents(db, skip=skip, limit=limit)
+    documents = crud.get_document_records(db, skip=skip, limit=limit)
     return documents
 
 
@@ -461,6 +462,14 @@ def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_
     return crud.create_contact(db=db, item=data_none_values_redefined)
 
 
+# @app.post("/documents/", response_model=schemas.Document)
+@app.post("/document_records/", response_model=schemas.DocumentRecord)
+def create_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
+    return crud.create_document_record(db=db, item=data_none_values_redefined)
+
+
 @app.post("/users/", response_model=schemas.User)
 def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
@@ -511,6 +520,15 @@ def update_contact(current_user: Annotated[UserAuth, Depends(get_current_active_
     return crud.update_contact(db=db, item_id=item_id, item=item)
 
 
+@app.put('/document_records/{item_id}', response_model=schemas.DocumentRecord)
+def update_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
+    item = schemas.DocumentRecordUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_document_record(db=db, item_id=item_id, item=item)
+
+
 @app.put('/users/{item_id}', response_model=schemas.User)
 def update_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
@@ -557,6 +575,13 @@ def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     return crud.delete_entry_request(db=db, item_id=item_id)
 
 
+@app.delete('/document_records/{item_id}')
+def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.delete_document_records(db=db, item_id=item_id)
+
+
 @app.put('/carpasses_deactivate/{carpass_id}')
 def deactivate_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                        carpass_id: int, db: Session = Depends(get_db)):
@@ -599,6 +624,13 @@ def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active
     return crud.posting_contact(db=db, item_id=item_id)
 
 
+@app.put('/document_records_posting/{item_id}')
+def posting_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_document_record(db=db, item_id=item_id)
+
+
 @app.put('/users_posting/{item_id}')
 def posting_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
@@ -624,21 +656,24 @@ def rollback_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_a
 @app.put('/entry_requests_rollback/{item_id}')
 def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
-    #
     return crud.rollback_entry_requests(db=db, item_id=item_id)
 
 
 @app.put('/contacts_rollback/{item_id}')
 def rollback_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
-    #
     return crud.rollback_contact(db=db, item_id=item_id)
+
+
+@app.put('/document_records_rollback/{item_id}')
+def rollback_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_id: int, db: Session = Depends(get_db)):
+    return crud.rollback_document_record(db=db, item_id=item_id)
 
 
 @app.put('/users_rollback/{item_id}')
 def rollback_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
-    #
     return crud.rollback_user(db=db, item_id=item_id)
 
 

@@ -11,6 +11,7 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+const toast = useToast();
 
 const emit = defineEmits(['docCreated', 'closeModal']) // emit
 
@@ -39,8 +40,9 @@ else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts/${props.itemData.id}`; }
 else if (props.itemName == 'Пользователи') {
   state.query = `http://${backendIpAddress}:${backendPort}/users/${props.itemData.id}`; }
+else if (props.itemName == 'Электронный архив') {
+  state.query = `http://${backendIpAddress}:${backendPort}/document_records/${props.itemData.id}`; }
 
-const toast = useToast();
 
 const handleSubmit = async () => {
 

@@ -98,7 +98,7 @@ const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpass
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
-const query_documents = `http://${backendIpAddress}:${backendPort}/documents/`
+const query_documents = `http://${backendIpAddress}:${backendPort}/document_records/`
 
 
 if (props.view_type == 'enter') {

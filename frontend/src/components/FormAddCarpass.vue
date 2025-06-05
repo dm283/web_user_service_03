@@ -12,6 +12,7 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['docCreated', 'closeModal'])
 
@@ -232,7 +233,9 @@ const handleSubmit = async () => {
     if (files.value) {
       for (let file of files.value.files) {
         formData.append('file', file);
-        formData.append('contact_name', form.contact_name);
+        formData.append('customer_name', form.contact_name_input); //deprecated
+        formData.append('contact_uuid', form.contact_uuid);
+        formData.append('post_user_id', userInfo.uuid);
         try {
           const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
             formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});

@@ -26,11 +26,11 @@ const itemFields = [
     'doc_name',
     'doc_id',
     'doc_date',
-    'related_doc_uuid',
     'contact_uuid',
+    'related_objects_uuid',
     'comment',
-    'created_datetime',
-    'post_user_id',
+    // 'created_datetime',
+    // 'post_user_id',
   ]
 
 const state = reactive({
@@ -77,11 +77,10 @@ onMounted(async () => {
 if (props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/document_by_uuid/${props.itemData.uuid}`,
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
         {headers: authHeader()}
       );
       state.documents = response.data;
-      console.log(state.documents)
 
       if (props.itemData.contact_uuid) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
@@ -172,7 +171,6 @@ const setInitialForm = () => {
   //   form.contact_name = userInfo.contact_name
   //   form.contact_name_input = userInfo.contact_name
   // }
-  console.log('created_datetime=', form.created_datetime)
 };
 
 setInitialForm();
@@ -181,7 +179,7 @@ const postingItem = async () => {
   //
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/contacts_posting/${props.itemData.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records_posting/${props.itemData.id}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else {
@@ -210,12 +208,12 @@ const handleSubmit = async () => {
 
   try {
     if (!props.itemData) {
-      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/documents/`, 
+      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/document_records/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Новая запись добавлена');
       state.responseItem = response.data;
     } else {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/documents/${props.itemData.id}`, 
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records/${props.itemData.id}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Запись обновлёна');      
       state.responseItem = response.data;
@@ -225,7 +223,9 @@ const handleSubmit = async () => {
     if (files.value) {
       for (let file of files.value.files) {
         formData.append('file', file);
-        formData.append('contact_name', form.contact_name);
+        formData.append('customer_name', form.contact_name_input); //deprecated
+        formData.append('contact_uuid', form.contact_uuid);
+        formData.append('post_user_id', userInfo.uuid);
         try {
           const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
             formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
@@ -294,15 +294,10 @@ async function downloadFile(document_id) {
       </div>
 
       <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>related_doc_uuid</label>
-          <input type="email" v-model="form.related_doc_uuid" :class="[errField['related_doc_uuid']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="false" :disabled="true" />
-        </div>
-
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Контрагент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
-                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="false"/>
+                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
@@ -315,8 +310,13 @@ async function downloadFile(document_id) {
         </div>
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Контрагент</label>
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="true" />
-        </div>   
+            :required="false" :disabled="true" />
+        </div>
+        
+        <div class=formInputDiv>   <label class=formLabelStyle>Связанные объекты</label>
+          <input type="email" v-model="form.related_objects_uuid" :class="[errField['related_objects_uuid']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="true" />
+        </div>
       </div>
 
       <div class="flex">
@@ -357,7 +357,7 @@ async function downloadFile(document_id) {
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" multiple class="formInputFile"/>
+          <input ref="files" name="files" type="file" multiple class="formInputFile" :required="!itemData"/>
           <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
