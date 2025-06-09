@@ -81,6 +81,7 @@ class Carpass(CarpassCreate):
 ##############
 class ExitcarpassCreate(BaseModel):
     id_enter: str
+    contact_uuid: str
     ncar: str
     driver_fio: str
     driver_phone: str
@@ -179,13 +180,15 @@ class EntryRequest(EntryRequestCreate):
 
     class Config:
         from_attributes = True
+
+
 #####################
-
-
 class DocumentBase(BaseModel):
     doc_name: str
     related_doc_uuid: str
     customer_name: str
+    contact_uuid: str
+    post_user_id: str
     filename: str
     filepath: str
 
@@ -196,14 +199,48 @@ class DocumentCreate(DocumentBase):
 
 class Document(DocumentBase):
     id: int
-    post_user_id: str | None
+    uuid: str
     created_datetime: datetime
     updated_datetime: datetime | None
 
     class Config:
         from_attributes = True
 
-#####
+##############################
+class DocumentRecordCreate(BaseModel):
+    doc_name: str
+    doc_id: str | None = None
+    doc_date: date | str | None = None
+    contact_uuid: str
+    related_objects_uuid: str | None = None
+    comment: str | None = None
+
+
+class DocumentRecordValidation(BaseModel):
+    doc_name: str
+    doc_id: str
+    doc_date: date
+    contact_uuid: str
+
+class DocumentRecordUpdate(DocumentRecordCreate):
+    updated_datetime: datetime
+
+
+class DocumentRecord(DocumentRecordCreate):
+    id: int
+    uuid: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
+
+
+################
 class UserBase(BaseModel):
     login: str
     email: str | None = None

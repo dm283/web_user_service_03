@@ -1,7 +1,7 @@
 <script setup>
-  import Documents from '@/components/Documents.vue';
+  import Carpasses from '@/components/Carpasses.vue';
 </script>
 
 <template>
-  <Documents />
+  <Carpasses :view_type="'documents'" :list_title="'Электронный архив'"/>
 </template>

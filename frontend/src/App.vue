@@ -283,14 +283,19 @@ const signOut = async () => {
       :selected="state.selectedMenu=='catalogs' ? '1' : '0'" @click="state.selectedMenu='catalogs'"
       />
     </RouterLink>
-    <RouterLink to="/parking_map" v-if="state.userInfo.contact_id == 0">
-      <MenuSection :label="'План стоянки ТС'" :icon="'th-large'" :description="'в работе'"
-      :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
+    <RouterLink to="/documents" v-if="state.userInfo.contact_id == 0">
+      <MenuSection :label="'Электронный архив'" :icon="'file'" :description="'Архив документов'"
+      :selected="state.selectedMenu=='documents' ? '1' : '0'" @click="state.selectedMenu='documents'"
       />
     </RouterLink>
     <RouterLink to="/administration" v-if="state.userInfo.contact_id == 0">
       <MenuSection :label="'Администрирование'" :icon="'android'" :description="'Администрирование сервиса'"
       :selected="state.selectedMenu=='administration' ? '1' : '0'" @click="state.selectedMenu='administration'"
+      />
+    </RouterLink>
+    <RouterLink to="/parking_map" v-if="state.userInfo.contact_id == 0">
+      <MenuSection :label="'План стоянки ТС'" :icon="'th-large'" :description="'в работе'"
+      :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
       />
     </RouterLink>
   </div>

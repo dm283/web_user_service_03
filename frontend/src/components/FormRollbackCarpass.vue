@@ -43,6 +43,8 @@ if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Пользователи') {
   state.query = `http://${backendIpAddress}:${backendPort}/users_rollback/${props.itemData.id}`;
+} else if (props.itemName == 'Электронный архив') {
+  state.query = `http://${backendIpAddress}:${backendPort}/document_records_rollback/${props.itemData.id}`;
 }
 
 

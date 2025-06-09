@@ -184,7 +184,9 @@ const handleSubmit = async () => {
     if (files.value) {
       for (let file of files.value.files) {
         formData.append('file', file);
-        formData.append('contact_name', form.contact_name);
+        formData.append('customer_name', state.responseItem.name); //deprecated
+        formData.append('contact_uuid', state.responseItem.uuid);
+        formData.append('post_user_id', userInfo.uuid);
         try {
           const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
             formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});

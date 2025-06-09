@@ -23,20 +23,20 @@ const props = defineProps({
 });
 
 const itemFields = [
-    'linked_broker_uuid',
-    'name',
-    'inn',
-    'type',
-    'fio',
-    'email',
-    'idtelegram',
+    'doc_name',
+    'doc_id',
+    'doc_date',
+    'contact_uuid',
+    'related_objects_uuid',
     'comment',
+    // 'created_datetime',
+    // 'post_user_id',
   ]
 
 const state = reactive({
   documents: [],
   isLoading: true,
-  brokers: [],
+  contacts: [],
 })
 
 const showDropDownSelect = reactive({});
@@ -65,8 +65,8 @@ const userAccessToken = () => {
 
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/brokers_posted/`, {headers: authHeader()});
-      state.brokers = response.data;
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
+      state.contacts = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -82,12 +82,12 @@ onMounted(async () => {
       );
       state.documents = response.data;
 
-      if (props.itemData.linked_broker_uuid) {
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.linked_broker_uuid}`,
+      if (props.itemData.contact_uuid) {
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
         {headers: authHeader()}
       );
-      state.linked_broker_name = response2.data.name;
-      form['linked_broker_name_input'] = response2.data.name
+      state.contact_name = response2.data.name;
+      form['contact_name_input'] = response2.data.name
       }
       
     } catch (error) {
@@ -98,25 +98,6 @@ onMounted(async () => {
 });
 };
 
-// const setFilter = (fieldForm, entity, fieldEntity) => {
-//   // filter setting
-//   state.filteredList = [];
-//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-//   for (let rec of state[entity]) {
-//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
-//       state.filteredList.push(rec);
-//     };
-//   };
-//   if (state.filteredList.length == 0) {
-//     for (let xobj of state[entity]) {
-//       let clonedObj = {...xobj};
-//       state.filteredList.push(clonedObj);
-//     };
-//   }
-//   console.log('state.filteredList=',state.filteredList)
-// };
-
-//'linked_broker_name_input', 'brokers', 'name'
 
 const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
@@ -127,13 +108,6 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
       state.filteredList.push(rec);
     };
   };
-
-  // if (state.filteredList.length == 0) {
-  //   for (let xobj of state[entity]) {
-  //     let clonedObj = {...xobj};
-  //     state.filteredList.push(clonedObj);
-  //   };
-  // }
 };
 
 
@@ -161,9 +135,9 @@ const setInitialForm = () => {
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
-      form['linked_broker_name_input'] = null  // fake form field for dropdown list
+      //form['linked_broker_name_input'] = null  // fake form field for dropdown list
     }
-    form['type'] = 'V' // template for 'ncar'
+    //form['type'] = 'V' // template for 'ncar'
   };
 
   // if (userInfo.contact_id!=0) {  // for the client service
@@ -179,7 +153,7 @@ const postingItem = async () => {
   //
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/contacts_posting/${props.itemData.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records_posting/${props.itemData.id}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else {
@@ -208,12 +182,12 @@ const handleSubmit = async () => {
 
   try {
     if (!props.itemData) {
-      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/contacts/`, 
+      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/document_records/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Новая запись добавлена');
       state.responseItem = response.data;
     } else {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/contacts/${props.itemData.id}`, 
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records/${props.itemData.id}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Запись обновлёна');      
       state.responseItem = response.data;
@@ -224,7 +198,7 @@ const handleSubmit = async () => {
       for (let file of files.value.files) {
         formData.append('file', file);
         formData.append('customer_name', form.contact_name_input); //deprecated
-        formData.append('contact_uuid', state.responseItem.uuid);
+        formData.append('contact_uuid', form.contact_uuid);
         formData.append('post_user_id', userInfo.uuid);
         try {
           const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
@@ -266,7 +240,7 @@ async function downloadFile(document_id) {
 <template>
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
-      Клиент <span v-if="props.itemData">№ {{ props.itemData.id }}</span>
+      Документ <span v-if="props.itemData">№ {{ props.itemData.id }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
@@ -280,70 +254,58 @@ async function downloadFile(document_id) {
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Наименование</label>
-          <input type="text" v-model="form.name" :class="[errField['name']==1 ? formInputStyleErr : formInputStyle]" 
+          <input type="text" v-model="form.doc_name" :class="[errField['doc_name']==1 ? formInputStyleErr : formInputStyle]" 
           :required="true" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>ИНН</label>
-          <input type="number" v-model="form.inn" :class="[errField['inn']==1 ? formInputStyleErr : formInputStyle]" 
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер</label>
+          <input type="text" v-model="form.doc_id" :class="[errField['doc_id']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
-        </div>        
-      </div>
-      <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>ФИО</label>
-          <input type="text" v-model="form.fio" :class="[errField['fio']==1 ? formInputStyleErr : formInputStyle]" 
+        </div>   
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата</label>
+          <input type="date" v-model="form.doc_date" :class="[errField['doc_date']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>email</label>
-          <input type="email" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>idtelegram</label>
-          <input type="text" v-model="form.idtelegram" :class="[errField['idtelegram']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="false" :disabled="isCard" />
-        </div>    
       </div>
 
       <div class="flex">
-        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
-                @keyup="setFilter('linked_broker_name_input', 'brokers', 'name')" :required="false"/>
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Контрагент</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
+                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
-          <div v-if="showDropDownSelect['linked_broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+          <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect['linked_broker_name_input']=false; 
-                  form['reserve_1']=item.name;form['linked_broker_name_input']=item.name;form['linked_broker_uuid']=item.uuid" >
+                @click="showDropDownSelect['contact_name_input']=false; 
+                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid" >
                 {{ item.name }}
             </div>
           </div>
         </div>
-
-        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('linked_broker_name_input', 'brokers', 'name'); 
-                showDropDownSelect.linked_broker_name_input ? showDropDownSelect.linked_broker_name_input=false : showDropDownSelect.linked_broker_name_input=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
-                @keyup="setFilter('linked_broker_name_input', 'brokers', 'uuid')" :required="false"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect.linked_broker_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect.linked_broker_name_input=false; 
-                  form.linked_broker_name_input=item.name;form.linked_broker_uuid=item.uuid" >
-                {{ item.name }}
-            </div>
-          </div>
-        </div> -->
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Контрагент</label>
+          <input type="text" v-model="form.contact_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div>
         
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
-          <input type="text" v-model="form.linked_broker_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="true" />
+        <div class=formInputDiv>   <label class=formLabelStyle>Связанные объекты</label>
+          <input type="email" v-model="form.related_objects_uuid" :class="[errField['related_objects_uuid']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="true" />
         </div>
+      </div>
 
+      <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата загрузки</label>
+          <input type="datetime" v-model="form.created_datetime" :class="[errField['created_datetime']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="true" />
+        </div>   
+        <div class=formInputDiv>   <label class=formLabelStyle>UUID пользователя</label>
+          <input type="text" v-model="form.post_user_id" :class="[errField['post_user_id']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="true" />
+        </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
-        </div>    
+        </div>
       </div>
 
       <div v-if="props.isCard || props.itemData">
@@ -369,7 +331,7 @@ async function downloadFile(document_id) {
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" multiple class="formInputFile"/>
+          <input ref="files" name="files" type="file" multiple class="formInputFile" :required="!itemData"/>
           <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
