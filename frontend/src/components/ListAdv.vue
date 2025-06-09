@@ -9,7 +9,7 @@ import { utils, writeFileXLSX, writeFile } from 'xlsx';
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit',
-  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited'
+  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose'
 ]) // emit
 
 const props = defineProps({
@@ -622,6 +622,13 @@ const rowClick = (index, item) => {
         </ul>
       </div>
     </div>
+
+      <!-- выбрать документ -->
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
+      @click="emit('btnChoose', selectedItem)">
+      <i class="pi pi-asterisk" style="font-size: 1rem"></i>
+    </button>
+
   </div>
 
   <div class="float-right mt-3">

@@ -4,7 +4,6 @@ import {ref, reactive, computed, onMounted} from 'vue';
 import { useToast } from 'vue-toastification';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
-import FormEAList from './FormEAList.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -16,9 +15,7 @@ var backendPort = parser.get("main", "backend_port");
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
-const emit = defineEmits(['docCreated', 'closeModal', 
-// 'openEaList'
-])
+const emit = defineEmits(['docCreated', 'closeModal'])
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -29,11 +26,9 @@ const state = reactive({
   documents: [],
   isLoading: true,
   contacts: [],
-  choosenDocsUuids: [],
 })
 
 const showDropDownSelect = ref({});
-const showEAList = ref(false)
 
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
@@ -59,25 +54,10 @@ onMounted(async () => {
 };
 
 
-// if (props.itemData) {
-// onMounted(async () => {
-//     try {
-//       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
-//         {headers: authHeader()}
-//       );
-//       state.documents = response.data;
-//     } catch (error) {
-//       console.error('Error fetching docs', error);
-//     } finally {
-//       state.isLoading = false;
-//     }
-// });
-// };
-
 if (props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/obj_docs/${props.itemData.uuid}`,
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
         {headers: authHeader()}
       );
       state.documents = response.data;
@@ -194,7 +174,8 @@ const postingItem = async () => {
 const handleSubmit = async () => {
   // form submit handling (item create or update)
   let formData = new FormData();
-      
+
+            
   // item updating
   for (let field of itemFields) { formData.append(field, form[field]) };
 
@@ -228,22 +209,6 @@ const handleSubmit = async () => {
       };
     };
 
-    // attach files from EA (creates record in related_docs table)
-    if (state.choosenDocs) {
-      for (let doc of state.choosenDocs){
-        let formData2 = new FormData();
-        formData2.append('obj_uuid', state.responseItem.uuid);
-        formData2.append('user_uuid', userInfo.uuid);
-        formData2.append('doc_uuid', doc.uuid);
-        try {
-          const response = await axios.post(`http://${backendIpAddress}:${backendPort}/create_related_docs_record/`, 
-            formData2, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-        } catch (error) {
-          console.error('Error posting', error);
-        }
-      }
-    }
-
     emit('docCreated'); emit('closeModal');
   } catch (error) {
     console.error('Error adding item', error);
@@ -266,22 +231,6 @@ async function downloadFile(document_id) {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
-}
-
-
-const attachFileEA = async () => {
-  showEAList.value=true
-}
-
-const setChoosenDocs = async (items) => {
-  state.choosenDocs = items
-  console.log('docs chosen for uploading=', items)
-  for (let item of items) {
-    state.choosenDocsUuids.push(item.uuid)
-    item.filename = item.doc_name  //
-    state.documents.push(item)     //
-    console.log('docs = ',state.documents)  //
-  }
 }
 
 </script>
@@ -406,47 +355,40 @@ const setChoosenDocs = async (items) => {
       </div>
 
 
+      <div v-if="props.isCard || props.itemData">
+        <!-- Show loading spinner while loading is true -->
+        <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
+          <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
+        </div>
+        <!-- Show when loading is done -->
+        <div class="border-t border-slate-300 mx-6 pt-3" v-if="!state.isLoading && state.documents.length>0">
+          <label class=formLabelStyle>Документы</label>
+          <div class="flex space-x-3 mt-3">
+          <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
+            <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.id)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
+            <div class="">{{ document.filename }}</div>
+          </div>
+          </div>
+          </div>
+      </div>
+
+
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
           <input ref="files" name="files" type="file" multiple class="formInputFile"/>
+          <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
         </div>
       </div>
+
       <div v-else class="mb-5"></div>
 
-
-      <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-12">
-        <div class="space-x-5">
-          <label class="mx-1 text-sm font-bold text-blue-500">Документы</label>
-          <button class="float-right formBtn" type="button" @click="attachFileEA()">ЗАГРУЗИТЬ ИЗ ЭА</button>
-          <button class="float-right formBtn" type="button" @click="">СОЗДАТЬ В ЭА</button>
-        </div>
-        <!-- Show loading spinner while loading is true -->
-        <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
-          <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
-        </div>
-        <!-- Show when loading is done -->
-        <div class="" v-if="!state.isLoading && state.documents.length>0">
-          <div class="flex space-x-3 mt-3">
-          <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
-            <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.id)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
-            <div class="">{{ document.doc_name }}</div>
-          </div>
-          </div>
-        </div>
-      </div>
-
     </form>
-  </div>
-
-  <!-- **********************   MODAL EA LIST   ************************** -->
-  <div v-if="showEAList" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormEAList @close-modal="showEAList=false" @returned-docs="setChoosenDocs" />
   </div>
 
 </template>

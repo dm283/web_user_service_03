@@ -5,11 +5,12 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 
-class RelatedObjects(Base):
-    __tablename__ = 'related_objects'
+class RelatedDocs(Base):
+    __tablename__ = 'related_docs'
     id = Column(Integer, primary_key=True)
-    primary_obj_uuid = Column(String)
-    secondary_obj_uuid = Column(String)
+    obj_uuid = Column(String)
+    doc_uuid = Column(String)
+    user_uuid = Column(String)
     created_datetime = Column(DateTime)
     is_active = Column(Boolean, default=True)
 
@@ -90,8 +91,8 @@ class DocumentRecord(Base):
     doc_name = Column(String)
     doc_id = Column(String)
     doc_date = Column(Date)
-    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
-    related_objects_uuid = Column(String)
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))   # depracated
+    related_objects_uuid = Column(String)                        # depracated
     
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)

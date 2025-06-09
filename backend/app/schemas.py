@@ -311,3 +311,9 @@ class Contact(ContactCreate):
 
     class Config:
         from_attributes = True	
+
+###########
+class RelatedDocsCreate(BaseModel):
+    obj_uuid: str
+    user_uuid: str
+    doc_uuid: str
