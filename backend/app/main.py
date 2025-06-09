@@ -448,7 +448,6 @@ def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_use
            order_by(models.RelatedDocs.created_datetime.desc()).all()
     doc_uuid_list = []
     for rec in db_related_docs:
-        print(rec.doc_uuid)
         doc_uuid_list.append(rec.doc_uuid)
 
     documents =  db.query(models.DocumentRecord).filter(models.DocumentRecord.uuid.in_(doc_uuid_list)).\
