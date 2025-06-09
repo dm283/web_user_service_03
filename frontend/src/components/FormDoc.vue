@@ -98,25 +98,6 @@ onMounted(async () => {
 });
 };
 
-// const setFilter = (fieldForm, entity, fieldEntity) => {
-//   // filter setting
-//   state.filteredList = [];
-//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-//   for (let rec of state[entity]) {
-//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
-//       state.filteredList.push(rec);
-//     };
-//   };
-//   if (state.filteredList.length == 0) {
-//     for (let xobj of state[entity]) {
-//       let clonedObj = {...xobj};
-//       state.filteredList.push(clonedObj);
-//     };
-//   }
-//   console.log('state.filteredList=',state.filteredList)
-// };
-
-//'linked_broker_name_input', 'brokers', 'name'
 
 const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
@@ -127,13 +108,6 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
       state.filteredList.push(rec);
     };
   };
-
-  // if (state.filteredList.length == 0) {
-  //   for (let xobj of state[entity]) {
-  //     let clonedObj = {...xobj};
-  //     state.filteredList.push(clonedObj);
-  //   };
-  // }
 };
 
 
