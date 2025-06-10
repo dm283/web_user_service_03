@@ -260,6 +260,22 @@ def create_document_record(db: Session, item: schemas.DocumentRecordCreate):
     return db_doc_rec
 
 
+def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
+    # creates record in related_docs table
+    created_datetime = datetime.datetime.now()
+
+    # add check if the same record exists already!
+
+    record = models.RelatedDocs(obj_uuid=data.obj_uuid, doc_uuid=data.doc_uuid, user_uuid=data.user_uuid, created_datetime=created_datetime)
+    try:
+        db.add(record); db.commit(); db.refresh(record)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    return record
+
+
 def create_user(db: Session, user: schemas.UserCreate):
     # creates a user in database
     password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

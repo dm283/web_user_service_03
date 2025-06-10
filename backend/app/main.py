@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Annotated, Union
 from urllib.parse import quote
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from passlib.context import CryptContext
 from uuid import uuid4
 import jwt
@@ -198,10 +199,14 @@ def document_get_filename(current_user: Annotated[UserAuth, Depends(get_current_
 
 
 # download file from object card
-@app.get('/download-file/{document_id}')
+@app.get('/download-file/{document_record_uuid}')
+# @app.get('/download-file/{document_id}')  #old
 def document_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                      document_id: int,  db: Session = Depends(get_db)):
-    document = db.query(models.Document).filter(models.Document.id == document_id).first()
+                    #   document_id: int,  #old
+                    document_record_uuid: str,
+                      db: Session = Depends(get_db)):
+    # document = db.query(models.Document).filter(models.Document.id == document_id).first()  #old
+    document = db.query(models.Document).filter(models.Document.related_doc_uuid == document_record_uuid).first()
     filepath = document.filepath
     filename = document.filename
     
@@ -211,7 +216,6 @@ def document_download(current_user: Annotated[UserAuth, Depends(get_current_acti
                                 "Access-Control-Expose-Headers": "Content-Disposition, File-Name",
                                 "File-Name": quote(os.path.basename(filename), encoding='utf-8'),
                                 "Content-Disposition": f"attachment; filename*=utf-8''{quote(os.path.basename(filename))}"
-
                                     }
                             # media_type="text/plain",
                             # content_disposition_type="attachment; filename*=utf-8''{}".format(quote(os.path.basename(filename)))
@@ -240,6 +244,15 @@ async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_
         filecontent = None
     )
     return crud.create_n_save_document(db=db, file=file, document=document)
+
+
+@app.post("/create_related_docs_record/")
+def create_related_docs_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        data: Annotated[schemas.RelatedDocsCreate, Form()], db: Session = Depends(get_db)):
+    #
+    # data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
+    print('create_related_docs_record', data)
+    return crud.create_related_docs_record(db=db, data=data)
 
 
 # attach document (file) to additional object
@@ -427,6 +440,21 @@ def get_entity_documents(current_user: Annotated[UserAuth, Depends(get_current_a
         order_by(models.Document.created_datetime.desc()).all()
     # documents =  db.query(models.Document).filter(models.Document.related_doc_uuid == related_doc_uuid).\
     #     order_by(models.Document.created_datetime.desc()).all()
+    return documents
+
+@app.get('/obj_docs/{obj_uuid}')
+def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         obj_uuid: str, db: Session = Depends(get_db)):
+    # get object documents from db table document_records
+    db_related_docs = db.query(models.RelatedDocs).\
+           filter(models.RelatedDocs.obj_uuid==obj_uuid, models.RelatedDocs.is_active==True).\
+           order_by(models.RelatedDocs.created_datetime.desc()).all()
+    doc_uuid_list = []
+    for rec in db_related_docs:
+        doc_uuid_list.append(rec.doc_uuid)
+
+    documents =  db.query(models.DocumentRecord).filter(models.DocumentRecord.uuid.in_(doc_uuid_list)).\
+          order_by(models.DocumentRecord.created_datetime.desc()).all()
     return documents
 
 
