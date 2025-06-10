@@ -15,7 +15,7 @@ var backendPort = parser.get("main", "backend_port");
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
-const emit = defineEmits(['docCreated', 'closeModal'])
+const emit = defineEmits(['docCreated', 'closeModal', 'returnedDocs'])
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -37,6 +37,7 @@ const state = reactive({
   documents: [],
   isLoading: true,
   contacts: [],
+  choosenDocs: [], // new
 })
 
 const showDropDownSelect = reactive({});
@@ -210,7 +211,8 @@ const handleSubmit = async () => {
       };
     };
 
-    emit('docCreated'); emit('closeModal');
+    state.choosenDocs.push(state.responseItem) // new
+    emit('docCreated'); emit('returnedDocs', state.choosenDocs); emit('closeModal');
   } catch (error) {
     console.error('Error adding item', error);
     toast.error('Item has not added');
@@ -218,9 +220,9 @@ const handleSubmit = async () => {
 };
 
 
-async function downloadFile(document_id) {
+async function downloadFile(related_doc_uuid) {
   // downloads file
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, 
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${related_doc_uuid}`, 
     {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
@@ -318,7 +320,7 @@ async function downloadFile(document_id) {
           <label class=formLabelStyle>Документы</label>
           <div class="flex space-x-3 mt-3">
           <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
-            <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.id)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
+            <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.related_doc_uuid)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
             <div class="">{{ document.filename }}</div>
           </div>
           </div>

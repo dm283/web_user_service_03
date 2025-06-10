@@ -199,10 +199,14 @@ def document_get_filename(current_user: Annotated[UserAuth, Depends(get_current_
 
 
 # download file from object card
-@app.get('/download-file/{document_id}')
+@app.get('/download-file/{document_record_uuid}')
+# @app.get('/download-file/{document_id}')  #old
 def document_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                      document_id: int,  db: Session = Depends(get_db)):
-    document = db.query(models.Document).filter(models.Document.id == document_id).first()
+                    #   document_id: int,  #old
+                    document_record_uuid: str,
+                      db: Session = Depends(get_db)):
+    # document = db.query(models.Document).filter(models.Document.id == document_id).first()  #old
+    document = db.query(models.Document).filter(models.Document.related_doc_uuid == document_record_uuid).first()
     filepath = document.filepath
     filename = document.filename
     
@@ -212,7 +216,6 @@ def document_download(current_user: Annotated[UserAuth, Depends(get_current_acti
                                 "Access-Control-Expose-Headers": "Content-Disposition, File-Name",
                                 "File-Name": quote(os.path.basename(filename), encoding='utf-8'),
                                 "Content-Disposition": f"attachment; filename*=utf-8''{quote(os.path.basename(filename))}"
-
                                     }
                             # media_type="text/plain",
                             # content_disposition_type="attachment; filename*=utf-8''{}".format(quote(os.path.basename(filename)))

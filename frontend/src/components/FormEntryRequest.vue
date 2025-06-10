@@ -5,6 +5,7 @@ import { useToast } from 'vue-toastification';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
 import FormEAList from './FormEAList.vue';
+import FormDoc from './FormDoc.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -29,11 +30,13 @@ const state = reactive({
   documents: [],
   isLoading: true,
   contacts: [],
-  choosenDocsUuids: [],
+  choosenDocs: [],
 })
 
 const showDropDownSelect = ref({});
 const showEAList = ref(false)
+const showAddDoc = ref(false)
+
 
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
@@ -252,10 +255,11 @@ const handleSubmit = async () => {
 };
 
 
-async function downloadFile(document_id) {
+async function downloadFile(document_record_uuid) {
   // downloads file
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, 
-    {responseType: "blob", headers: authHeader()});
+  // let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_id}` // old
+  let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_record_uuid}` // old
+  const response = await axios.get(query, {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -268,20 +272,22 @@ async function downloadFile(document_id) {
   window.URL.revokeObjectURL(url);
 }
 
+const attachFileSys = async () => {
+  showAddDoc.value=true
+}
 
 const attachFileEA = async () => {
   showEAList.value=true
 }
 
 const setChoosenDocs = async (items) => {
-  state.choosenDocs = items
-  console.log('docs chosen for uploading=', items)
+  state.choosenDocs = state.choosenDocs.concat(items)
   for (let item of items) {
-    state.choosenDocsUuids.push(item.uuid)
+    // state.choosenDocsUuids.push(item.uuid)
     item.filename = item.doc_name  //
     state.documents.push(item)     //
-    console.log('docs = ',state.documents)  //
   }
+  console.log('state.choosenDocs=', state.choosenDocs)
 }
 
 </script>
@@ -424,7 +430,7 @@ const setChoosenDocs = async (items) => {
         <div class="space-x-5">
           <label class="mx-1 text-sm font-bold text-blue-500">Документы</label>
           <button class="float-right formBtn" type="button" @click="attachFileEA()">ЗАГРУЗИТЬ ИЗ ЭА</button>
-          <button class="float-right formBtn" type="button" @click="">СОЗДАТЬ В ЭА</button>
+          <button class="float-right formBtn" type="button" @click="attachFileSys()">СОЗДАТЬ В ЭА</button>
         </div>
         <!-- Show loading spinner while loading is true -->
         <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
@@ -434,7 +440,7 @@ const setChoosenDocs = async (items) => {
         <div class="" v-if="!state.isLoading && state.documents.length>0">
           <div class="flex space-x-3 mt-3">
           <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
-            <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.id)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
+            <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.uuid)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
             <div class="">{{ document.doc_name }}</div>
           </div>
           </div>
@@ -447,6 +453,11 @@ const setChoosenDocs = async (items) => {
   <!-- **********************   MODAL EA LIST   ************************** -->
   <div v-if="showEAList" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormEAList @close-modal="showEAList=false" @returned-docs="setChoosenDocs" />
+  </div>
+
+  <!-- **********************   MODAL DOC ADD   ************************** -->
+  <div v-if="showAddDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormDoc @close-modal="showAddDoc=false" @doc-created="" @returned-docs="setChoosenDocs" />
   </div>
 
 </template>
