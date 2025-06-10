@@ -197,45 +197,50 @@ const postingItem = async () => {
 const handleSubmit = async () => {
   // form submit handling (item create or update)
   let formData = new FormData();
-      
-  // item updating
   for (let field of itemFields) { formData.append(field, form[field]) };
 
   try {
-    if (!props.itemData) {
-      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/entry_requests/`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-      toast.success('Новая запись добавлена');
-      state.responseItem = response.data;
-    } else {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-      toast.success('Запись обновлёна');      
-      state.responseItem = response.data;
+    if (!props.isCard) {
+      if (!props.itemData) {
+        const response = await axios.post(`http://${backendIpAddress}:${backendPort}/entry_requests/`, 
+          formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+        toast.success('Новая запись добавлена');
+        state.responseItem = response.data;
+      } else {
+        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`, 
+          formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+        toast.success('Запись обновлёна');      
+        state.responseItem = response.data;
+      }
     }
 
     // files uploading
-    if (files.value) {
-      for (let file of files.value.files) {
-        formData.append('file', file);
-        formData.append('customer_name', form.contact_name_input); //deprecated
-        formData.append('contact_uuid', form.contact_uuid);
-        formData.append('post_user_id', userInfo.uuid);
-        try {
-          const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
-            formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-        } catch (error) {
-          console.error('Error uploading file', error);
-          toast.error('File has not been uploaded');
-        };
-      };
-    };
+    // if (files.value) {
+    //   for (let file of files.value.files) {
+    //     formData.append('file', file);
+    //     formData.append('customer_name', form.contact_name_input); //deprecated
+    //     formData.append('contact_uuid', form.contact_uuid);
+    //     formData.append('post_user_id', userInfo.uuid);
+    //     try {
+    //       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
+    //         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+    //     } catch (error) {
+    //       console.error('Error uploading file', error);
+    //       toast.error('File has not been uploaded');
+    //     };
+    //   };
+    // };
+
+    
 
     // attach files from EA (creates record in related_docs table)
+    // if (!isCard) { state.obj_uuid = state.responseItem.uuid } else { state.obj_uuid = itemData.uuid }
+    state.obj_uuid = props.isCard ? props.itemData.uuid : state.responseItem.uuid
+
     if (state.choosenDocs) {
       for (let doc of state.choosenDocs){
         let formData2 = new FormData();
-        formData2.append('obj_uuid', state.responseItem.uuid);
+        formData2.append('obj_uuid', state.obj_uuid);
         formData2.append('user_uuid', userInfo.uuid);
         formData2.append('doc_uuid', doc.uuid);
         try {
@@ -417,7 +422,7 @@ const setChoosenDocs = async (items) => {
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" multiple class="formInputFile"/>
+          <!-- <input ref="files" name="files" type="file" multiple class="formInputFile"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
@@ -428,7 +433,8 @@ const setChoosenDocs = async (items) => {
 
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-12">
         <div class="space-x-5">
-          <label class="mx-1 text-sm font-bold text-blue-500">Документы</label>
+          <label class="mx-1 text-sm font-bold text-blue-500">ДОКУМЕНТЫ</label>
+          <button v-if="isCard" class="float-right formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="float-right formBtn" type="button" @click="attachFileEA()">ЗАГРУЗИТЬ ИЗ ЭА</button>
           <button class="float-right formBtn" type="button" @click="attachFileSys()">СОЗДАТЬ В ЭА</button>
         </div>
@@ -437,12 +443,10 @@ const setChoosenDocs = async (items) => {
           <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
         </div>
         <!-- Show when loading is done -->
-        <div class="" v-if="!state.isLoading && state.documents.length>0">
-          <div class="flex space-x-3 mt-3">
+        <div class="flex space-x-3 mt-5" v-if="!state.isLoading && state.documents.length>0">
           <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
             <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.uuid)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
             <div class="">{{ document.doc_name }}</div>
-          </div>
           </div>
         </div>
       </div>
