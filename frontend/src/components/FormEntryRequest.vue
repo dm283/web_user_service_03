@@ -417,7 +417,7 @@ const setChoosenDocs = async (items) => {
       </div>
 
 
-      <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
+      <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
       <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
@@ -431,9 +431,9 @@ const setChoosenDocs = async (items) => {
       <div v-else class="mb-5"></div>
 
 
-      <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-12">
-        <div class="space-x-5">
-          <label class="mx-1 text-sm font-bold text-blue-500">ДОКУМЕНТЫ</label>
+      <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
+        <div class="space-x-5 overflow-auto">
+          <label class="mx-1 text-sm font-semibold text-blue-500">ДОКУМЕНТЫ</label>
           <button v-if="isCard" class="float-right formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="float-right formBtn" type="button" @click="attachFileEA()">ЗАГРУЗИТЬ ИЗ ЭА</button>
           <button class="float-right formBtn" type="button" @click="attachFileSys()">СОЗДАТЬ В ЭА</button>
@@ -443,7 +443,7 @@ const setChoosenDocs = async (items) => {
           <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
         </div>
         <!-- Show when loading is done -->
-        <div class="flex space-x-3 mt-5" v-if="!state.isLoading && state.documents.length>0">
+        <div class="flex space-x-3 mt-3" v-if="!state.isLoading && state.documents.length>0">
           <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
             <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.uuid)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
             <div class="">{{ document.doc_name }}</div>

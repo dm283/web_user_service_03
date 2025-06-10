@@ -523,11 +523,14 @@ const rowClick = (index, item) => {
 <!-- *******************************  NAV AREA  ************************* --> 
 <nav class="overflow-auto">
 
-  <div id="listTitle" class="">
+  <div id="listTitle" class="" v-if="props.name!='Выбор документов'">
     <div class="text-xl font-normal">{{ props.name }}</div>
   </div>
 
-  <div class="inline-block mt-3 space-x-2">
+  <div id="listTitle" class="inline-block mt-1.5" v-if="props.name=='Выбор документов'">
+    <div class="text-xl font-normal">{{ props.name }}</div>
+  </div>
+  <div class="inline-block mt-3 space-x-2" v-else>
 
     <!-- разрешить выезд -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
@@ -602,6 +605,15 @@ const rowClick = (index, item) => {
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>
     </button>
 
+    <!-- Выбор документов -->
+    <!-- <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
+      @click="emit('btnChoose', selectedItem)"
+      v-if="props.name=='Выбор документов'"
+      >
+      ВЫБРАТЬ
+    </button> -->
+
+
     <!-- обновить -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
       @click="emit('btnRefresh')">
@@ -622,12 +634,6 @@ const rowClick = (index, item) => {
         </ul>
       </div>
     </div>
-
-      <!-- выбрать документ -->
-    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="emit('btnChoose', selectedItem)">
-      <i class="pi pi-asterisk" style="font-size: 1rem"></i>
-    </button>
 
   </div>
 
@@ -689,6 +695,7 @@ const rowClick = (index, item) => {
     <tr v-if="dataLengthRender()==0"><td><div class="h-11"></div></td></tr>
     <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100"
       :class=listRowStyle[index]
+      @dblclick="emit('btnChoose', selectedItem)"
       @click="rowClick(index, item)" v-for="(item, index) in dataRender()">
     <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
         @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()"> -->
