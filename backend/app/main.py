@@ -251,7 +251,7 @@ def create_related_docs_record(current_user: Annotated[UserAuth, Depends(get_cur
                         data: Annotated[schemas.RelatedDocsCreate, Form()], db: Session = Depends(get_db)):
     #
     # data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
-    print('create_related_docs_record', data)
+    # print('create_related_docs_record', data)
     return crud.create_related_docs_record(db=db, data=data)
 
 
@@ -308,6 +308,15 @@ def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_us
     if db_carpass is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return db_carpass
+
+
+@app.get('/entry_request_by_uuid/{uuid}', response_model=schemas.EntryRequest)
+def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    item = crud.get_entry_request_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
 
 
 @app.get("/contacts/{contact_id}", response_model=schemas.Contact)
@@ -456,6 +465,16 @@ def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_use
     documents =  db.query(models.DocumentRecord).filter(models.DocumentRecord.uuid.in_(doc_uuid_list)).\
           order_by(models.DocumentRecord.created_datetime.desc()).all()
     return documents
+
+@app.get('/related_docs/{doc_uuid}')
+def get_related_doc(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         doc_uuid: str, db: Session = Depends(get_db)):
+    # get objects which have document_record
+    db_related_docs = db.query(models.RelatedDocs).\
+           filter(models.RelatedDocs.doc_uuid==doc_uuid, models.RelatedDocs.is_active==True).\
+           order_by(models.RelatedDocs.created_datetime.desc()).all()
+    
+    return db_related_docs
 
 
 #########################################################    CREATE ITEM ENDPOINTS

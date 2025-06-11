@@ -28,6 +28,11 @@ var backendPort = parser.get("main", "backend_port");
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
 const props = defineProps({
   view_type: String,
   list_title: String,
@@ -81,10 +86,8 @@ const selectedItem = ref('')
 const itemName = ref('')
 const file = ref(null)
 
-const authHeader = () => {
-  let user = JSON.parse(localStorage.getItem('user')); 
-  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
-}
+const modalStyle = "absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
+const modalStyleSecond = "absolute z-20 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
 
 // queries
 const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/carpasses/`:
@@ -164,7 +167,7 @@ else if (props.view_type == 'users') {
 else if (props.view_type == 'documents') {
   state.query = query_documents;
   state.listTableColumns = {
-    'doc_name':'Наименование','doc_id':'Номер','doc_date':'Дата','contact_uuid':'Контрагент','created_datetime':'Дата загрузки'
+    'doc_name':'Наименование','doc_id':'Номер','doc_date':'Дата','created_datetime':'Дата загрузки'
   };
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
@@ -204,6 +207,14 @@ async function downloadFile(document_id, section) {
   window.URL.revokeObjectURL(url);
 };
 
+async function openItemCard(obj) {
+  // open object card (modal) from document cart
+  if (obj.obj_type_name == 'Заявки на въезд ТС') { 
+    state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/entry_request_by_uuid/${obj.obj_uuid}`
+  }
+  state.item_for_card = await axios.get(state.query_item_for_card, {headers: authHeader()})
+  itemCard(state.item_for_card.data, obj.obj_type_name)
+}
 
 const itemCard = (item, name) => {
   //
@@ -354,7 +365,7 @@ const createExitCarpass = (item) => {
 
 
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->
-  <div v-if="showCardEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+  <div v-if="showCardEntryRequest" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
     <FormEntryRequest @close-modal="showCardEntryRequest=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL ENTRY_REQUEST ADD   ************************** -->
@@ -411,7 +422,7 @@ const createExitCarpass = (item) => {
 
   <!-- **********************   MODAL DOC CARD   ************************** -->
   <div v-if="showCardDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDoc @close-modal="showCardDoc=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+    <FormDoc @close-modal="showCardDoc=false" @doc-created="getData" @open-itemcard="openItemCard" :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL DOC ADD   ************************** -->
   <div v-if="showAddDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">

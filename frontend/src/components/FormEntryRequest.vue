@@ -17,6 +17,15 @@ var backendPort = parser.get("main", "backend_port");
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
+}
+
 const emit = defineEmits(['docCreated', 'closeModal', 
 // 'openEaList'
 ])
@@ -36,16 +45,6 @@ const state = reactive({
 const showDropDownSelect = ref({});
 const showEAList = ref(false)
 const showAddDoc = ref(false)
-
-
-const authHeader = () => {
-  let user = JSON.parse(localStorage.getItem('user')); 
-  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
-}
-
-const userAccessToken = () => {
-  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
-}
 
 
 if (!props.isCard) {
@@ -240,6 +239,8 @@ const handleSubmit = async () => {
     if (state.choosenDocs) {
       for (let doc of state.choosenDocs){
         let formData2 = new FormData();
+        formData2.append('obj_type_name', 'Заявки на въезд ТС');
+        formData2.append('obj_type', 'Заявка на въезд ТС');
         formData2.append('obj_uuid', state.obj_uuid);
         formData2.append('user_uuid', userInfo.uuid);
         formData2.append('doc_uuid', doc.uuid);
@@ -288,11 +289,9 @@ const attachFileEA = async () => {
 const setChoosenDocs = async (items) => {
   state.choosenDocs = state.choosenDocs.concat(items)
   for (let item of items) {
-    // state.choosenDocsUuids.push(item.uuid)
     item.filename = item.doc_name  //
     state.documents.push(item)     //
   }
-  console.log('state.choosenDocs=', state.choosenDocs)
 }
 
 </script>

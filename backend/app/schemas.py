@@ -209,10 +209,11 @@ class Document(DocumentBase):
 ##############################
 class DocumentRecordCreate(BaseModel):
     doc_name: str
-    doc_id: str | None = None
-    doc_date: date | str | None = None
-    contact_uuid: str
-    related_objects_uuid: str | None = None
+    doc_id: str
+    doc_date: date
+    #contact_uuid: str
+    #related_objects_uuid: str | None = None
+    user_uuid_create: str
     comment: str | None = None
 
 
@@ -314,6 +315,8 @@ class Contact(ContactCreate):
 
 ###########
 class RelatedDocsCreate(BaseModel):
+    obj_type: str
+    obj_type_name: str
     obj_uuid: str
     user_uuid: str
     doc_uuid: str

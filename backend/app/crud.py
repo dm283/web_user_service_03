@@ -266,7 +266,8 @@ def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
 
     # add check if the same record exists already!
 
-    record = models.RelatedDocs(obj_uuid=data.obj_uuid, doc_uuid=data.doc_uuid, user_uuid=data.user_uuid, created_datetime=created_datetime)
+    record = models.RelatedDocs(obj_type=data.obj_type, obj_type_name=data.obj_type_name,
+        obj_uuid=data.obj_uuid, doc_uuid=data.doc_uuid, user_uuid=data.user_uuid, created_datetime=created_datetime)
     try:
         db.add(record); db.commit(); db.refresh(record)
     except Exception as err:
@@ -859,6 +860,11 @@ def exit_prohibited(db: Session, carpass_id: int):
 def get_carpass(db: Session, carpass_id_enter: str):
     # get single carpass from db
     return db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_id_enter).first()
+
+
+def get_entry_request_by_uuid(db: Session, uuid: str):
+    # get single entry_request from db
+    return db.query(models.EntryRequest).filter(models.EntryRequest.uuid == uuid).first()
 
 
 #########################################################    USER FUNCTIONS

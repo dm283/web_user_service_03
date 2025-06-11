@@ -8,6 +8,8 @@ from app.database import Base
 class RelatedDocs(Base):
     __tablename__ = 'related_docs'
     id = Column(Integer, primary_key=True)
+    obj_type = Column(String)
+    obj_type_name = Column(String)
     obj_uuid = Column(String)
     doc_uuid = Column(String)
     user_uuid = Column(String)
@@ -91,13 +93,16 @@ class DocumentRecord(Base):
     doc_name = Column(String)
     doc_id = Column(String)
     doc_date = Column(Date)
-    contact_uuid = Column(String, ForeignKey('contacts.uuid'))   # depracated
-    related_objects_uuid = Column(String)                        # depracated
+    # contact_uuid = Column(String, ForeignKey('contacts.uuid'))   # depracated
+    # related_objects_uuid = Column(String)                        # depracated
     
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
     comment = Column(String)
     created_datetime = Column(DateTime)
+    
+    user_uuid_create = Column(String)
+    
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)
     post_user_id = Column(String, nullable=True, default=None)

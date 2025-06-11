@@ -15,7 +15,7 @@ var backendPort = parser.get("main", "backend_port");
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
-const emit = defineEmits(['docCreated', 'closeModal', 'returnedDocs'])
+const emit = defineEmits(['docCreated', 'closeModal', 'returnedDocs', 'openItemcard'])
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -26,10 +26,11 @@ const itemFields = [
     'doc_name',
     'doc_id',
     'doc_date',
-    'contact_uuid',
-    'related_objects_uuid',
+    // 'contact_uuid',
+    // 'related_objects_uuid',
     'comment',
-    // 'created_datetime',
+    'created_datetime',
+    'user_uuid_create',
     // 'post_user_id',
   ]
 
@@ -83,13 +84,20 @@ onMounted(async () => {
       );
       state.documents = response.data;
 
-      if (props.itemData.contact_uuid) {
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_docs/${props.itemData.uuid}`,
         {headers: authHeader()}
       );
-      state.contact_name = response2.data.name;
-      form['contact_name_input'] = response2.data.name
-      }
+      console.log('response2.data =', response2.data)
+      state.related_objects = response2.data;
+
+
+      // if (props.itemData.contact_uuid) {
+      // const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
+      //   {headers: authHeader()}
+      // );
+      // state.contact_name = response2.data.name;
+      // form['contact_name_input'] = response2.data.name
+      // }
       
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -136,6 +144,7 @@ const setInitialForm = () => {
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
+      form['user_uuid_create'] = userInfo.uuid
       //form['linked_broker_name_input'] = null  // fake form field for dropdown list
     }
     //form['type'] = 'V' // template for 'ncar'
@@ -261,15 +270,15 @@ async function downloadFile(related_doc_uuid) {
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Номер</label>
           <input type="text" v-model="form.doc_id" :class="[errField['doc_id']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="false" :disabled="isCard" />
+          :required="true" :disabled="isCard" />
         </div>   
         <div class=formInputDiv>   <label class=formLabelStyle>Дата</label>
           <input type="date" v-model="form.doc_date" :class="[errField['doc_date']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="false" :disabled="isCard" />
+          :required="true" :disabled="isCard" />
         </div>
       </div>
 
-      <div class="flex">
+      <!-- <div class="flex">
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Контрагент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
@@ -293,20 +302,48 @@ async function downloadFile(related_doc_uuid) {
           <input type="email" v-model="form.related_objects_uuid" :class="[errField['related_objects_uuid']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="true" />
         </div>
-      </div>
+      </div> -->
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Дата загрузки</label>
           <input type="datetime" v-model="form.created_datetime" :class="[errField['created_datetime']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="true" />
         </div>   
-        <div class=formInputDiv>   <label class=formLabelStyle>UUID пользователя</label>
-          <input type="text" v-model="form.post_user_id" :class="[errField['post_user_id']==1 ? formInputStyleErr : formInputStyle]" 
+        <div class=formInputDiv>   <label class=formLabelStyle>Загрузил пользователь</label>
+          <input type="text" v-model="form.user_uuid_create" :class="[errField['user_uuid_create']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="true" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
+        </div>
+      </div>
+
+      <!-- state.related_objects -->
+      <div v-if="state.related_objects" class="mx-5 px-1 mb-5"> <label class=formLabelStyle>Связанные объекты</label>
+        <div class="border rounded-md mt-2 overflow-hidden">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
+              <td class="text-center">#</td>
+              <td class="text-center">Объект</td>
+              <td class="text-center">Прикрепил пользователь</td>
+              <td class="text-center">Дата прикрепления</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t text-slate-500 text-xs" v-for="obj in state.related_objects">
+              <td class="min-w-10 text-center" @click="selectedObj=obj; emit('openItemcard', selectedObj)">
+                <div class="inline-block text-blue-500 border-b-2 border-blue-400 hover:text-cyan-300 hover:border-cyan-300 max-w-min">
+                  <i class="pi pi-file" style="font-size: 0.7rem"></i>
+                </div>
+              </td>
+              <td class="text-center">{{ obj.obj_type }} {{ obj.obj_uuid }}</td>
+              <td class="text-center">{{ obj.user_uuid }}</td>
+              <td class="text-center">{{ obj.created_datetime }}</td>
+            </tr>
+          </tbody>
+        </table>
         </div>
       </div>
 
