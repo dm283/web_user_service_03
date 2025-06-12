@@ -14,6 +14,7 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+const toast = useToast();
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
@@ -26,9 +27,7 @@ const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
 
-const emit = defineEmits(['docCreated', 'closeModal', 
-// 'openEaList'
-])
+const emit = defineEmits(['docCreated', 'closeModal'])
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -38,6 +37,7 @@ const props = defineProps({
 const state = reactive({
   documents: [],
   isLoading: true,
+  filteredList: [],
   contacts: [],
   choosenDocs: [],
 })
@@ -59,7 +59,6 @@ onMounted(async () => {
     }
 });
 };
-
 
 // if (props.itemData) {
 // onMounted(async () => {
@@ -100,7 +99,7 @@ const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full
 
 const errField = reactive({});
 const form = reactive({});
-const files = ref(null)
+// const files = ref(null)
 
 const itemFields = [
     'ncar',
@@ -121,7 +120,7 @@ const itemFields = [
     'comment',
   ]
 
-  const setFilter = (fieldForm, entity, fieldEntity) => {
+const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
@@ -137,7 +136,6 @@ const itemFields = [
     };
   }
 };
-
 
 const setInitialForm = () => {
   //
@@ -165,9 +163,7 @@ const setInitialForm = () => {
 
 setInitialForm();
 
-const file = ref(null)
-const toast = useToast();
-
+// const file = ref(null)
 
 const postingItem = async () => {
   //
@@ -230,12 +226,9 @@ const handleSubmit = async () => {
     //   };
     // };
 
-    
-
     // attach files from EA (creates record in related_docs table)
     // if (!isCard) { state.obj_uuid = state.responseItem.uuid } else { state.obj_uuid = itemData.uuid }
     state.obj_uuid = props.isCard ? props.itemData.uuid : state.responseItem.uuid
-
     if (state.choosenDocs) {
       for (let doc of state.choosenDocs){
         let formData2 = new FormData();
@@ -264,7 +257,7 @@ const handleSubmit = async () => {
 async function downloadFile(document_record_uuid) {
   // downloads file
   // let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_id}` // old
-  let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_record_uuid}` // old
+  let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_record_uuid}`
   const response = await axios.get(query, {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
@@ -383,8 +376,6 @@ const setChoosenDocs = async (items) => {
           :required="false" :disabled="isCard" />
         </div>
       </div>
-
-
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>№ транспортного документа</label>

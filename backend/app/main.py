@@ -310,6 +310,15 @@ def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return db_carpass
 
 
+@app.get('/carpass_by_uuid/{uuid}', response_model=schemas.Carpass)
+def read_carpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    item = crud.get_carpass_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 @app.get('/entry_request_by_uuid/{uuid}', response_model=schemas.EntryRequest)
 def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
