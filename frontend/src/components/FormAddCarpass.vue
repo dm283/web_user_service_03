@@ -334,13 +334,15 @@ const setChoosenDocs = async (items) => {
 
 
 <template>
-  <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
+  <div class="w-3/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Пропуск на въезд <span v-if="props.itemData">№ {{ props.itemData.id_enter }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
     </header>
+
+    <div class=contStyle >
 
     <div class="ml-6 mt-3" v-if="props.isCard">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
@@ -570,6 +572,7 @@ const setChoosenDocs = async (items) => {
 
     </form>
   </div>
+  </div>
 
   <!-- **********************   MODAL EA LIST   ************************** -->
   <div v-if="showEAList" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -585,6 +588,11 @@ const setChoosenDocs = async (items) => {
 
 
 <style lang="postcss" scoped>
+.contStyle {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
 
 .formInputDiv {
   @apply w-64 mx-5 mb-2
