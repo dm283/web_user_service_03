@@ -212,6 +212,9 @@ async function openItemCard(obj) {
   if (obj.obj_type_name == 'Заявки на въезд ТС') { 
     state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/entry_request_by_uuid/${obj.obj_uuid}`
   }
+  else if (obj.obj_type_name == 'Пропуска ТС на въезд') { 
+    state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${obj.obj_uuid}`
+  }
   state.item_for_card = await axios.get(state.query_item_for_card, {headers: authHeader()})
   itemCard(state.item_for_card.data, obj.obj_type_name)
 }
@@ -307,7 +310,7 @@ const createExitCarpass = (item) => {
   <div v-else>
 
   <!-- **********************   MODAL CARPASS CARD   ************************** -->
-  <div v-if="showItemCard" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+  <div v-if="showItemCard" :class="[state.item_for_card ? modalStyleSecond : modalStyle]">
     <FormAddCarpass @close-modal="showItemCard=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL ADD CARPASS   ************************** -->
