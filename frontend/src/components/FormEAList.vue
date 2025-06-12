@@ -84,8 +84,8 @@ const returnToObjForm = () => { emit('returnedDocs', state.choosenDocs); emit('c
   </div>
 
   <!-- Show when loading is done -->
-  <div v-else>
-  <div class="flex flex-col md:flex-row p-3 gap-3 ">
+  <div class=listStyle v-else>
+  <div class="flex flex-col md:flex-row px-3 pb-3 gap-3 ">
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-choose="chooseDoc"
@@ -101,6 +101,11 @@ const returnToObjForm = () => { emit('returnedDocs', state.choosenDocs); emit('c
 
 
 <style lang="postcss" scoped>
+.listStyle {
+  margin-top: 10px;
+  height: 550px;
+  overflow: auto;
+}
 
 .formInputDiv {
   @apply w-64 mx-5 mb-2

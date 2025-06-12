@@ -39,6 +39,7 @@ const state = reactive({
   isLoading: true,
   contacts: [],
   choosenDocs: [], // new
+  related_objects: [],
 })
 
 const showDropDownSelect = reactive({});
@@ -305,11 +306,11 @@ async function downloadFile(related_doc_uuid) {
       </div> -->
 
       <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата загрузки</label>
+        <div class=formInputDiv v-if="props.itemData">   <label class=formLabelStyle>Дата загрузки</label>
           <input type="datetime" v-model="form.created_datetime" :class="[errField['created_datetime']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="true" />
         </div>   
-        <div class=formInputDiv>   <label class=formLabelStyle>Загрузил пользователь</label>
+        <div class=formInputDiv v-if="props.itemData">   <label class=formLabelStyle>Загрузил пользователь</label>
           <input type="text" v-model="form.user_uuid_create" :class="[errField['user_uuid_create']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="true" />
         </div>
@@ -319,8 +320,7 @@ async function downloadFile(related_doc_uuid) {
         </div>
       </div>
 
-      <!-- state.related_objects -->
-      <div v-if="state.related_objects" class="mx-5 px-1 mb-5"> <label class=formLabelStyle>Связанные объекты</label>
+      <div v-if="state.related_objects.length>0" class="mx-5 px-1 mb-5"> <label class=formLabelStyle>Связанные объекты</label>
         <div class="border rounded-md mt-2 overflow-hidden">
         <table class="w-full">
           <thead>
@@ -334,7 +334,7 @@ async function downloadFile(related_doc_uuid) {
           <tbody>
             <tr class="border-t text-slate-500 text-xs" v-for="obj in state.related_objects">
               <td class="min-w-10 text-center" @click="selectedObj=obj; emit('openItemcard', selectedObj)">
-                <div class="inline-block text-blue-500 border-b-2 border-blue-400 hover:text-cyan-300 hover:border-cyan-300 max-w-min">
+                <div class="inline-block text-blue-500 border-b-2 border-blue-400 hover:text-cyan-300 hover:border-cyan-300 max-w-min cursor-pointer">
                   <i class="pi pi-file" style="font-size: 0.7rem"></i>
                 </div>
               </td>
@@ -370,7 +370,7 @@ async function downloadFile(related_doc_uuid) {
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" multiple class="formInputFile" :required="!itemData"/>
+          <input ref="files" name="files" type="file" class="formInputFile" :required="!itemData"/>
           <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
