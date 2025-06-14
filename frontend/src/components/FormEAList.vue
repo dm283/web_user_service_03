@@ -15,6 +15,13 @@ var backendPort = parser.get("main", "backend_port");
 
 const toast = useToast();
 
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
 const emit = defineEmits(['docCreated', 'closeModal', 'returnedDocs']) // emit
 
 const props = defineProps({
@@ -30,12 +37,10 @@ const state = reactive({
   listItemFileds: {},
 })
 
-const authHeader = () => {
-  let user = JSON.parse(localStorage.getItem('user')); 
-  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
-}
 
-state.query = `http://${backendIpAddress}:${backendPort}/document_records/`
+state.query = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/document_records/`:
+  `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
+// state.query = `http://${backendIpAddress}:${backendPort}/document_records/`
 state.listTableColumns = {
     'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','created_datetime':'Дата загрузки'
   };
