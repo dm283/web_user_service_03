@@ -167,7 +167,7 @@ else if (props.view_type == 'users') {
 else if (props.view_type == 'documents') {
   state.query = query_documents;
   state.listTableColumns = {
-    'doc_name':'Наименование','doc_id':'Номер','doc_date':'Дата','created_datetime':'Дата загрузки'
+    'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','created_datetime':'Дата загрузки'
   };
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};

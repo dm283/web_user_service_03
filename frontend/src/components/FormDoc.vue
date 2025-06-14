@@ -269,11 +269,11 @@ async function downloadFile(related_doc_uuid) {
           <input type="text" v-model="form.doc_name" :class="[errField['doc_name']==1 ? formInputStyleErr : formInputStyle]" 
           :required="true" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Номер</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер документа</label>
           <input type="text" v-model="form.doc_id" :class="[errField['doc_id']==1 ? formInputStyleErr : formInputStyle]" 
           :required="true" :disabled="isCard" />
         </div>   
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата документа</label>
           <input type="date" v-model="form.doc_date" :class="[errField['doc_date']==1 ? formInputStyleErr : formInputStyle]" 
           :required="true" :disabled="isCard" />
         </div>
