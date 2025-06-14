@@ -195,7 +195,7 @@ const handleSubmit = async () => {
     if (!props.itemData) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/document_records/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-      toast.success('Новая запись добавлена');
+      toast.success('Новая документ добавлен');
       state.responseItem = response.data;
     } else {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records/${props.itemData.id}`, 

@@ -96,12 +96,17 @@ const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${bac
 const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
   `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.contact_uuid}`
 
+const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/document_records/`:
+  `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
+
+// const query_documents = `http://${backendIpAddress}:${backendPort}/document_records/`
+
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
-const query_documents = `http://${backendIpAddress}:${backendPort}/document_records/`
+
 
 
 if (props.view_type == 'enter') {

@@ -317,6 +317,7 @@ class Contact(ContactCreate):
 class RelatedDocsCreate(BaseModel):
     obj_type: str
     obj_type_name: str
+    contact_uuid: str
     obj_uuid: str
     user_uuid: str
     doc_uuid: str

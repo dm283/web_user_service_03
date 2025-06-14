@@ -1,6 +1,7 @@
 import datetime
 from fastapi import UploadFile, HTTPException, Depends, status
 from pydantic import ValidationError
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
@@ -52,6 +53,21 @@ def get_document_by_uuid(db: Session, uuid: str):
 def get_document_records(db: Session, skip: int = 0, limit: int = 100):
     # retrives all document_records from database
     return db.query(models.DocumentRecord).filter(models.DocumentRecord.is_active==True).\
+        order_by(models.DocumentRecord.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
+def get_document_records_client(user_uuid: str, user_contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    # retrives all document_records from database
+    db_related_docs = db.query(models.RelatedDocs).\
+           filter(models.RelatedDocs.contact_uuid==user_contact_uuid, models.RelatedDocs.is_active==True).\
+           order_by(models.RelatedDocs.created_datetime.desc()).all()
+    doc_uuid_list = []
+    for rec in db_related_docs:
+        doc_uuid_list.append(rec.doc_uuid)
+
+    return db.query(models.DocumentRecord).\
+        filter( or_(models.DocumentRecord.user_uuid_create==user_uuid, models.DocumentRecord.uuid.in_(doc_uuid_list)) ).\
+        filter(models.DocumentRecord.is_active==True).\
         order_by(models.DocumentRecord.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
@@ -266,7 +282,7 @@ def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
 
     # add check if the same record exists already!
 
-    record = models.RelatedDocs(obj_type=data.obj_type, obj_type_name=data.obj_type_name,
+    record = models.RelatedDocs(obj_type=data.obj_type, obj_type_name=data.obj_type_name, contact_uuid=data.contact_uuid,
         obj_uuid=data.obj_uuid, doc_uuid=data.doc_uuid, user_uuid=data.user_uuid, created_datetime=created_datetime)
     try:
         db.add(record); db.commit(); db.refresh(record)
