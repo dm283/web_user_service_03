@@ -294,7 +294,7 @@ async function downloadFile(document_id) {
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" multiple class="formInputFile"/>
+          <!-- <input ref="files" name="files" type="file" multiple class="formInputFile"/> -->
           <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
