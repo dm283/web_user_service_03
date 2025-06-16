@@ -149,7 +149,7 @@ const setInitialForm = () => {
       form[field] = null
       form['contact_name_input'] = null  // fake form field for dropdown list
     }
-    form.ncar = '_234РА23' // template for 'ncar'
+    //form.ncar = '_234РА23' // template for 'ncar'
   };
 
   if (userInfo.contact_id!=0) {  // for the client service

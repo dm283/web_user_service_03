@@ -164,7 +164,7 @@ const setInitialForm = () => {
       form[field] = null
       form['contact_name_input'] = null  // fake form field for dropdown list
     }
-    form.ncar = '_234РА23' // template for 'ncar'
+    //form.ncar = '_234РА23' // template for 'ncar'
     form.radiation = false
     form.brokenAwning = false
     form.brokenSeal = false
@@ -362,7 +362,7 @@ const setChoosenDocs = async (items) => {
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       
       <div class="flex">
-        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Номер машины</label>
+        <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Номер машины</label>
           <div :class=formInputStyle class="flex" @click="setFilter('ncar', 'entiryRequests', 'ncar'); 
               showDropDownSelect.ncar ? showDropDownSelect.ncar=false : showDropDownSelect.ncar=true;">
             <input class="w-64 focus:outline-none" type="text" v-model="form.ncar" @keyup="setFilter('ncar', 'entiryRequests', 'ncar')" 
