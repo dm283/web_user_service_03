@@ -250,6 +250,7 @@ const handleSubmit = async () => {
         let formData2 = new FormData();
         formData2.append('obj_type_name', 'Пропуска ТС на въезд');
         formData2.append('obj_type', 'Пропуск ТС на въезд');
+        formData2.append('contact_uuid', form.contact_uuid);
         formData2.append('obj_uuid', state.obj_uuid);
         formData2.append('user_uuid', userInfo.uuid);
         formData2.append('doc_uuid', doc.uuid);
@@ -383,7 +384,7 @@ const setChoosenDocs = async (items) => {
 
         
         <!-- fake field 'contact_name_input' for dropdown list -->
-        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Клиент</label>
+        <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Клиент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
               showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 

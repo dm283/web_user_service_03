@@ -364,6 +364,15 @@ def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_
     return documents
 
 
+@app.get('/document_records_client/{user_uuid}/{user_contact_uuid}', response_model=list[schemas.DocumentRecord])
+def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   user_uuid: str, user_contact_uuid: str,
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    # documents = crud.get_documents(db, skip=skip, limit=limit)
+    documents = crud.get_document_records_client(user_uuid=user_uuid, user_contact_uuid=user_contact_uuid, db=db, skip=skip, limit=limit)
+    return documents
+
+
 @app.get("/contacts/", response_model=list[schemas.Contact])
 def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

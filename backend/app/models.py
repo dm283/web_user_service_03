@@ -10,6 +10,7 @@ class RelatedDocs(Base):
     id = Column(Integer, primary_key=True)
     obj_type = Column(String)
     obj_type_name = Column(String)
+    contact_uuid = Column(String) #new
     obj_uuid = Column(String)
     doc_uuid = Column(String)
     user_uuid = Column(String)
