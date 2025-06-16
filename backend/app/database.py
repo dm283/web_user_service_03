@@ -292,7 +292,7 @@ from sqlalchemy.orm import sessionmaker
 from urllib.parse import quote_plus
 
 #SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
-SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:%s@localhost/dev_pg_2' % quote_plus('s2d3f4!@')
+SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:%s@localhost/mts_pro' % quote_plus('s2d3f4!@')
 # SQLALCHEMY_DATABASE_URL = 'mssql+pyodbc://' + 'LAPTOP-MR8NJ1DK\SQLEXPRESS' + '/' + 'dev_db_1' + '?trusted_connection=yes&encrypt=no&driver=ODBC+Driver+18+for+SQL+Server'
 
 engine = create_engine(

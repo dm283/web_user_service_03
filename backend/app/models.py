@@ -44,7 +44,8 @@ class Contact(Base):
 class User(Base):
     __tablename__ = "users"
     contact_id = Column(Integer)  # deprecated
-    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+    # contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+    contact_uuid = Column(String)
     type = Column(String)
     login = Column(String, unique=True, index=True)
     email = Column(String)
