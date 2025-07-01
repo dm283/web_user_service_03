@@ -89,6 +89,12 @@ def get_brokers_posted(db: Session, skip: int = 0, limit: int = 100):
         offset(skip).limit(limit).all()
 
 
+def get_batches(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\

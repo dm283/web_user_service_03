@@ -99,6 +99,9 @@ const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress
 const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/document_records/`:
   `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
 
+const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/batches/`:
+  `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.contact_uuid}`
+
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
@@ -139,6 +142,15 @@ else if (props.view_type == 'entryRequest') {
   state.listTableColumns = {
     'dateen':'Дата въезда','timeen':'Время въезда с','plan_timeen_to':'Время въезда по','ncar':'№ ТС',
     'contact_name':'Клиент','entry_type':'Тип въезда'
+  };
+  state.additionalColumns = {  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+else if (props.view_type == 'batches') {
+  state.query = query_batches;
+  state.listTableColumns = {
+    'tn_id':'ТН','carpass_uuid':'Пропуск','contact_uuid':'Клиент','goods':'Описание товаров',
+    'places_cnt':'Кол-во мест','weight':'Вес'
   };
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};

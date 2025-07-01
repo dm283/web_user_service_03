@@ -321,3 +321,43 @@ class RelatedDocsCreate(BaseModel):
     obj_uuid: str
     user_uuid: str
     doc_uuid: str
+
+
+#############
+class BatchCreate(BaseModel):
+    carpass_uuid: str | None = None
+    status: str = 'terminal'
+    tn_id: str
+    contact_uuid: str
+    goods: str | None = None
+    places_cnt: int | str | None = None
+    weight: float | str | None = None
+
+
+class BatchValidation(BaseModel):
+    carpass_uuid: str
+    status: str
+    tn_id: str
+    contact_uuid: str
+    goods: str
+    places_cnt: int
+    weight: float
+
+
+class BatchUpdate(BatchCreate):
+    updated_datetime: datetime
+
+
+class Batch(BatchCreate):
+    id: int
+    uuid: str
+    id_entry_request: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True

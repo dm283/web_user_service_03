@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, Time, DateTime, LargeBinary
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Float, String, Date, Time, DateTime, LargeBinary
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -214,6 +214,31 @@ class EntryRequest(Base):
     status = Column(String)
     
     carpass_created = Column(Boolean, default=False)
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)
+    was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+
+
+class Batch(Base):
+    __tablename__ = 'batches'
+
+    entry_request_uuid = Column(String, nullable=True, default=None)
+    carpass_uuid = Column(String)
+    exitcarpass_uuid = Column(String, nullable=True, default=None)
+    status = Column(String)
+    tn_id = Column(String)
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+    goods = Column(String)
+    places_cnt = Column(Integer)
+    weight = Column(Float)
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    comment = Column(String)
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)
