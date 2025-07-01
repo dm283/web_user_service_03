@@ -16,6 +16,7 @@ import FormContact from './FormContact.vue';
 import FormBroker from './FormBroker.vue';
 import FormUser from './FormUser.vue';
 import FormDoc from './FormDoc.vue';
+import FormBatch from './FormBatch.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -65,6 +66,10 @@ const showAddExitcarpass = ref(false)
 const showCardEntryRequest = ref(false)
 const showAddEntryRequest = ref(false)
 const showUpdateEntryRequest = ref(false)
+
+const showCardBatch = ref(false)
+const showAddBatch = ref(false)
+const showUpdateBatch = ref(false)
 
 const showCardContact = ref(false)
 const showAddContact = ref(false)
@@ -240,6 +245,7 @@ const itemCard = (item, name) => {
   if (name == 'Пропуска ТС на въезд' || name == 'ТС на терминале') { showItemCard.value = true }
   else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
+  else if (name == 'Партии товаров') { showCardBatch.value = true }
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
   else if (name == 'Пользователи') { showCardUser.value = true }
@@ -251,6 +257,7 @@ const addItem = (section) => {
   if (section == 'Пропуска ТС на въезд') { showAddItem.value = true; } 
   else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
+  else if (section == 'Партии товаров') { showAddBatch.value = true; }
   else if (section == 'Клиенты') { showAddContact.value = true; }
   else if (section == 'Брокеры') { showAddBroker.value = true; }
   else if (section == 'Пользователи') { showAddUser.value = true; }
@@ -263,6 +270,7 @@ const editItem = (item, name) => {
   if (name == 'Пропуска ТС на въезд') { showUpdateItem.value = true } 
   else if (name == 'Пропуска ТС на выезд') { showUpdateExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
+  else if (name == 'Партии товаров') { showUpdateBatch.value = true }
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
   else if (name == 'Пользователи') { showUpdateUser.value = true }
@@ -393,6 +401,20 @@ const createExitCarpass = (item) => {
   <!-- **********************   MODAL ENTRY_REQUEST EDIT  ************************** -->
   <div v-if="showUpdateEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormEntryRequest @close-modal="showUpdateEntryRequest=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
+  <!-- **********************   MODAL BATCH CARD   ************************** -->
+  <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL BATCH ADD   ************************** -->
+  <div v-if="showAddBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBatch @close-modal="showAddBatch=false" @doc-created="getData" />
+  </div>
+  <!-- **********************   MODAL BATCH EDIT  ************************** -->
+  <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
 
