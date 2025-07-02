@@ -519,6 +519,14 @@ def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     return crud.create_entry_request(db=db, item=data_none_values_redefined)
 
 
+@app.post("/batches/", response_model=schemas.Batch)
+def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate) 
+    return crud.create_batch(db=db, item=data_none_values_redefined)
+
+
 @app.post("/carpasses/", response_model=schemas.Carpass)
 def create_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):

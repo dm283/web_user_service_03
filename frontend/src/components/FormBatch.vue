@@ -42,12 +42,12 @@ const state = reactive({
   choosenDocs: [],
 })
 
-const showDropDownSelect = ref({});
+
+const showDropDownSelect = reactive({});
 const showEAList = ref(false)
 const showAddDoc = ref(false)
 
 
-if (!props.isCard) {
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
@@ -58,22 +58,18 @@ onMounted(async () => {
       state.isLoading = false;
     }
 });
-};
 
-// if (props.itemData) {
-// onMounted(async () => {
-//     try {
-//       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
-//         {headers: authHeader()}
-//       );
-//       state.documents = response.data;
-//     } catch (error) {
-//       console.error('Error fetching docs', error);
-//     } finally {
-//       state.isLoading = false;
-//     }
-// });
-// };
+if (props.itemData) {
+onMounted(async () => {
+    try {
+      if (props.itemData.contact_uuid) {
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
+        {headers: authHeader()}
+      );
+      form['contact_name_input'] = response2.data.name
+      }
+    } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
+}); };
 
 if (props.itemData) {
 onMounted(async () => {
@@ -111,6 +107,7 @@ const itemFields = [
     'comment',
   ]
 
+
 const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
   state.filteredList = [];
@@ -120,12 +117,28 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
       state.filteredList.push(rec);
     };
   };
-  if (state.filteredList.length == 0) {
-    for (let xobj of state[entity]) {
-      let clonedObj = {...xobj};
-      state.filteredList.push(clonedObj);
-    };
+
+  // if (state.filteredList.length == 0) {
+  //   for (let xobj of state[entity]) {
+  //     let clonedObj = {...xobj};
+  //     state.filteredList.push(clonedObj);
+  //   };
+  // }
+};
+
+const setVars = (inputField, reserveField) => {
+  //
+  if (!form[reserveField]) {
+    form[reserveField] = form[inputField]
   }
+  if (showDropDownSelect[inputField]) { 
+    showDropDownSelect[inputField]=false 
+    form[inputField]=form[reserveField]
+  }
+  else { 
+    showDropDownSelect[inputField]=true 
+    form[inputField]=null
+  };
 };
 
 const setInitialForm = () => {
@@ -138,7 +151,7 @@ const setInitialForm = () => {
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
-      form['contact_name_input'] = null  // fake form field for dropdown list
+      form['contact_name_input'] = null  // fake form field for dropdown list 
     }
     //form.ncar = '_234РА23' // template for 'ncar'
   };
@@ -314,8 +327,7 @@ const setChoosenDocs = async (items) => {
         </div>
 
         <!-- fake field 'contact_name_input' for dropdown list -->
-        <!-- <div class="formInputDiv" v-if="(!props.isCard) & userInfo.contact_id==0"> -->
-        <div class="formInputDiv" v-if="(!props.itemData) & userInfo.contact_id==0">
+        <!-- <div class="formInputDiv" v-if="(!props.itemData) & userInfo.contact_id==0">
           <label class=formLabelStyle>Клиент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
               showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
@@ -330,13 +342,29 @@ const setChoosenDocs = async (items) => {
               {{ item.name }}
             </div>
           </div>
+        </div> -->
+
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
+                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="false"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['contact_name_input']=false; 
+                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid" >
+                {{ item.name }}
+            </div>
+          </div>
         </div>
+
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
-          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
+          <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
 
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Описание товаров</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Описание товаров</label>
           <input type="text" v-model="form.goods" :class="[errField['goods']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>

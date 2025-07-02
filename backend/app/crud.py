@@ -204,6 +204,22 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
 #     db.delete(db_ro)
 #     db.commit()
 
+def create_batch(db: Session, item: schemas.BatchCreate):
+    #
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.Batch(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+        # create records in related_objects
+        # if db_item.contact_uuid:
+        #     create_rec_related_objects(db_item.contact_uuid, uuid, db=db)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    
+    return db_item
 
 
 

@@ -351,7 +351,6 @@ class BatchUpdate(BatchCreate):
 class Batch(BatchCreate):
     id: int
     uuid: str
-    id_entry_request: str
     created_datetime: datetime
     updated_datetime: datetime | None
     post_date: datetime | None
