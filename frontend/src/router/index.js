@@ -32,7 +32,7 @@ const router = createRouter({
 
     { path: '/svh_section', name: 'svh_section', component: SvhSectionView, },
     { path: '/batches', name: 'batches', component: BatchesView, },
-    { path: '/add_batch', name: 'batches', component: AddBatchView, },
+    { path: '/add_batch', name: 'add_batch', component: AddBatchView, },
 
     { path: '/administration', name: 'administration', component: AdministrationView, },
     { path: '/users', name: 'users', component: UsersView, },

@@ -613,7 +613,6 @@ const rowClick = (index, item) => {
       ВЫБРАТЬ
     </button> -->
 
-
     <!-- обновить -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
       @click="emit('btnRefresh')">
@@ -634,6 +633,35 @@ const rowClick = (index, item) => {
         </ul>
       </div>
     </div>
+
+    <!-- ********    блок кнопок изменения статусов партий товаров    ********** -->
+    <div v-if="selectedItem.posted" class="inline-block space-x-2">
+    <!-- партии - change status to exit_permitted -->
+    <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatusExit', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
+      v-if="props.name=='Партии товаров'">
+      <i class="pi pi-unlock" style="font-size: 1rem"></i>
+    </button>
+    <!-- партии - change status to exit_prohibited -->
+    <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatusProhibit', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_prohibited'"
+      v-if="props.name=='Партии товаров'">
+      <i class="pi pi-ban" style="font-size: 1rem"></i>
+    </button>
+    <!-- партии - change status to released -->
+    <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatusReleased', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_prohibited' | selectedItem.status=='terminal'"
+      v-if="props.name=='Партии товаров'">
+      <i class="pi pi-truck" style="font-size: 1rem"></i>
+    </button>
+    <!-- партии - change status to default (terminal) -->
+    <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatusDefault', selectedItem)" :disabled="!selectedItem | selectedItem.status=='terminal'"
+      v-if="props.name=='Партии товаров'">
+      <i class="pi pi-arrow-circle-left" style="font-size: 1rem"></i>
+    </button>
+    </div>
+    
 
   </div>
 
