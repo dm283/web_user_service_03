@@ -332,14 +332,14 @@ const setChoosenDocs = async (items) => {
 
         <div class=formInputDiv>   <label class=formLabelStyle>Описание товаров</label>
           <input type="text" v-model="form.goods" :class="[errField['goods']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="isCard" />
+            :required="false" :disabled="isCard" />
         </div>
 
       </div>
 
       <div class="flex">
 
-        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Пропуск</label>
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>№ ТС</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_2');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.carpass_ncar_input" 
                 @keyup="setFilter('carpass_ncar_input', 'carpasses', 'ncar')" :required="false"/>
@@ -354,9 +354,9 @@ const setChoosenDocs = async (items) => {
             </div>
           </div>
         </div>
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Пропуск</label>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>№ ТС</label>
           <input type="text" v-model="form.carpass_ncar_input" :class="[errField['carpass_uuid']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="true" />
+            :required="false" :disabled="true" />
         </div>
 
         <div class=formInputDiv>   <label class=formLabelStyle>Количество мест</label>

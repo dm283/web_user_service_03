@@ -151,7 +151,7 @@ else if (props.view_type == 'entryRequest') {
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
-else if (props.view_type == 'batches') {
+else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   state.query = query_batches;
   state.listTableColumns = {
     'tn_id':'ТН','carpass_uuid':'Пропуск','contact_uuid':'Клиент','goods':'Описание товаров',
@@ -191,6 +191,11 @@ else if (props.view_type == 'documents') {
   };
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+
+//
+if (props.view_type == 'add_batch') {
+  showAddBatch.value = true
 }
 
 
