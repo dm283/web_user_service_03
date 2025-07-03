@@ -536,10 +536,20 @@ def delete_entry_request(db: Session, item_id: int):
 
     db.commit()
 
-    # create records in related_objects
-    # delete_rec_related_objects(item_from_db.contact_uuid, item_from_db.uuid, db=db)
+    return {"message": f"Item ID {item_id} deleted successfully"}
 
-    return {"message": f"Carpass id {item_id} deleted successfully"}
+
+def delete_batch(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    return {"message": f"Item ID {item_id} deleted successfully"}
 
 
 def delete_exitcarpass(db: Session, carpass_id: int):
@@ -741,6 +751,27 @@ def posting_entry_request(db: Session, item_id: int):
     return item_from_db
 
 
+def posting_batch(db: Session, item_id: int):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        ###
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.Batch, 
+                               schema_obj=schemas.BatchValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    return item_from_db
+
+
 def posting_exitcarpass(db: Session, item_id: int):
     #
     def foo_fields_validation(item_from_db):
@@ -817,9 +848,21 @@ def rollback_entry_requests(db: Session, item_id: int):
     if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(item_from_db, 'posted', False)
-    setattr(item_from_db, 'post_date', None)
-    setattr(item_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    return item_from_db.id
+
+
+def rollback_batches(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
     return item_from_db.id

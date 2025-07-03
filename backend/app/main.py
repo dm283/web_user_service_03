@@ -679,6 +679,12 @@ def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     return crud.delete_entry_request(db=db, item_id=item_id)
 
 
+@app.delete('/batches/{item_id}')
+def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    return crud.delete_batch(db=db, item_id=item_id)
+
+
 @app.delete('/document_records/{item_id}')
 def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
@@ -721,6 +727,13 @@ def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_
     return crud.posting_entry_request(db=db, item_id=item_id)
 
 
+@app.put('/batch_posting/{item_id}')
+def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_batch(db=db, item_id=item_id)
+
+
 @app.put('/contacts_posting/{item_id}')
 def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
@@ -761,6 +774,12 @@ def rollback_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_a
 def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
     return crud.rollback_entry_requests(db=db, item_id=item_id)
+
+
+@app.put('/batches_rollback/{item_id}')
+def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_id: int, db: Session = Depends(get_db)):
+    return crud.rollback_batches(db=db, item_id=item_id)
 
 
 @app.put('/contacts_rollback/{item_id}')

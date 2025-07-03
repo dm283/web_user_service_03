@@ -103,7 +103,6 @@ const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full
 
 const errField = reactive({});
 const form = reactive({});
-// const files = ref(null)
 
 const itemFields = [
     'carpass_uuid',
@@ -121,33 +120,13 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
   for (let rec of state[entity]) {
-    if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
-      state.filteredList.push(rec);
-    };
-  };
-
-  // if (state.filteredList.length == 0) {
-  //   for (let xobj of state[entity]) {
-  //     let clonedObj = {...xobj};
-  //     state.filteredList.push(clonedObj);
-  //   };
-  // }
-};
+    if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); }; }; };
 
 const setVars = (inputField, reserveField) => {
   //
-  if (!form[reserveField]) {
-    form[reserveField] = form[inputField]
-  }
-  if (showDropDownSelect[inputField]) { 
-    showDropDownSelect[inputField]=false 
-    form[inputField]=form[reserveField]
-  }
-  else { 
-    showDropDownSelect[inputField]=true 
-    form[inputField]=null
-  };
-};
+  if (!form[reserveField]) { form[reserveField] = form[inputField] }
+  if (showDropDownSelect[inputField]) { showDropDownSelect[inputField]=false; form[inputField]=form[reserveField] }
+  else { showDropDownSelect[inputField]=true; form[inputField]=null }; };
 
 const setInitialForm = () => {
   //
@@ -172,8 +151,6 @@ const setInitialForm = () => {
 };
 
 setInitialForm();
-
-// const file = ref(null)
 
 const postingItem = async () => {
   //
