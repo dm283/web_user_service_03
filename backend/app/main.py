@@ -438,6 +438,20 @@ def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_
     return items
 
 
+@app.get('/carpasses_posted/', response_model=list[schemas.Carpass])
+def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_carpasses_posted(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/carpasses_posted_not_archival/', response_model=list[schemas.Carpass])
+def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_carpasses_posted_not_archival(db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/car_terminal/', response_model=list[schemas.Carpass])
 def read_car_at_terminal(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -588,6 +602,16 @@ def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
     item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_entry_request(db=db, item_id=item_id, item=item)
+
+
+@app.put('/batches/{item_id}', response_model=schemas.Batch)
+def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
+    item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_batch(db=db, item_id=item_id, item=item)
 
 
 @app.put('/contacts/{item_id}', response_model=schemas.Contact)

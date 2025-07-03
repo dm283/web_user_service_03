@@ -108,6 +108,20 @@ def get_carpasses_client(contact_uuid: str, db: Session, skip: int = 0, limit: i
         offset(skip).limit(limit).all()
 
 
+def get_carpasses_posted(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Carpass).filter(models.Carpass.posted==True, models.Carpass.is_active==True).\
+        order_by(models.Carpass.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
+def get_carpasses_posted_not_archival(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Carpass).filter(models.Carpass.posted==True, models.Carpass.status!='archival', models.Carpass.is_active==True).\
+        order_by(models.Carpass.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
 def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.is_active==True, models.Carpass.posted==True, models.Carpass.dateex==None).\
@@ -366,16 +380,23 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    contact_uuid_from_db = item_from_db.contact_uuid
     
     for field, value in item.model_dump(exclude_unset=True).items():
         setattr(item_from_db, field, value)
     db.commit()
 
-    # create records in related_objects
-    # if contact_uuid_from_db != item.contact_uuid:
-    #     delete_rec_related_objects(contact_uuid_from_db, item_from_db.uuid, db=db)
-    #     create_rec_related_objects(item.contact_uuid, item_from_db.uuid, db=db)
+    return item_from_db
+
+
+def update_batch(db: Session, item_id: int, item: schemas.BatchUpdate):
+    #
+    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
 
     return item_from_db
 

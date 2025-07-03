@@ -332,6 +332,7 @@ class BatchCreate(BaseModel):
     goods: str | None = None
     places_cnt: int | str | None = None
     weight: float | str | None = None
+    comment: str | None = None
 
 
 class BatchValidation(BaseModel):
