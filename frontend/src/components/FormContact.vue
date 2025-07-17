@@ -39,6 +39,7 @@ const state = reactive({
   brokers: [],
   related_brokers: [],
   new_brokers: [],
+  query_brokers: '',
 })
 
 const showDropDownSelect = reactive({});
@@ -66,8 +67,10 @@ const userAccessToken = () => {
 }
 
 onMounted(async () => {
+    if (!props.itemData) { state.query_brokers = `http://${backendIpAddress}:${backendPort}/brokers_posted/` }
+    else { state.query_brokers = `http://${backendIpAddress}:${backendPort}/brokers_available/${props.itemData.uuid}` }
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/brokers_posted/`, {headers: authHeader()});
+      const response = await axios.get(state.query_brokers, {headers: authHeader()});
       state.brokers = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -94,7 +97,7 @@ onMounted(async () => {
         {headers: authHeader()}
       );
       state.linked_broker_name = response2.data.name;
-      form['linked_broker_name_input'] = response2.data.name
+      // form['linked_broker_name_input'] = response2.data.name
       }
 
     } catch (error) {
@@ -125,6 +128,21 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
 };
 
 
+// const setVars = (inputField, reserveField) => {   ACTUAL GOOD VERSION OF DROPDOWN
+//   //
+//   if (!form[reserveField]) {
+//     form[reserveField] = form[inputField]
+//   }
+//   if (showDropDownSelect[inputField]) { 
+//     showDropDownSelect[inputField]=false 
+//     form[inputField]=form[reserveField]
+//   }
+//   else { 
+//     showDropDownSelect[inputField]=true 
+//     form[inputField]=null
+//   };
+// };
+
 const setVars = (inputField, reserveField) => {
   //
   if (!form[reserveField]) {
@@ -132,7 +150,7 @@ const setVars = (inputField, reserveField) => {
   }
   if (showDropDownSelect[inputField]) { 
     showDropDownSelect[inputField]=false 
-    form[inputField]=form[reserveField]
+    form[inputField]=null
   }
   else { 
     showDropDownSelect[inputField]=true 
@@ -314,7 +332,7 @@ async function downloadFile(document_id) {
         </div>   
       </div>
 
-      <div class="flex">
+      <!-- <div class="flex">    ACTUAL GOOD VERSION OF DROPDOWN!!!!
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Добавить брокера</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
@@ -330,10 +348,29 @@ async function downloadFile(document_id) {
             </div>
           </div>
         </div>
-        <!-- <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
           <input type="text" v-model="form.linked_broker_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
-        </div> -->
+        </div>
+        <div></div>
+      </div> -->
+
+      <div class="flex">
+        <div class="formInputDiv" v-if="(!props.isCard)">
+          <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
+              @keyup="setFilter('linked_broker_name_input', 'brokers', 'name')" :required="false" placeholder="Добавить брокера"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect['linked_broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['linked_broker_name_input']=false; 
+                  state.new_brokers.push({'name': item.name, 'inn': item.inn, 'uuid': item.uuid});
+                  form['reserve_1']=item.name;form['linked_broker_name_input']='';form['linked_broker_uuid']=item.uuid" >
+                {{ item.name }}
+            </div>
+          </div>
+        </div>
         <div></div>
       </div>
 

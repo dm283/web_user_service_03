@@ -410,6 +410,13 @@ def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return brokers
 
 
+@app.get("/brokers_available/{contact_uuid}", response_model=list[schemas.Contact])
+def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                 contact_uuid: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    brokers = crud.get_brokers_available(contact_uuid, db, skip=skip, limit=limit)
+    return brokers
+
+
 @app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -528,7 +535,9 @@ def get_related_doc(current_user: Annotated[UserAuth, Depends(get_current_active
 @app.get('/related_contact_broker/{contact_uuid}')
 def get_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          contact_uuid: str, db: Session = Depends(get_db)):    
-    stmt = select(models.RelatedContactBroker, models.Contact).where(models.Contact.uuid == models.RelatedContactBroker.broker_uuid)
+    stmt = select(models.RelatedContactBroker, models.Contact).where(models.RelatedContactBroker.contact_uuid == contact_uuid,
+                                                                     models.RelatedContactBroker.is_active==True,
+                                                                     models.Contact.uuid == models.RelatedContactBroker.broker_uuid)
     response = db.execute(stmt).all()
 
     db_related_contact_broker = [schemas.RelatedContactBrokerWithJoins(**row[0].__dict__, 

@@ -89,6 +89,21 @@ def get_brokers_posted(db: Session, skip: int = 0, limit: int = 100):
         offset(skip).limit(limit).all()
 
 
+def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    # get brokers which are not already in the list of related brokers of client
+    db_related_contact_brokers = db.query(models.RelatedContactBroker).filter(models.RelatedContactBroker.contact_uuid==contact_uuid, 
+                                                 models.RelatedContactBroker.is_active==True).all()
+
+    existing_brokers_uuid_list = []
+    for rec in db_related_contact_brokers:
+        if rec.broker_uuid not in existing_brokers_uuid_list:
+            existing_brokers_uuid_list.append(rec.broker_uuid)
+
+    return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True, models.Contact.posted==True,
+                                           models.Contact.uuid.not_in(existing_brokers_uuid_list)).\
+        offset(skip).limit(limit).all()
+
+
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
