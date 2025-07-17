@@ -350,6 +350,7 @@ class BatchCreate(BaseModel):
     status: str = 'terminal'
     tn_id: str
     contact_uuid: str
+    broker_uuid: str | None = None
     goods: str | None = None
     places_cnt: int | str | None = None
     weight: float | str | None = None

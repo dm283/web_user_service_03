@@ -83,19 +83,16 @@ if (props.itemData) {
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
-        {headers: authHeader()}
-      );
+        {headers: authHeader()} );
       state.documents = response.data;
 
       const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_contact_broker/${props.itemData.uuid}`,
-        {headers: authHeader()}
-      );
+        {headers: authHeader()} );
       state.related_brokers = response1.data;
 
       if (props.itemData.linked_broker_uuid) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.linked_broker_uuid}`,
-        {headers: authHeader()}
-      );
+        {headers: authHeader()} );
       state.linked_broker_name = response2.data.name;
       // form['linked_broker_name_input'] = response2.data.name
       }

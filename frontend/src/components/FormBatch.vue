@@ -39,13 +39,20 @@ const state = reactive({
   isLoading: true,
   filteredList: [],
   contacts: [],
+  brokers: [],
   choosenDocs: [],
 })
-
 
 const showDropDownSelect = reactive({});
 const showEAList = ref(false)
 const showAddDoc = ref(false)
+
+const getBrokers = async (client_uuid) => {
+  if (!client_uuid) { return }
+  let response = await axios.get(`http://${backendIpAddress}:${backendPort}/related_contact_broker/${client_uuid}`,
+        {headers: authHeader()} );
+  state.brokers = response.data;
+} 
 
 
 onMounted(async () => {
@@ -66,16 +73,20 @@ onMounted(async () => {
     try {
       if (props.itemData.contact_uuid) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
-        {headers: authHeader()}
-      );
+        {headers: authHeader()} );
       form['contact_name_input'] = response2.data.name
+      }
+      if (props.itemData.broker_uuid) {
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.broker_uuid}`,
+        {headers: authHeader()} );
+      form['broker_name_input'] = response2.data.name
       }
       if (props.itemData.carpass_uuid) {
       const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
-        {headers: authHeader()}
-      );
+        {headers: authHeader()} );
       form['carpass_ncar_input'] = response3.data.ncar
       }
+      getBrokers(props.itemData.contact_uuid)
     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };
 
@@ -108,6 +119,7 @@ const itemFields = [
     'carpass_uuid',
     'tn_id',
     'contact_uuid',
+    'broker_uuid',
     'goods',
     'places_cnt',
     'weight',
@@ -222,6 +234,7 @@ const handleSubmit = async () => {
         formData2.append('obj_type_name', 'Партии товаров');
         formData2.append('obj_type', 'Партия товаров');
         formData2.append('contact_uuid', form.contact_uuid);
+        formData2.append('broker_uuid', form.broker_uuid);
         formData2.append('obj_uuid', state.obj_uuid);
         formData2.append('user_uuid', userInfo.uuid);
         formData2.append('doc_uuid', doc.uuid);
@@ -320,7 +333,7 @@ const setChoosenDocs = async (items) => {
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['contact_name_input']=false; 
-                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid" >
+                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid;getBrokers(item.uuid);" >
                 {{ item.name }}
             </div>
           </div>
@@ -330,10 +343,28 @@ const setChoosenDocs = async (items) => {
             :required="true" :disabled="true" />
         </div>
 
-        <div class=formInputDiv>   <label class=formLabelStyle>Описание товаров</label>
-          <input type="text" v-model="form.goods" :class="[errField['goods']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
+
+
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
+          <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
+            <input class="w-64 focus:outline-none" type="text" v-model="form.broker_name_input" 
+                @keyup="setFilter('broker_name_input', 'brokers', 'broker_name')" :required="false"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+          </div>
+          <div v-if="showDropDownSelect['broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['broker_name_input']=false; 
+                  form['reserve_2']=item.broker_name;form['broker_name_input']=item.broker_name;form['broker_uuid']=item.broker_uuid" >
+                {{ item.broker_name }}
+            </div>
+          </div>
         </div>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
+          <input type="text" v-model="form.broker_name_input" :class="[errField['broker_uuid']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
+
 
       </div>
 
@@ -370,6 +401,10 @@ const setChoosenDocs = async (items) => {
       </div>
 
       <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Описание товаров</label>
+          <input type="text" v-model="form.goods" :class="[errField['goods']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Примечание</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />

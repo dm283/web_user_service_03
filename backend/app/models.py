@@ -243,6 +243,7 @@ class Batch(Base):
     status = Column(String)
     tn_id = Column(String)
     contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+    broker_uuid = Column(String, nullable=True, default=None)
     goods = Column(String)
     places_cnt = Column(Integer)
     weight = Column(Float)
