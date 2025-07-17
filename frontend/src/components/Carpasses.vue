@@ -89,6 +89,8 @@ const showUpdateDoc = ref(false)
 
 const selectedItem = ref('')
 const itemName = ref('')
+const deletedItem = ref('')
+const deletedItemName = ref('')
 const file = ref(null)
 
 const modalStyle = "absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
@@ -282,11 +284,18 @@ const editItem = (item, name) => {
   else if (name == 'Электронный архив') { showUpdateDoc.value = true }
 };
 
+// const deleteItem = (item, name) => {
+//   //
+//   console.log('deleting!!!!', item, name)
+//   selectedItem.value = item;
+//   itemName.value = name;
+//   showDeleteItem.value = true;
+// };
+
 const deleteItem = (item, name) => {
   //
-  console.log('deleting!!!!', item, name)
-  selectedItem.value = item;
-  itemName.value = name;
+  deletedItem.value = item;
+  deletedItemName.value = name;
   showDeleteItem.value = true;
 };
 
@@ -353,8 +362,8 @@ const createExitCarpass = (item) => {
 
   
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
-  <div v-if="showDeleteItem" :class="[itemName=='открепить_брокера' ? modalStyleSecond : modalStyle]">
-    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemName="itemName" :itemData="selectedItem"/>
+  <div v-if="showDeleteItem" :class="[deletedItemName=='открепить_брокера' ? modalStyleSecond : modalStyle]">
+    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemName="deletedItemName" :itemData="deletedItem"/>
   </div>
 
   <!-- **********************   MODAL ROLLBACK CARPASS   ************************** -->
