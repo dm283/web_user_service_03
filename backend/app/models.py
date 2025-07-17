@@ -18,6 +18,17 @@ class RelatedDocs(Base):
     is_active = Column(Boolean, default=True)
 
 
+class RelatedContactBroker(Base):
+    __tablename__ = 'related_contact_broker'
+    contact_uuid = Column(String)
+    broker_uuid = Column(String)
+
+    id = Column(Integer, primary_key=True)
+    created_datetime = Column(DateTime)
+    user_uuid_create = Column(String)
+    is_active = Column(Boolean, default=True)
+
+
 class Contact(Base):
     __tablename__ = 'contacts'    
     name = Column(String)

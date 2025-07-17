@@ -322,6 +322,18 @@ class RelatedDocsCreate(BaseModel):
     user_uuid: str
     doc_uuid: str
 
+###########
+class RelatedContactBrokerCreate(BaseModel):
+    contact_uuid: str
+    broker_uuid: str
+    user_uuid_create: str
+
+class RelatedContactBrokerWithJoins(BaseModel):
+    contact_uuid: str
+    broker_uuid: str
+    user_uuid_create: str
+    broker_name: str
+    broker_inn: str
 
 #############
 class BatchCreate(BaseModel):

@@ -255,6 +255,15 @@ def create_related_docs_record(current_user: Annotated[UserAuth, Depends(get_cur
     return crud.create_related_docs_record(db=db, data=data)
 
 
+@app.post("/create_related_contact_broker/")
+def create_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        data: Annotated[schemas.RelatedContactBrokerCreate, Form()], db: Session = Depends(get_db)):
+    #
+    # data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
+    # print('create_related_docs_record', data)
+    return crud.create_related_contact_broker(db=db, data=data)
+
+
 # attach document (file) to additional object
 @app.put("/attach_doc_to_additional_entity/")
 async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -514,6 +523,18 @@ def get_related_doc(current_user: Annotated[UserAuth, Depends(get_current_active
            order_by(models.RelatedDocs.created_datetime.desc()).all()
     
     return db_related_docs
+
+
+@app.get('/related_contact_broker/{contact_uuid}')
+def get_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         contact_uuid: str, db: Session = Depends(get_db)):    
+    stmt = select(models.RelatedContactBroker, models.Contact).where(models.Contact.uuid == models.RelatedContactBroker.broker_uuid)
+    response = db.execute(stmt).all()
+
+    db_related_contact_broker = [schemas.RelatedContactBrokerWithJoins(**row[0].__dict__, 
+                broker_name=row[1].__dict__['name'], broker_inn=row[1].__dict__['inn']) for row in response]
+
+    return db_related_contact_broker
 
 
 #########################################################    CREATE ITEM ENDPOINTS

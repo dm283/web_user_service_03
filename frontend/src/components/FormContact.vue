@@ -37,6 +37,8 @@ const state = reactive({
   documents: [],
   isLoading: true,
   brokers: [],
+  related_brokers: [],
+  new_brokers: [],
 })
 
 const showDropDownSelect = reactive({});
@@ -82,6 +84,11 @@ onMounted(async () => {
       );
       state.documents = response.data;
 
+      const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_contact_broker/${props.itemData.uuid}`,
+        {headers: authHeader()}
+      );
+      state.related_brokers = response1.data;
+
       if (props.itemData.linked_broker_uuid) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.linked_broker_uuid}`,
         {headers: authHeader()}
@@ -89,7 +96,7 @@ onMounted(async () => {
       state.linked_broker_name = response2.data.name;
       form['linked_broker_name_input'] = response2.data.name
       }
-      
+
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -98,25 +105,6 @@ onMounted(async () => {
 });
 };
 
-// const setFilter = (fieldForm, entity, fieldEntity) => {
-//   // filter setting
-//   state.filteredList = [];
-//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-//   for (let rec of state[entity]) {
-//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
-//       state.filteredList.push(rec);
-//     };
-//   };
-//   if (state.filteredList.length == 0) {
-//     for (let xobj of state[entity]) {
-//       let clonedObj = {...xobj};
-//       state.filteredList.push(clonedObj);
-//     };
-//   }
-//   console.log('state.filteredList=',state.filteredList)
-// };
-
-//'linked_broker_name_input', 'brokers', 'name'
 
 const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
@@ -166,6 +154,7 @@ const setInitialForm = () => {
     form['type'] = 'V' // template for 'ncar'
   };
 
+  state.new_brokers = []
   // if (userInfo.contact_id!=0) {  // for the client service
   //   form.contact = userInfo.contact_id
   //   form.contact_name = userInfo.contact_name
@@ -218,6 +207,22 @@ const handleSubmit = async () => {
       toast.success('Запись обновлёна');      
       state.responseItem = response.data;
     }
+
+    if (state.new_brokers.length>0) {
+      for (let broker of state.new_brokers){
+        let formData2 = new FormData();
+        formData2.append('contact_uuid', state.responseItem.uuid);
+        formData2.append('broker_uuid', broker.uuid);
+        formData2.append('user_uuid_create', userInfo.uuid);
+        try {
+          const response = await axios.post(`http://${backendIpAddress}:${backendPort}/create_related_contact_broker/`, 
+            formData2, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+        } catch (error) {
+          console.error('Error posting', error);
+        }
+      }
+    }
+
 
     // files uploading
     if (files.value) {
@@ -302,9 +307,15 @@ async function downloadFile(document_id) {
           :required="false" :disabled="isCard" />
         </div>    
       </div>
+      <div class="flex">
+       <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
+          <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>   
+      </div>
 
       <div class="flex">
-        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Добавить брокера</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
                 @keyup="setFilter('linked_broker_name_input', 'brokers', 'name')" :required="false"/>
@@ -313,38 +324,44 @@ async function downloadFile(document_id) {
           <div v-if="showDropDownSelect['linked_broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['linked_broker_name_input']=false; 
+                  state.new_brokers.push({'name': item.name, 'inn': item.inn, 'uuid': item.uuid});
                   form['reserve_1']=item.name;form['linked_broker_name_input']=item.name;form['linked_broker_uuid']=item.uuid" >
                 {{ item.name }}
             </div>
           </div>
         </div>
-
-        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('linked_broker_name_input', 'brokers', 'name'); 
-                showDropDownSelect.linked_broker_name_input ? showDropDownSelect.linked_broker_name_input=false : showDropDownSelect.linked_broker_name_input=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
-                @keyup="setFilter('linked_broker_name_input', 'brokers', 'uuid')" :required="false"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect.linked_broker_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect.linked_broker_name_input=false; 
-                  form.linked_broker_name_input=item.name;form.linked_broker_uuid=item.uuid" >
-                {{ item.name }}
-            </div>
-          </div>
-        </div> -->
-        
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
+        <!-- <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
           <input type="text" v-model="form.linked_broker_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
-        </div>
-
-        <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
-          <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="false" :disabled="isCard" />
-        </div>    
+        </div> -->
+        <div></div>
       </div>
+
+
+      <div class="mx-5 px-1 mb-5"> <label class=formLabelStyle>Брокеры</label>
+        <div class="border rounded-md mt-2 overflow-hidden">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
+              <td class="text-center">Наименование</td>
+              <td class="text-center">ИНН</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t text-slate-500 text-xs" v-for="broker in state.related_brokers">
+              <td class="text-center">{{ broker.broker_name }}</td>
+              <td class="text-center">{{ broker.broker_inn }}</td>
+            </tr>
+            <tr class="border-t text-blue-500 text-xs" v-for="broker in state.new_brokers">
+              <td class="text-center">{{ broker.name }}</td>
+              <td class="text-center">{{ broker.inn }}</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+
 
       <div v-if="props.isCard || props.itemData">
         <!-- Show loading spinner while loading is true -->
@@ -376,7 +393,6 @@ async function downloadFile(document_id) {
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
         </div>
       </div>
-
       <div v-else class="mb-5"></div>
 
     </form>

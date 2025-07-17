@@ -329,6 +329,23 @@ def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
     return record
 
 
+def create_related_contact_broker(db: Session, data: schemas.RelatedContactBrokerCreate):
+    # creates record in related_docs table
+    created_datetime = datetime.datetime.now()
+
+    # add check if the same record exists already!
+
+    record = models.RelatedContactBroker(contact_uuid=data.contact_uuid,
+        broker_uuid=data.broker_uuid, user_uuid_create=data.user_uuid_create, created_datetime=created_datetime)
+    try:
+        db.add(record); db.commit(); db.refresh(record)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    return record
+
+
 def create_user(db: Session, user: schemas.UserCreate):
     # creates a user in database
     password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
