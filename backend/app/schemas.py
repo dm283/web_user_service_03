@@ -336,6 +336,14 @@ class RelatedContactBrokerWithJoins(BaseModel):
     broker_name: str
     broker_inn: str
 
+class RelatedBrokerContactWithJoins(BaseModel):
+    id: int
+    contact_uuid: str
+    broker_uuid: str
+    user_uuid_create: str
+    client_name: str
+    client_inn: str
+
 #############
 class BatchCreate(BaseModel):
     carpass_uuid: str | None = None

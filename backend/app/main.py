@@ -546,6 +546,20 @@ def get_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_cur
     return db_related_contact_broker
 
 
+@app.get('/related_broker_contact/{broker_uuid}')
+def get_related_broker_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         broker_uuid: str, db: Session = Depends(get_db)):    
+    stmt = select(models.RelatedContactBroker, models.Contact).where(models.RelatedContactBroker.broker_uuid == broker_uuid,
+                                                                     models.RelatedContactBroker.is_active==True,
+                                                                     models.Contact.uuid == models.RelatedContactBroker.contact_uuid)
+    response = db.execute(stmt).all()
+
+    db_related_broker_contact = [schemas.RelatedBrokerContactWithJoins(**row[0].__dict__, 
+                client_name=row[1].__dict__['name'], client_inn=row[1].__dict__['inn']) for row in response]
+
+    return db_related_broker_contact
+
+
 #########################################################    CREATE ITEM ENDPOINTS
 @app.post("/exitcarpasses/", response_model=schemas.Exitcarpass)
 def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],

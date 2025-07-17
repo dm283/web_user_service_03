@@ -25,6 +25,7 @@ const props = defineProps({
 const state = reactive({
   documents: [],
   isLoading: true,
+  related_clients: [],
 })
 
 const showDropDownSelect = ref({});
@@ -57,9 +58,13 @@ if (props.itemData) {
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
-        {headers: authHeader()}
-      );
+        {headers: authHeader()} );
       state.documents = response.data;
+
+      const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_broker_contact/${props.itemData.uuid}`,
+        {headers: authHeader()} );
+      state.related_clients = response1.data;
+
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -269,6 +274,27 @@ async function downloadFile(document_id) {
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
         </div>    
+      </div>
+
+      <div v-if="itemData" class="mx-5 px-1 mb-5">
+        <label class=formLabelStyle>Клиенты</label>
+        <div v-if="state.related_clients.length>0" class="border rounded-md mt-2 overflow-hidden">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
+              <td class="text-center">Наименование клиента</td>
+              <td class="text-center">ИНН</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t text-slate-500 text-xs" v-for="rec in state.related_clients">
+              <td class="text-center">{{ rec.client_name }}</td>
+              <td class="text-center">{{ rec.client_inn }}</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет закреплённых клиентов</div>
       </div>
 
       <div v-if="props.isCard || props.itemData">
