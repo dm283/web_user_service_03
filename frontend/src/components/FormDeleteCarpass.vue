@@ -44,6 +44,8 @@ else if (props.itemName == 'Пользователи') {
   state.query = `http://${backendIpAddress}:${backendPort}/users/${props.itemData.id}`; }
 else if (props.itemName == 'Электронный архив') {
   state.query = `http://${backendIpAddress}:${backendPort}/document_records/${props.itemData.id}`; }
+else if (props.itemName == 'открепить_брокера') {
+  state.query = `http://${backendIpAddress}:${backendPort}/related_contact_broker/${props.itemData.id}`; }
 
 
 const handleSubmit = async () => {

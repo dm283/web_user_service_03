@@ -584,6 +584,19 @@ def delete_batch(db: Session, item_id: int):
     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
+def delete_related_contact_broker(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.RelatedContactBroker).filter(models.RelatedContactBroker.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    return {"message": f"Item ID {item_id} deleted successfully"}
+
+
 def delete_exitcarpass(db: Session, carpass_id: int):
     #
     exitcarpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()

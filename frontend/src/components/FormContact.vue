@@ -15,7 +15,7 @@ var backendPort = parser.get("main", "backend_port");
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
-const emit = defineEmits(['docCreated', 'closeModal'])
+const emit = defineEmits(['docCreated', 'closeModal', 'btnDelete'])
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -355,7 +355,8 @@ async function downloadFile(document_id) {
         <div></div>
       </div> -->
 
-      <div class="flex">
+      <div class="">
+        <div class="formInputDiv"><label class=formLabelStyle>Брокер(ы)</label></div>
         <div class="formInputDiv" v-if="(!props.isCard)">
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
@@ -375,27 +376,31 @@ async function downloadFile(document_id) {
       </div>
 
 
-      <div class="mx-5 px-1 mb-5"> <label class=formLabelStyle>Брокеры</label>
-        <div class="border rounded-md mt-2 overflow-hidden">
+      <div class="mx-5 px-1 mb-5">
+        <div v-if="state.related_brokers.length>0 || state.new_brokers.length>0" class="border rounded-md mt-2 overflow-hidden">
         <table class="w-full">
           <thead>
             <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
-              <td class="text-center">Наименование</td>
+              <td class="text-center">Наименование брокера</td>
               <td class="text-center">ИНН</td>
+              <td class="text-center"></td>
             </tr>
           </thead>
           <tbody>
-            <tr class="border-t text-slate-500 text-xs" v-for="broker in state.related_brokers">
-              <td class="text-center">{{ broker.broker_name }}</td>
-              <td class="text-center">{{ broker.broker_inn }}</td>
+            <tr class="border-t text-slate-500 text-xs" v-for="rec in state.related_brokers">
+              <td class="text-center">{{ rec.broker_name }}</td>
+              <td class="text-center">{{ rec.broker_inn }}</td>
+              <td class="text-center"><div v-if="!props.isCard" class="text-rose-400 cursor-pointer" @click="emit('btnDelete', {'id': rec.id}, 'открепить_брокера')">
+                <i class="pi pi-trash" style="font-size: 0.8rem"></i></div></td>
             </tr>
-            <tr class="border-t text-blue-500 text-xs" v-for="broker in state.new_brokers">
-              <td class="text-center">{{ broker.name }}</td>
-              <td class="text-center">{{ broker.inn }}</td>
+            <tr class="border-t text-orange-500 text-xs" v-for="rec in state.new_brokers">
+              <td class="text-center">{{ rec.name }}</td>
+              <td class="text-center">{{ rec.inn }}</td>
             </tr>
           </tbody>
         </table>
         </div>
+        <div class="max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет закреплённых брокеров</div>
       </div>
 
 

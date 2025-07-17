@@ -715,6 +715,12 @@ def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return crud.delete_batch(db=db, item_id=item_id)
 
 
+@app.delete('/related_contact_broker/{item_id}')
+def delete_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    return crud.delete_related_contact_broker(db=db, item_id=item_id)
+
+
 @app.delete('/document_records/{item_id}')
 def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):

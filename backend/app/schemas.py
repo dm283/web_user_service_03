@@ -329,6 +329,7 @@ class RelatedContactBrokerCreate(BaseModel):
     user_uuid_create: str
 
 class RelatedContactBrokerWithJoins(BaseModel):
+    id: int
     contact_uuid: str
     broker_uuid: str
     user_uuid_create: str

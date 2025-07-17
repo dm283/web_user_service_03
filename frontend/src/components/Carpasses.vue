@@ -284,6 +284,7 @@ const editItem = (item, name) => {
 
 const deleteItem = (item, name) => {
   //
+  console.log('deleting!!!!', item, name)
   selectedItem.value = item;
   itemName.value = name;
   showDeleteItem.value = true;
@@ -352,7 +353,7 @@ const createExitCarpass = (item) => {
 
   
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
-  <div v-if="showDeleteItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+  <div v-if="showDeleteItem" :class="[itemName=='открепить_брокера' ? modalStyleSecond : modalStyle]">
     <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemName="itemName" :itemData="selectedItem"/>
   </div>
 
@@ -429,11 +430,11 @@ const createExitCarpass = (item) => {
   </div>
   <!-- **********************   MODAL CONTACT ADD   ************************** -->
   <div v-if="showAddContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormContact @close-modal="showAddContact=false" @doc-created="getData" />
+    <FormContact @close-modal="showAddContact=false" @doc-created="getData" @btn-delete="deleteItem" />
   </div>
   <!-- **********************   MODAL CONTACT EDIT  ************************** -->
   <div v-if="showUpdateContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormContact @close-modal="showUpdateContact=false" @doc-created="getData" :itemData="selectedItem"/>
+    <FormContact @close-modal="showUpdateContact=false" @doc-created="getData" @btn-delete="deleteItem" :itemData="selectedItem"/>
   </div>
 
 
