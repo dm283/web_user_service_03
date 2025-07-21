@@ -21,7 +21,7 @@ class RelatedDocs(Base):
 class RelatedContactBroker(Base):
     __tablename__ = 'related_contact_broker'
     contact_uuid = Column(String)
-    broker_uuid = Column(String)
+    broker_uuid = Column(String)   # add foreign key!!!
 
     id = Column(Integer, primary_key=True)
     created_datetime = Column(DateTime)

@@ -47,6 +47,7 @@ const showDropDownSelect = reactive({});
 const showEAList = ref(false)
 const showAddDoc = ref(false)
 
+
 const getBrokers = async (client_uuid) => {
   if (!client_uuid) { return }
   let response = await axios.get(`http://${backendIpAddress}:${backendPort}/related_contact_broker/${client_uuid}`,
@@ -54,7 +55,7 @@ const getBrokers = async (client_uuid) => {
   state.brokers = response.data;
 } 
 
-
+// for dropdowns
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
@@ -68,6 +69,7 @@ onMounted(async () => {
     }
 });
 
+// for dropdowns
 if (props.itemData) {
 onMounted(async () => {
     try {
@@ -75,21 +77,26 @@ onMounted(async () => {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
         {headers: authHeader()} );
       form['contact_name_input'] = response2.data.name
+      state.initial_contact_name = response2.data.name
       }
       if (props.itemData.broker_uuid) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.broker_uuid}`,
         {headers: authHeader()} );
       form['broker_name_input'] = response2.data.name
+      state.initial_broker_name = response2.data.name
       }
       if (props.itemData.carpass_uuid) {
       const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
         {headers: authHeader()} );
       form['carpass_ncar_input'] = response3.data.ncar
+      state.initial_ncar = response3.data.ncar
       }
       getBrokers(props.itemData.contact_uuid)
     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };
 
+
+// get documents
 if (props.itemData) {
 onMounted(async () => {
     try {
@@ -128,14 +135,14 @@ const itemFields = [
 
 
 const setFilter = (fieldForm, entity, fieldEntity) => {
-  // filter setting
+  // for dropdowns
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
   for (let rec of state[entity]) {
     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); }; }; };
 
 const setVars = (inputField, reserveField) => {
-  //
+  // for dropdowns
   if (!form[reserveField]) { form[reserveField] = form[inputField] }
   if (showDropDownSelect[inputField]) { showDropDownSelect[inputField]=false; form[inputField]=form[reserveField] }
   else { showDropDownSelect[inputField]=true; form[inputField]=null }; };
@@ -145,12 +152,14 @@ const setInitialForm = () => {
   if (props.itemData) { // card and update
     for (let field of itemFields) {
       form[field] = props.itemData[field]
-      form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
+      form['contact_name_input'] = state.initial_contact_name  // for dropdowns
+      form['broker_name_input'] = state.initial_broker_name    // for dropdowns
+      form['carpass_ncar_input'] = state.initial_ncar          // for dropdowns
     }
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
-      form['contact_name_input'] = null  // fake form field for dropdown list 
+      form['contact_name_input'] = null  // for dropdowns
     }
     //form.ncar = '_234РА23' // template for 'ncar'
   };
@@ -208,25 +217,7 @@ const handleSubmit = async () => {
       }
     }
 
-    // files uploading
-    // if (files.value) {
-    //   for (let file of files.value.files) {
-    //     formData.append('file', file);
-    //     formData.append('customer_name', form.contact_name_input); //deprecated
-    //     formData.append('contact_uuid', form.contact_uuid);
-    //     formData.append('post_user_id', userInfo.uuid);
-    //     try {
-    //       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
-    //         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-    //     } catch (error) {
-    //       console.error('Error uploading file', error);
-    //       toast.error('File has not been uploaded');
-    //     };
-    //   };
-    // };
-
     // attach files from EA (creates record in related_docs table)
-    // if (!isCard) { state.obj_uuid = state.responseItem.uuid } else { state.obj_uuid = itemData.uuid }
     state.obj_uuid = props.isCard ? props.itemData.uuid : state.responseItem.uuid
     if (state.choosenDocs) {
       for (let doc of state.choosenDocs){
@@ -257,7 +248,6 @@ const handleSubmit = async () => {
 
 async function downloadFile(document_record_uuid) {
   // downloads file
-  // let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_id}` // old
   let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_record_uuid}`
   const response = await axios.get(query, {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
@@ -333,7 +323,8 @@ const setChoosenDocs = async (items) => {
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['contact_name_input']=false; 
-                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid;getBrokers(item.uuid);" >
+                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid;
+                  getBrokers(item.uuid);form['broker_name_input']=null;form['broker_uuid']=null" >
                 {{ item.name }}
             </div>
           </div>
@@ -342,8 +333,6 @@ const setChoosenDocs = async (items) => {
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
-
-
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
@@ -364,12 +353,9 @@ const setChoosenDocs = async (items) => {
             :required="true" :disabled="true" />
         </div>
 
-
-
       </div>
 
       <div class="flex">
-
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Номер машины</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_2');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.carpass_ncar_input" 
@@ -413,11 +399,9 @@ const setChoosenDocs = async (items) => {
 
 
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
-      <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
-          <!-- <input ref="files" name="files" type="file" multiple class="formInputFile"/> -->
         </div>
         <div class="float-right" v-if="props.itemData">
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
