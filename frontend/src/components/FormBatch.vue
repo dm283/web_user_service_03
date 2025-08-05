@@ -28,7 +28,7 @@ const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
 
-const emit = defineEmits(['docCreated', 'closeModal'])  
+const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate'])  
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -187,9 +187,9 @@ watch(form, (nV, oV) => {
   if (nV) {
     for (let field of itemFields) {
       if (props.itemData) {  // edit card
-        if (form[field] == '' & props.itemData[field] == null) { console.log('empty and null'); isNV[field] = false; continue; }
+        if (form[field] == '' & props.itemData[field] == null) { isNV[field] = false; continue; }
         if (form[field] != props.itemData[field]) { 
-          console.log('new value!!!!!!!', form[field], props.itemData[field])
+          // console.log('new value!!!!!!!', form[field], props.itemData[field])
           isNV[field] = true;
         } else { isNV[field] = false; }
       }
@@ -200,7 +200,7 @@ watch(form, (nV, oV) => {
   }
   isNeedSave.value = false
   for (let field of itemFields) { if (isNV[field] == true) { 
-    console.log('NEEDED TO SAVE FOR NV!'); 
+    // console.log('NEEDED TO SAVE FOR NV!'); 
     isNeedSave.value = true; break; 
   } }
 });
@@ -270,7 +270,16 @@ const handleSubmit = async () => {
       }
     }
 
-    for (let field of itemFields) { isNV[field] = false; errField[field] = 0; props.itemData[field] = form[field] }; isNeedSave.value = false;
+    for (let field of itemFields) { 
+      isNV[field] = false; 
+      errField[field] = 0; 
+      if (props.itemData) { props.itemData[field] = form[field] }
+    }
+    isNeedSave.value = false;
+    
+    //
+    if (!props.itemData) { emit('closeModal'); emit('openEditAfterCreate', state.responseItem, 'Партии товаров') }
+
     //emit('docCreated'); 
     //emit('closeModal');
     //emit('reopenModal'); // new
@@ -311,6 +320,7 @@ const setChoosenDocs = async (items) => {
     item.filename = item.doc_name  //
     state.documents.push(item)     //
   }
+  isNeedSave.value = true // new
 }
 
 const closeIt = async () => {
@@ -330,7 +340,7 @@ const closeIt = async () => {
       </div>
     </header>
 
-    <div class="ml-6 mt-3" v-if="props.isCard">
+    <div class="ml-6 mt-3" v-if="props.itemData">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-400" v-if="props.itemData.status=='terminal'">
         НА ТЕРМИНАЛЕ</div>
@@ -357,7 +367,7 @@ const closeIt = async () => {
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
-                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="false"/>
+                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
@@ -454,8 +464,8 @@ const closeIt = async () => {
         <div class="space-x-5 overflow-auto">
           <label class="mx-1 text-sm font-semibold text-blue-500">ДОКУМЕНТЫ</label>
           <button v-if="isCard" class="float-right formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="float-right formBtn" type="button" @click="attachFileEA()">ЗАГРУЗИТЬ ИЗ ЭА</button>
-          <button class="float-right formBtn" type="button" @click="attachFileSys()">СОЗДАТЬ В ЭА</button>
+          <button class="float-right formBtn" type="button" @click="attachFileEA()">ЭЛ. АРХИВ</button>
+          <button class="float-right formBtn" type="button" @click="attachFileSys()">ЗАГРУЗИТЬ</button>
         </div>
         <!-- Show loading spinner while loading is true -->
         <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
