@@ -1,6 +1,6 @@
 <script setup>
 // import router from '@/router';
-import {ref, reactive, computed, onMounted} from 'vue';
+import {ref, reactive, computed, onMounted, watch} from 'vue';
 import { useToast } from 'vue-toastification';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
@@ -46,6 +46,8 @@ const state = reactive({
 const showDropDownSelect = reactive({});
 const showEAList = ref(false)
 const showAddDoc = ref(false)
+const errField = reactive({});
+const form = reactive({});
 
 
 const getBrokers = async (client_uuid) => {
@@ -118,9 +120,10 @@ const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full 
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
 const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-
-const errField = reactive({});
-const form = reactive({});
+const saveBtnStyle0 = 'text-slate-400 text-sm font-semibold border border-slate-400 rounded-lg \
+        w-32 h-9 hover:text-slate-500 hover:border-slate-500'
+const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border border-slate-400 rounded-lg \
+        w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 
 const itemFields = [
     'carpass_uuid',
@@ -172,6 +175,28 @@ const setInitialForm = () => {
 };
 
 setInitialForm();
+
+var isNV = {};
+var isNeedSave = ref(false);
+
+watch(form, (nV, oV) => {
+  if (nV) {
+    for (let field of itemFields) {
+      if (form[field] == '' & props.itemData[field] == null) { console.log('empty and null'); isNV[field] = false; continue; }
+      if (form[field] != props.itemData[field]) { 
+        //console.log('new value!!!!!!!', form[field], props.itemData[field])
+        isNV[field] = true;
+      } else {
+        isNV[field] = false;
+      }
+    }
+  }
+  isNeedSave.value = false
+  for (let field of itemFields) { if (isNV[field] == true) { 
+    //console.log('NEEDED TO SAVE FOR NV!'); 
+    isNeedSave.value = true; break; 
+  } }
+});
 
 const postingItem = async () => {
   //
@@ -400,7 +425,7 @@ const setChoosenDocs = async (items) => {
 
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
-          <button class="formBtn" type="submit">СОХРАНИТЬ</button>
+          <button :class="[isNeedSave ? saveBtnStyle1 : saveBtnStyle0]" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
         </div>
         <div class="float-right" v-if="props.itemData">
@@ -459,6 +484,10 @@ const setChoosenDocs = async (items) => {
 
 .formBtn {
   @apply text-slate-400 text-sm font-semibold border border-slate-400 rounded-lg w-32 h-9 hover:text-slate-500 hover:border-slate-500
+}
+
+.formBtn2 {
+  @apply text-red-400 text-sm font-semibold border border-slate-400 rounded-lg w-32 h-9 hover:text-slate-500 hover:border-slate-500
 }
 
 .formLabelStyle {
