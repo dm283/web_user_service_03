@@ -6,6 +6,7 @@ import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
 import FormEAList from './FormEAList.vue';
 import FormDoc from './FormDoc.vue';
+import FormAskCloseWithoutSave from './FormAskCloseWithoutSave.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -27,7 +28,7 @@ const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
 
-const emit = defineEmits(['docCreated', 'closeModal'])
+const emit = defineEmits(['docCreated', 'closeModal'])  
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -48,6 +49,7 @@ const showEAList = ref(false)
 const showAddDoc = ref(false)
 const errField = reactive({});
 const form = reactive({});
+const showAskCloseWithoutSave = ref(false)
 
 
 const getBrokers = async (client_uuid) => {
@@ -268,7 +270,10 @@ const handleSubmit = async () => {
       }
     }
 
-    emit('docCreated'); emit('closeModal');
+    for (let field of itemFields) { isNV[field] = false; errField[field] = 0; props.itemData[field] = form[field] }; isNeedSave.value = false;
+    //emit('docCreated'); 
+    //emit('closeModal');
+    //emit('reopenModal'); // new
   } catch (error) {
     console.error('Error adding item', error);
     toast.error('Item has not added');
@@ -308,6 +313,11 @@ const setChoosenDocs = async (items) => {
   }
 }
 
+const closeIt = async () => {
+  if (isNeedSave.value) { console.log('IS NEEDED SAVE IS TRUE +++++++'); showAskCloseWithoutSave.value = true }
+  else { emit('docCreated'); emit('closeModal'); }
+}
+
 </script>
 
 
@@ -316,7 +326,7 @@ const setChoosenDocs = async (items) => {
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Партия товаров <span v-if="props.itemData">№ {{ props.itemData.id }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
-        <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
+        <i class="pi pi-times" style="font-size: 1rem" @click="closeIt()"></i>
       </div>
     </header>
 
@@ -471,6 +481,11 @@ const setChoosenDocs = async (items) => {
   <!-- **********************   MODAL DOC ADD   ************************** -->
   <div v-if="showAddDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormDoc @close-modal="showAddDoc=false" @doc-created="" @returned-docs="setChoosenDocs" />
+  </div>
+
+  <!-- **********************   MODAL ASK CLOSE WITHOUT SAVE   ************************** -->
+  <div v-if="showAskCloseWithoutSave" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAskCloseWithoutSave @close-modal="showAskCloseWithoutSave=false" @doc-created="emit('docCreated'); emit('closeModal');" />
   </div>
 
 </template>

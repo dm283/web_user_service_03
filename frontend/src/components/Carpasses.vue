@@ -432,7 +432,6 @@ const createExitCarpass = (item) => {
     <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
-
   <!-- **********************   MODAL CONTACT CARD   ************************** -->
   <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormContact @close-modal="showCardContact=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
