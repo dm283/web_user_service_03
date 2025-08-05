@@ -42,7 +42,7 @@ models.Base.metadata.create_all(bind=engine)
 # openssl rand -hex 32
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 720
 
 class Token(BaseModel):
     access_token: str
@@ -255,6 +255,15 @@ def create_related_docs_record(current_user: Annotated[UserAuth, Depends(get_cur
     return crud.create_related_docs_record(db=db, data=data)
 
 
+@app.post("/create_related_contact_broker/")
+def create_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        data: Annotated[schemas.RelatedContactBrokerCreate, Form()], db: Session = Depends(get_db)):
+    #
+    # data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
+    # print('create_related_docs_record', data)
+    return crud.create_related_contact_broker(db=db, data=data)
+
+
 # attach document (file) to additional object
 @app.put("/attach_doc_to_additional_entity/")
 async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -401,6 +410,13 @@ def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return brokers
 
 
+@app.get("/brokers_available/{contact_uuid}", response_model=list[schemas.Contact])
+def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                 contact_uuid: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    brokers = crud.get_brokers_available(contact_uuid, db, skip=skip, limit=limit)
+    return brokers
+
+
 @app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -416,6 +432,13 @@ def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_ac
     return items
 
 
+@app.get('/batches/', response_model=list[schemas.Batch])
+def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_batches(db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/carpasses/', response_model=list[schemas.Carpass])
 def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -428,6 +451,20 @@ def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_
                    contact_uuid: str,
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_carpasses_client(contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/carpasses_posted/', response_model=list[schemas.Carpass])
+def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_carpasses_posted(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/carpasses_posted_not_archival/', response_model=list[schemas.Carpass])
+def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_carpasses_posted_not_archival(db, skip=skip, limit=limit)
     return items
 
 
@@ -495,6 +532,34 @@ def get_related_doc(current_user: Annotated[UserAuth, Depends(get_current_active
     return db_related_docs
 
 
+@app.get('/related_contact_broker/{contact_uuid}')
+def get_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         contact_uuid: str, db: Session = Depends(get_db)):    
+    stmt = select(models.RelatedContactBroker, models.Contact).where(models.RelatedContactBroker.contact_uuid == contact_uuid,
+                                                                     models.RelatedContactBroker.is_active==True,
+                                                                     models.Contact.uuid == models.RelatedContactBroker.broker_uuid)
+    response = db.execute(stmt).all()
+
+    db_related_contact_broker = [schemas.RelatedContactBrokerWithJoins(**row[0].__dict__, 
+                broker_name=row[1].__dict__['name'], broker_inn=row[1].__dict__['inn']) for row in response]
+
+    return db_related_contact_broker
+
+
+@app.get('/related_broker_contact/{broker_uuid}')
+def get_related_broker_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         broker_uuid: str, db: Session = Depends(get_db)):    
+    stmt = select(models.RelatedContactBroker, models.Contact).where(models.RelatedContactBroker.broker_uuid == broker_uuid,
+                                                                     models.RelatedContactBroker.is_active==True,
+                                                                     models.Contact.uuid == models.RelatedContactBroker.contact_uuid)
+    response = db.execute(stmt).all()
+
+    db_related_broker_contact = [schemas.RelatedBrokerContactWithJoins(**row[0].__dict__, 
+                client_name=row[1].__dict__['name'], client_inn=row[1].__dict__['inn']) for row in response]
+
+    return db_related_broker_contact
+
+
 #########################################################    CREATE ITEM ENDPOINTS
 @app.post("/exitcarpasses/", response_model=schemas.Exitcarpass)
 def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -510,6 +575,14 @@ def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate) 
     return crud.create_entry_request(db=db, item=data_none_values_redefined)
+
+
+@app.post("/batches/", response_model=schemas.Batch)
+def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate) 
+    return crud.create_batch(db=db, item=data_none_values_redefined)
 
 
 @app.post("/carpasses/", response_model=schemas.Carpass)
@@ -573,6 +646,16 @@ def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
     item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_entry_request(db=db, item_id=item_id, item=item)
+
+
+@app.put('/batches/{item_id}', response_model=schemas.Batch)
+def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
+    item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_batch(db=db, item_id=item_id, item=item)
 
 
 @app.put('/contacts/{item_id}', response_model=schemas.Contact)
@@ -640,6 +723,18 @@ def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     return crud.delete_entry_request(db=db, item_id=item_id)
 
 
+@app.delete('/batches/{item_id}')
+def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    return crud.delete_batch(db=db, item_id=item_id)
+
+
+@app.delete('/related_contact_broker/{item_id}')
+def delete_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    return crud.delete_related_contact_broker(db=db, item_id=item_id)
+
+
 @app.delete('/document_records/{item_id}')
 def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
@@ -682,6 +777,13 @@ def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_
     return crud.posting_entry_request(db=db, item_id=item_id)
 
 
+@app.put('/batch_posting/{item_id}')
+def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_batch(db=db, item_id=item_id)
+
+
 @app.put('/contacts_posting/{item_id}')
 def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
@@ -722,6 +824,12 @@ def rollback_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_a
 def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
     return crud.rollback_entry_requests(db=db, item_id=item_id)
+
+
+@app.put('/batches_rollback/{item_id}')
+def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_id: int, db: Session = Depends(get_db)):
+    return crud.rollback_batches(db=db, item_id=item_id)
 
 
 @app.put('/contacts_rollback/{item_id}')

@@ -16,6 +16,7 @@ import FormContact from './FormContact.vue';
 import FormBroker from './FormBroker.vue';
 import FormUser from './FormUser.vue';
 import FormDoc from './FormDoc.vue';
+import FormBatch from './FormBatch.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -66,6 +67,10 @@ const showCardEntryRequest = ref(false)
 const showAddEntryRequest = ref(false)
 const showUpdateEntryRequest = ref(false)
 
+const showCardBatch = ref(false)
+const showAddBatch = ref(false)
+const showUpdateBatch = ref(false)
+
 const showCardContact = ref(false)
 const showAddContact = ref(false)
 const showUpdateContact = ref(false)
@@ -84,6 +89,8 @@ const showUpdateDoc = ref(false)
 
 const selectedItem = ref('')
 const itemName = ref('')
+const deletedItem = ref('')
+const deletedItemName = ref('')
 const file = ref(null)
 
 const modalStyle = "absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
@@ -98,6 +105,9 @@ const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress
 
 const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/document_records/`:
   `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
+
+const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/batches/`:
+  `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.contact_uuid}`
 
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
@@ -143,6 +153,15 @@ else if (props.view_type == 'entryRequest') {
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
+else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
+  state.query = query_batches;
+  state.listTableColumns = {
+    'tn_id':'№ ТН','carpass_uuid':'№ ТС','contact_uuid':'Клиент','goods':'Описание товаров',
+    'places_cnt':'Кол-во мест','weight':'Вес'
+  };
+  state.additionalColumns = {  };
+  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
 else if (props.view_type == 'contacts') {
   state.query = query_contacts;
   state.listTableColumns = {
@@ -174,6 +193,11 @@ else if (props.view_type == 'documents') {
   };
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+
+//
+if (props.view_type == 'add_batch') {
+  showAddBatch.value = true
 }
 
 
@@ -228,6 +252,7 @@ const itemCard = (item, name) => {
   if (name == 'Пропуска ТС на въезд' || name == 'ТС на терминале') { showItemCard.value = true }
   else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
+  else if (name == 'Партии товаров') { showCardBatch.value = true }
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
   else if (name == 'Пользователи') { showCardUser.value = true }
@@ -239,6 +264,7 @@ const addItem = (section) => {
   if (section == 'Пропуска ТС на въезд') { showAddItem.value = true; } 
   else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
+  else if (section == 'Партии товаров') { showAddBatch.value = true; }
   else if (section == 'Клиенты') { showAddContact.value = true; }
   else if (section == 'Брокеры') { showAddBroker.value = true; }
   else if (section == 'Пользователи') { showAddUser.value = true; }
@@ -251,16 +277,25 @@ const editItem = (item, name) => {
   if (name == 'Пропуска ТС на въезд') { showUpdateItem.value = true } 
   else if (name == 'Пропуска ТС на выезд') { showUpdateExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
+  else if (name == 'Партии товаров') { showUpdateBatch.value = true }
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
   else if (name == 'Пользователи') { showUpdateUser.value = true }
   else if (name == 'Электронный архив') { showUpdateDoc.value = true }
 };
 
+// const deleteItem = (item, name) => {
+//   //
+//   console.log('deleting!!!!', item, name)
+//   selectedItem.value = item;
+//   itemName.value = name;
+//   showDeleteItem.value = true;
+// };
+
 const deleteItem = (item, name) => {
   //
-  selectedItem.value = item;
-  itemName.value = name;
+  deletedItem.value = item;
+  deletedItemName.value = name;
   showDeleteItem.value = true;
 };
 
@@ -327,8 +362,8 @@ const createExitCarpass = (item) => {
 
   
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
-  <div v-if="showDeleteItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemName="itemName" :itemData="selectedItem"/>
+  <div v-if="showDeleteItem" :class="[deletedItemName=='открепить_брокера' ? modalStyleSecond : modalStyle]">
+    <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemName="deletedItemName" :itemData="deletedItem"/>
   </div>
 
   <!-- **********************   MODAL ROLLBACK CARPASS   ************************** -->
@@ -384,17 +419,31 @@ const createExitCarpass = (item) => {
   </div>
 
 
+  <!-- **********************   MODAL BATCH CARD   ************************** -->
+  <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL BATCH ADD   ************************** -->
+  <div v-if="showAddBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBatch @close-modal="showAddBatch=false" @doc-created="getData" />
+  </div>
+  <!-- **********************   MODAL BATCH EDIT  ************************** -->
+  <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div>
+
+
   <!-- **********************   MODAL CONTACT CARD   ************************** -->
   <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormContact @close-modal="showCardContact=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL CONTACT ADD   ************************** -->
   <div v-if="showAddContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormContact @close-modal="showAddContact=false" @doc-created="getData" />
+    <FormContact @close-modal="showAddContact=false" @doc-created="getData" @btn-delete="deleteItem" />
   </div>
   <!-- **********************   MODAL CONTACT EDIT  ************************** -->
   <div v-if="showUpdateContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormContact @close-modal="showUpdateContact=false" @doc-created="getData" :itemData="selectedItem"/>
+    <FormContact @close-modal="showUpdateContact=false" @doc-created="getData" @btn-delete="deleteItem" :itemData="selectedItem"/>
   </div>
 
 

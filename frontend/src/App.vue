@@ -278,6 +278,13 @@ const signOut = async () => {
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
       />
     </RouterLink>
+
+    <RouterLink to="/svh_section" v-if="state.userInfo.contact_id == 0">
+      <MenuSection :label="'Диспетчер СВХ'" :icon="'warehouse'" :description="'Раздел работы диспетчера СВХ'"
+      :selected="state.selectedMenu=='svh_section' ? '1' : '0'" @click="state.selectedMenu='svh_section'"
+      />
+    </RouterLink>
+
     <RouterLink to="/catalogs" v-if="state.userInfo.contact_id == 0">
       <MenuSection :label="'Справочники'" :icon="'server'" :description="'Каталоги данных'"
       :selected="state.selectedMenu=='catalogs' ? '1' : '0'" @click="state.selectedMenu='catalogs'"

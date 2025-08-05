@@ -89,6 +89,27 @@ def get_brokers_posted(db: Session, skip: int = 0, limit: int = 100):
         offset(skip).limit(limit).all()
 
 
+def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    # get brokers which are not already in the list of related brokers of client
+    db_related_contact_brokers = db.query(models.RelatedContactBroker).filter(models.RelatedContactBroker.contact_uuid==contact_uuid, 
+                                                 models.RelatedContactBroker.is_active==True).all()
+
+    existing_brokers_uuid_list = []
+    for rec in db_related_contact_brokers:
+        if rec.broker_uuid not in existing_brokers_uuid_list:
+            existing_brokers_uuid_list.append(rec.broker_uuid)
+
+    return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True, models.Contact.posted==True,
+                                           models.Contact.uuid.not_in(existing_brokers_uuid_list)).\
+        offset(skip).limit(limit).all()
+
+
+def get_batches(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
@@ -99,6 +120,20 @@ def get_carpasses_client(contact_uuid: str, db: Session, skip: int = 0, limit: i
     #
     return db.query(models.Carpass).filter(models.Carpass.contact_uuid==contact_uuid).\
         filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
+def get_carpasses_posted(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Carpass).filter(models.Carpass.posted==True, models.Carpass.is_active==True).\
+        order_by(models.Carpass.created_datetime.desc()).\
+        offset(skip).limit(limit).all()
+
+
+def get_carpasses_posted_not_archival(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.Carpass).filter(models.Carpass.posted==True, models.Carpass.status!='archival', models.Carpass.is_active==True).\
+        order_by(models.Carpass.created_datetime.desc()).\
         offset(skip).limit(limit).all()
 
 
@@ -198,6 +233,22 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
 #     db.delete(db_ro)
 #     db.commit()
 
+def create_batch(db: Session, item: schemas.BatchCreate):
+    #
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.Batch(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+        # create records in related_objects
+        # if db_item.contact_uuid:
+        #     create_rec_related_objects(db_item.contact_uuid, uuid, db=db)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    
+    return db_item
 
 
 
@@ -293,6 +344,23 @@ def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
     return record
 
 
+def create_related_contact_broker(db: Session, data: schemas.RelatedContactBrokerCreate):
+    # creates record in related_docs table
+    created_datetime = datetime.datetime.now()
+
+    # add check if the same record exists already!
+
+    record = models.RelatedContactBroker(contact_uuid=data.contact_uuid,
+        broker_uuid=data.broker_uuid, user_uuid_create=data.user_uuid_create, created_datetime=created_datetime)
+    try:
+        db.add(record); db.commit(); db.refresh(record)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    return record
+
+
 def create_user(db: Session, user: schemas.UserCreate):
     # creates a user in database
     password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -344,16 +412,23 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    contact_uuid_from_db = item_from_db.contact_uuid
     
     for field, value in item.model_dump(exclude_unset=True).items():
         setattr(item_from_db, field, value)
     db.commit()
 
-    # create records in related_objects
-    # if contact_uuid_from_db != item.contact_uuid:
-    #     delete_rec_related_objects(contact_uuid_from_db, item_from_db.uuid, db=db)
-    #     create_rec_related_objects(item.contact_uuid, item_from_db.uuid, db=db)
+    return item_from_db
+
+
+def update_batch(db: Session, item_id: int, item: schemas.BatchUpdate):
+    #
+    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
 
     return item_from_db
 
@@ -493,10 +568,33 @@ def delete_entry_request(db: Session, item_id: int):
 
     db.commit()
 
-    # create records in related_objects
-    # delete_rec_related_objects(item_from_db.contact_uuid, item_from_db.uuid, db=db)
+    return {"message": f"Item ID {item_id} deleted successfully"}
 
-    return {"message": f"Carpass id {item_id} deleted successfully"}
+
+def delete_batch(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    return {"message": f"Item ID {item_id} deleted successfully"}
+
+
+def delete_related_contact_broker(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.RelatedContactBroker).filter(models.RelatedContactBroker.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    return {"message": f"Item ID {item_id} deleted successfully"}
 
 
 def delete_exitcarpass(db: Session, carpass_id: int):
@@ -698,6 +796,27 @@ def posting_entry_request(db: Session, item_id: int):
     return item_from_db
 
 
+def posting_batch(db: Session, item_id: int):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        ###
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.Batch, 
+                               schema_obj=schemas.BatchValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    return item_from_db
+
+
 def posting_exitcarpass(db: Session, item_id: int):
     #
     def foo_fields_validation(item_from_db):
@@ -774,9 +893,21 @@ def rollback_entry_requests(db: Session, item_id: int):
     if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(item_from_db, 'posted', False)
-    setattr(item_from_db, 'post_date', None)
-    setattr(item_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    return item_from_db.id
+
+
+def rollback_batches(db: Session, item_id: int):
+    #
+    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
     return item_from_db.id

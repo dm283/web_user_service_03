@@ -286,7 +286,7 @@ class ContactCreate(BaseModel):
     fio: str | None = None
     email: str | None = None
     idtelegram: str | None = None
-    linked_broker_uuid: str | None = None
+    linked_broker_uuid: str | None = None   # deprecated
     comment: str | None = None
 
 class ContactValidation(BaseModel):
@@ -321,3 +321,65 @@ class RelatedDocsCreate(BaseModel):
     obj_uuid: str
     user_uuid: str
     doc_uuid: str
+
+###########
+class RelatedContactBrokerCreate(BaseModel):
+    contact_uuid: str
+    broker_uuid: str
+    user_uuid_create: str
+
+class RelatedContactBrokerWithJoins(BaseModel):
+    id: int
+    contact_uuid: str
+    broker_uuid: str
+    user_uuid_create: str
+    broker_name: str
+    broker_inn: str
+
+class RelatedBrokerContactWithJoins(BaseModel):
+    id: int
+    contact_uuid: str
+    broker_uuid: str
+    user_uuid_create: str
+    client_name: str
+    client_inn: str
+
+#############
+class BatchCreate(BaseModel):
+    carpass_uuid: str | None = None
+    status: str = 'terminal'
+    tn_id: str
+    contact_uuid: str
+    broker_uuid: str | None = None
+    goods: str | None = None
+    places_cnt: int | str | None = None
+    weight: float | str | None = None
+    comment: str | None = None
+
+
+class BatchValidation(BaseModel):
+    carpass_uuid: str
+    status: str
+    tn_id: str
+    contact_uuid: str
+    goods: str
+    places_cnt: int
+    weight: float
+
+
+class BatchUpdate(BatchCreate):
+    updated_datetime: datetime
+
+
+class Batch(BatchCreate):
+    id: int
+    uuid: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
