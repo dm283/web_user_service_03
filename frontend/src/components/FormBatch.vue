@@ -163,6 +163,8 @@ const setInitialForm = () => {
     for (let field of itemFields) {
       form[field] = null
       form['contact_name_input'] = null  // for dropdowns
+      form['broker_name_input'] = null    // for dropdowns
+      form['carpass_ncar_input'] = null          // for dropdowns
     }
     //form.ncar = '_234РА23' // template for 'ncar'
   };
@@ -182,18 +184,21 @@ var isNeedSave = ref(false);
 watch(form, (nV, oV) => {
   if (nV) {
     for (let field of itemFields) {
-      if (form[field] == '' & props.itemData[field] == null) { console.log('empty and null'); isNV[field] = false; continue; }
-      if (form[field] != props.itemData[field]) { 
-        //console.log('new value!!!!!!!', form[field], props.itemData[field])
-        isNV[field] = true;
-      } else {
-        isNV[field] = false;
+      if (props.itemData) {  // edit card
+        if (form[field] == '' & props.itemData[field] == null) { console.log('empty and null'); isNV[field] = false; continue; }
+        if (form[field] != props.itemData[field]) { 
+          console.log('new value!!!!!!!', form[field], props.itemData[field])
+          isNV[field] = true;
+        } else { isNV[field] = false; }
+      }
+      else {  // create card
+        if (form[field]) { isNV[field] = true; } else { isNV[field] = false; }
       }
     }
   }
   isNeedSave.value = false
   for (let field of itemFields) { if (isNV[field] == true) { 
-    //console.log('NEEDED TO SAVE FOR NV!'); 
+    console.log('NEEDED TO SAVE FOR NV!'); 
     isNeedSave.value = true; break; 
   } }
 });
