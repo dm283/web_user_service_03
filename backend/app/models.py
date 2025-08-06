@@ -35,7 +35,9 @@ class Contact(Base):
     inn = Column(String, unique=True)  # check digits number via pydantic schemas
     type = Column(String)
     fio = Column(String)
-    email = Column(String)
+    contract = Column(String)  #
+    phone = Column(String) #
+    email = Column(String)     #
     idtelegram = Column(String)
     linked_broker_uuid = Column(String, ForeignKey('contacts.uuid'))  # deprecated
     related_obj_uuid = Column(String)  # deprecated

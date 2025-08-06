@@ -1,6 +1,6 @@
 from datetime import date, datetime, time, timedelta
 from typing import Annotated
-from pydantic import BaseModel, StringConstraints, EmailStr
+from pydantic import BaseModel, StringConstraints, EmailStr, AfterValidator
 from fastapi import UploadFile
 
 
@@ -284,16 +284,29 @@ class ContactCreate(BaseModel):
     inn: str | None = None
     type: str
     fio: str | None = None
+    contract: str | None = None
+    phone: str | None = None
     email: str | None = None
     idtelegram: str | None = None
     linked_broker_uuid: str | None = None   # deprecated
     comment: str | None = None
 
+def is_emails_list(value: str) -> str:
+    # email list validator
+    class EmailCheck(BaseModel): email: EmailStr
+    try:
+        for i in value.split(';'):
+            email = EmailCheck(email=i.strip())
+    except Exception as e:
+        raise ValueError(f'{value} is not an list of emails')
+    return value  
+
 class ContactValidation(BaseModel):
     name: str
     inn: Annotated[str, StringConstraints(min_length=10, max_length=12)]
     type: str
-    email: EmailStr | None = None
+    email: Annotated[str, AfterValidator(is_emails_list)] | None = None
+    #email: EmailStr | None = None
 
 
 class ContactUpdate(ContactCreate):
