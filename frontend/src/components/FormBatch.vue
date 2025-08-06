@@ -463,7 +463,7 @@ const closeIt = async () => {
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
         <div class="space-x-5 overflow-auto">
           <label class="mx-1 text-sm font-semibold text-blue-500">ДОКУМЕНТЫ</label>
-          <button v-if="isCard" class="float-right formBtn" type="submit">СОХРАНИТЬ</button>
+          <button v-if="isCard" class="float-right" :class="[isNeedSave ? saveBtnStyle1 : saveBtnStyle0]" type="submit">СОХРАНИТЬ</button>
           <button class="float-right formBtn" type="button" @click="attachFileEA()">ЭЛ. АРХИВ</button>
           <button class="float-right formBtn" type="button" @click="attachFileSys()">ЗАГРУЗИТЬ</button>
         </div>
