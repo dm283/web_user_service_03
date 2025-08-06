@@ -28,6 +28,8 @@ const itemFields = [
     'inn',
     'type',
     'fio',
+    'contract',
+    'phone',
     'email',
     'idtelegram',
     'comment',
@@ -305,24 +307,32 @@ async function downloadFile(document_id) {
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>ИНН</label>
           <input type="number" v-model="form.inn" :class="[errField['inn']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="true" :disabled="isCard" />
+        </div>    
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер договора</label>
+          <input type="text" v-model="form.contract" :class="[errField['contract']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
-        </div>        
+        </div>
       </div>
       <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>ФИО</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Контактное лицо (ФИО)</label>
           <input type="text" v-model="form.fio" :class="[errField['fio']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>email</label>
-          <input type="email" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
+        <div class=formInputDiv>   <label class=formLabelStyle>Телефон(ы)</label>
+          <input type="text" v-model="form.phone" :class="[errField['phone']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>idtelegram</label>
-          <input type="text" v-model="form.idtelegram" :class="[errField['idtelegram']==1 ? formInputStyleErr : formInputStyle]" 
+        <div class=formInputDiv>   <label class=formLabelStyle>Email(s)</label>
+          <input type="text" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
-        </div>    
+        </div>
       </div>
       <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Telegram ID</label>
+          <input type="text" v-model="form.idtelegram" :class="[errField['idtelegram']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>   
        <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
