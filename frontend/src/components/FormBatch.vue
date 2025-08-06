@@ -1,11 +1,12 @@
 <script setup>
 // import router from '@/router';
-import {ref, reactive, computed, onMounted} from 'vue';
+import {ref, reactive, computed, onMounted, watch} from 'vue';
 import { useToast } from 'vue-toastification';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
 import FormEAList from './FormEAList.vue';
 import FormDoc from './FormDoc.vue';
+import FormAskCloseWithoutSave from './FormAskCloseWithoutSave.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -27,7 +28,7 @@ const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
 
-const emit = defineEmits(['docCreated', 'closeModal'])
+const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate'])  
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -46,6 +47,9 @@ const state = reactive({
 const showDropDownSelect = reactive({});
 const showEAList = ref(false)
 const showAddDoc = ref(false)
+const errField = reactive({});
+const form = reactive({});
+const showAskCloseWithoutSave = ref(false)
 
 
 const getBrokers = async (client_uuid) => {
@@ -118,9 +122,10 @@ const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full 
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
 const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-
-const errField = reactive({});
-const form = reactive({});
+const saveBtnStyle0 = 'text-slate-400 text-sm font-semibold border border-slate-400 rounded-lg \
+        w-32 h-9 hover:text-slate-500 hover:border-slate-500'
+const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border border-slate-400 rounded-lg \
+        w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 
 const itemFields = [
     'carpass_uuid',
@@ -160,6 +165,8 @@ const setInitialForm = () => {
     for (let field of itemFields) {
       form[field] = null
       form['contact_name_input'] = null  // for dropdowns
+      form['broker_name_input'] = null    // for dropdowns
+      form['carpass_ncar_input'] = null          // for dropdowns
     }
     //form.ncar = '_234РА23' // template for 'ncar'
   };
@@ -172,6 +179,31 @@ const setInitialForm = () => {
 };
 
 setInitialForm();
+
+var isNV = {};
+var isNeedSave = ref(false);
+
+watch(form, (nV, oV) => {
+  if (nV) {
+    for (let field of itemFields) {
+      if (props.itemData) {  // edit card
+        if (form[field] == '' & props.itemData[field] == null) { isNV[field] = false; continue; }
+        if (form[field] != props.itemData[field]) { 
+          // console.log('new value!!!!!!!', form[field], props.itemData[field])
+          isNV[field] = true;
+        } else { isNV[field] = false; }
+      }
+      else {  // create card
+        if (form[field]) { isNV[field] = true; } else { isNV[field] = false; }
+      }
+    }
+  }
+  isNeedSave.value = false
+  for (let field of itemFields) { if (isNV[field] == true) { 
+    // console.log('NEEDED TO SAVE FOR NV!'); 
+    isNeedSave.value = true; break; 
+  } }
+});
 
 const postingItem = async () => {
   //
@@ -238,7 +270,19 @@ const handleSubmit = async () => {
       }
     }
 
-    emit('docCreated'); emit('closeModal');
+    for (let field of itemFields) { 
+      isNV[field] = false; 
+      errField[field] = 0; 
+      if (props.itemData) { props.itemData[field] = form[field] }
+    }
+    isNeedSave.value = false;
+    
+    //
+    if (!props.itemData) { emit('closeModal'); emit('openEditAfterCreate', state.responseItem, 'Партии товаров') }
+
+    //emit('docCreated'); 
+    //emit('closeModal');
+    //emit('reopenModal'); // new
   } catch (error) {
     console.error('Error adding item', error);
     toast.error('Item has not added');
@@ -276,6 +320,12 @@ const setChoosenDocs = async (items) => {
     item.filename = item.doc_name  //
     state.documents.push(item)     //
   }
+  isNeedSave.value = true // new
+}
+
+const closeIt = async () => {
+  if (isNeedSave.value) { console.log('IS NEEDED SAVE IS TRUE +++++++'); showAskCloseWithoutSave.value = true }
+  else { emit('docCreated'); emit('closeModal'); }
 }
 
 </script>
@@ -286,11 +336,11 @@ const setChoosenDocs = async (items) => {
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Партия товаров <span v-if="props.itemData">№ {{ props.itemData.id }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
-        <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
+        <i class="pi pi-times" style="font-size: 1rem" @click="closeIt()"></i>
       </div>
     </header>
 
-    <div class="ml-6 mt-3" v-if="props.isCard">
+    <div class="ml-6 mt-3" v-if="props.itemData">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-400" v-if="props.itemData.status=='terminal'">
         НА ТЕРМИНАЛЕ</div>
@@ -317,7 +367,7 @@ const setChoosenDocs = async (items) => {
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
-                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="false"/>
+                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
@@ -400,7 +450,7 @@ const setChoosenDocs = async (items) => {
 
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
-          <button class="formBtn" type="submit">СОХРАНИТЬ</button>
+          <button :class="[isNeedSave ? saveBtnStyle1 : saveBtnStyle0]" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
         </div>
         <div class="float-right" v-if="props.itemData">
@@ -413,9 +463,9 @@ const setChoosenDocs = async (items) => {
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
         <div class="space-x-5 overflow-auto">
           <label class="mx-1 text-sm font-semibold text-blue-500">ДОКУМЕНТЫ</label>
-          <button v-if="isCard" class="float-right formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="float-right formBtn" type="button" @click="attachFileEA()">ЗАГРУЗИТЬ ИЗ ЭА</button>
-          <button class="float-right formBtn" type="button" @click="attachFileSys()">СОЗДАТЬ В ЭА</button>
+          <button v-if="isCard" class="float-right" :class="[isNeedSave ? saveBtnStyle1 : saveBtnStyle0]" type="submit">СОХРАНИТЬ</button>
+          <button class="float-right formBtn" type="button" @click="attachFileEA()">ЭЛ. АРХИВ</button>
+          <button class="float-right formBtn" type="button" @click="attachFileSys()">ЗАГРУЗИТЬ</button>
         </div>
         <!-- Show loading spinner while loading is true -->
         <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
@@ -443,6 +493,11 @@ const setChoosenDocs = async (items) => {
     <FormDoc @close-modal="showAddDoc=false" @doc-created="" @returned-docs="setChoosenDocs" />
   </div>
 
+  <!-- **********************   MODAL ASK CLOSE WITHOUT SAVE   ************************** -->
+  <div v-if="showAskCloseWithoutSave" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAskCloseWithoutSave @close-modal="showAskCloseWithoutSave=false" @doc-created="emit('docCreated'); emit('closeModal');" />
+  </div>
+
 </template>
 
 
@@ -459,6 +514,10 @@ const setChoosenDocs = async (items) => {
 
 .formBtn {
   @apply text-slate-400 text-sm font-semibold border border-slate-400 rounded-lg w-32 h-9 hover:text-slate-500 hover:border-slate-500
+}
+
+.formBtn2 {
+  @apply text-red-400 text-sm font-semibold border border-slate-400 rounded-lg w-32 h-9 hover:text-slate-500 hover:border-slate-500
 }
 
 .formLabelStyle {

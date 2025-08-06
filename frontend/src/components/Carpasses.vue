@@ -246,6 +246,14 @@ async function openItemCard(obj) {
   itemCard(state.item_for_card.data, obj.obj_type_name)
 }
 
+
+const openItem = (item, name) => {
+  //
+  if (item.posted) { itemCard(item, name) }
+  else if (!item.posted) { editItem(item, name) }
+}
+
+
 const itemCard = (item, name) => {
   //
   selectedItem.value = item;
@@ -334,6 +342,11 @@ const createExitCarpass = (item) => {
   showCreateExitCarpass.value = true;
   selectedItem.value = item;
 };
+
+const openEditAfterCreate = (item, name) => {
+  //
+  getData(); editItem(item, name)
+}
 
 </script>
 
@@ -425,13 +438,12 @@ const createExitCarpass = (item) => {
   </div>
   <!-- **********************   MODAL BATCH ADD   ************************** -->
   <div v-if="showAddBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showAddBatch=false" @doc-created="getData" />
+    <FormBatch @close-modal="showAddBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate"/>
   </div>
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
-
 
   <!-- **********************   MODAL CONTACT CARD   ************************** -->
   <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -493,7 +505,7 @@ const createExitCarpass = (item) => {
     <div class="flex-auto w-auto md:w-64">
       <div class="">
         <ListAdv @btn-add="addItem" @btn-edit="editItem" @btn-delete="deleteItem" @btn-createexitcarpass="createExitCarpass"
-          @btn-refresh="getData" @btn-itemcard="itemCard" @btn-rollback="rollbackItem" @btn-print="printItem" 
+          @btn-refresh="getData" @btn-itemcard="openItem" @btn-rollback="rollbackItem" @btn-print="printItem" 
           @btn-setstatusexit="setStatusExit" @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
           :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
       </div>
@@ -502,3 +514,5 @@ const createExitCarpass = (item) => {
 
   </div>
 </template>
+
+<!-- @btn-itemcard="itemCard" -->
