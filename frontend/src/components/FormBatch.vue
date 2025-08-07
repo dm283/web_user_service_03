@@ -442,7 +442,6 @@ const closeIt = async () => {
         </div>
       </div>
 
-
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
           <button :class="[isNeedSave ? saveBtnStyle1 : saveBtnStyle0]" type="submit">СОХРАНИТЬ</button>
@@ -509,6 +508,7 @@ const closeIt = async () => {
 
 .formBtn {
   @apply text-slate-400 text-sm font-semibold border border-slate-400 rounded-lg w-32 h-9 hover:text-slate-500 hover:border-slate-500
+  active:border-2 active:border-blue-400
 }
 
 .formBtn2 {
