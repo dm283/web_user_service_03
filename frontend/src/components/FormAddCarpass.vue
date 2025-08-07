@@ -44,7 +44,7 @@ const itemFields = [
     'timeex',
   ]
 
-  
+
 const toast = useToast();
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -477,7 +477,7 @@ const setChoosenDocs = async (items) => {
           <input type="text" v-model="form.driver_phone" :class="[errField['driver_phone']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Номер водительских прав</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>№ водительских прав/паспорта</label>
           <input type="text" v-model="form.driver_licence" :class="[errField['driver_licence']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>

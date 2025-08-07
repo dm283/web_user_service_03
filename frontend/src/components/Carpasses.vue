@@ -120,8 +120,8 @@ const query_users = `http://${backendIpAddress}:${backendPort}/users/`
 if (props.view_type == 'enter') {
   state.query = query_carpass;
   state.listTableColumns = {
-    'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Клиент', 
-    'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
+    'id_enter':'№','ncar':'№ ТС','contact_name':'Клиент','nseal':'Номер пломбы',
+    'place_n':'№ стоянки', 'dateen':'Дата въезда', 'timeen':'Время въезда','dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {  };
   state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
