@@ -279,6 +279,10 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
+
+class UserJoined(User):
+    contact_name: str
+    
         
 #####
 class ContactCreate(BaseModel):
@@ -401,3 +405,8 @@ class Batch(BatchCreate):
 
     class Config:
         from_attributes = True
+
+
+class BatchJoined(Batch):
+    ncar: str           #new
+    contact_name: str   #new
