@@ -379,12 +379,30 @@ const closeIt = async () => {
             :required="true" :disabled="true" />
         </div>
 
-        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.broker_name_input" 
-                @keyup="setFilter('broker_name_input', 'brokers', 'broker_name')" :required="false"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+         <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
+            <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
+              <input class="w-64 focus:outline-none" type="text" v-model="form.broker_name_input" 
+                  @keyup="setFilter('broker_name_input', 'brokers', 'broker_name')" :required="false"/>
+              <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['broker_name_input']=false; 
+                  form['reserve_2']=item.broker_name;form['broker_name_input']=item.broker_name;form['broker_uuid']=item.broker_uuid" >
+                {{ item.broker_name }}
+            </div>
           </div>
+        </div> -->
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none" type="text" v-model="form.broker_name_input" 
+                  @keyup="setFilter('broker_name_input', 'brokers', 'broker_name')" :required="false"/>
+              <span @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['broker_name_input']=false; 
+                  form['reserve_2']=null;form['broker_name_input']=null;form['broker_uuid']=null">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
           <div v-if="showDropDownSelect['broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['broker_name_input']=false; 
@@ -402,10 +420,11 @@ const closeIt = async () => {
 
       <div class="flex">
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Номер машины</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_2');">
+          <div :class=formInputStyle class="flex">
             <input class="w-64 focus:outline-none" type="text" v-model="form.carpass_ncar_input" 
                 @keyup="setFilter('carpass_ncar_input', 'carpasses', 'ncar')" :required="true"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+            <span @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_2');">
+              <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
           </div>
           <div v-if="showDropDownSelect['carpass_ncar_input']" class="bg-white border border-slate-400 rounded-md shadow-xl 
               w-64 max-h-24 overflow-auto p-1 absolute z-10">
