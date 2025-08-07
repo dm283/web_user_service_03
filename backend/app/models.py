@@ -251,6 +251,9 @@ class Batch(Base):
     goods = Column(String)
     places_cnt = Column(Integer)
     weight = Column(Float)
+    tnved = Column(String)  #new
+    fito_control = Column(Boolean, default=False)  #new
+    vet_control = Column(Boolean, default=False)   #new
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)

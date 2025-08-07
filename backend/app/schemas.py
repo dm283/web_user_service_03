@@ -369,6 +369,9 @@ class BatchCreate(BaseModel):
     goods: str | None = None
     places_cnt: int | str | None = None
     weight: float | str | None = None
+    tnved: str | None = None  #new
+    fito_control: bool  #new
+    vet_control: bool   #new
     comment: str | None = None
 
 

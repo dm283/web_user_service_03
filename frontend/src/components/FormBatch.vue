@@ -15,6 +15,22 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+
+const itemFields = [
+    'carpass_uuid',
+    'tn_id',
+    'contact_uuid',
+    'broker_uuid',
+    'goods',
+    'places_cnt',
+    'weight',
+    'tnved',
+    'fito_control',
+    'vet_control',
+    'comment',
+  ]
+
+
 const toast = useToast();
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -126,17 +142,6 @@ const saveBtnStyle0 = 'text-slate-400 text-sm font-semibold border border-slate-
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border border-slate-400 rounded-lg \
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
-
-const itemFields = [
-    'carpass_uuid',
-    'tn_id',
-    'contact_uuid',
-    'broker_uuid',
-    'goods',
-    'places_cnt',
-    'weight',
-    'comment',
-  ]
 
 
 const setFilter = (fieldForm, entity, fieldEntity) => {
@@ -451,6 +456,10 @@ const closeIt = async () => {
       </div>
 
       <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Код ТНВЭД</label>
+          <input type="text" v-model="form.tnved" :class="[errField['tnved']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Описание товаров</label>
           <input type="text" v-model="form.goods" :class="[errField['goods']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
@@ -458,6 +467,17 @@ const closeIt = async () => {
         <div class=formInputDiv>   <label class=formLabelStyle>Примечание</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
+        </div>
+      </div>
+
+      <div class="flex">
+        <div class=formInputDiv>
+          <input type="checkbox" v-model='form.fito_control' id="fito_control" name="fito_control" class=formInputCheckboxStyle :disabled="isCard"/>
+          <label class=formLabelCheckboxStyle for="fito_control">Фитосанитарный контроль</label>
+        </div>
+        <div class=formInputDiv>
+          <input type="checkbox" v-model='form.vet_control' id="vet_control" name="vet_control" class=formInputCheckboxStyle :disabled="isCard"/>
+          <label class=formLabelCheckboxStyle for="vet_control">Ветеринарный контроль</label>
         </div>
       </div>
 
