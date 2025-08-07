@@ -114,10 +114,8 @@ def get_batches(db: Session, skip: int = 0, limit: int = 100):
     stmt = select(models.Batch, models.Carpass, models.Contact).where(models.Batch.is_active==True,
                                     models.Carpass.uuid == models.Batch.carpass_uuid, models.Contact.uuid == models.Batch.contact_uuid)
     response = db.execute(stmt).all()
-
     db_full_response = [schemas.BatchJoined(**row[0].__dict__, 
                 ncar=row[1].__dict__['ncar'], contact_name=row[2].__dict__['name']) for row in response]
-
     return db_full_response
 
     # return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
@@ -1048,7 +1046,17 @@ def get_user_by_login(db: Session, login: str):
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.User).filter(models.User.is_active==True).offset(skip).limit(limit).all()
+    stmt = select(models.User, models.Contact).where(models.User.is_active==True,
+                                    models.Contact.uuid == models.User.contact_uuid)
+    response = db.execute(stmt).all()
+    db_full_response = [schemas.UserJoined(**row[0].__dict__, 
+                contact_name=row[1].__dict__['name']) for row in response]
+    return db_full_response
+
+
+# def get_users(db: Session, skip: int = 0, limit: int = 100):
+#     #
+#     return db.query(models.User).filter(models.User.is_active==True).offset(skip).limit(limit).all()
 
 
 #########################################################    CONTACT FUNCTIONS

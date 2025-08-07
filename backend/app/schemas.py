@@ -279,6 +279,10 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
+
+class UserJoined(User):
+    contact_name: str
+    
         
 #####
 class ContactCreate(BaseModel):
