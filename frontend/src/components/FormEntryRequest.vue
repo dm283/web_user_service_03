@@ -14,6 +14,26 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+const itemFields = [
+    'ncar',
+    'dateen',
+    'timeen',
+    'plan_timeen_to',
+    'driver_fio',
+    'driver_licence',
+    'car_model',
+    'entry_type',
+    'contact',
+    'contact_name',
+    'contact_uuid',
+    'ntir',
+    'ntir_date',
+    'customs_doc',
+    'customs_doc_date',
+    'warehouse_upload',
+    'comment',
+  ]
+
 const toast = useToast();
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -101,24 +121,7 @@ const errField = reactive({});
 const form = reactive({});
 // const files = ref(null)
 
-const itemFields = [
-    'ncar',
-    'dateen',
-    'timeen',
-    'plan_timeen_to',
-    'driver_fio',
-    'driver_licence',
-    'car_model',
-    'entry_type',
-    'contact',
-    'contact_name',
-    'contact_uuid',
-    'ntir',
-    'ntir_date',
-    'customs_doc',
-    'customs_doc_date',
-    'comment',
-  ]
+
 
 const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
@@ -406,6 +409,10 @@ const setChoosenDocs = async (items) => {
         <div class=formInputDiv>   <label class=formLabelStyle>Примечание</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
+        </div>
+        <div class="pt-2 formInputDiv">
+          <input type="checkbox" v-model='form.warehouse_upload' id="warehouse_upload" name="warehouse_upload" class=formInputCheckboxStyle :disabled="isCard"/>
+          <label class=formLabelCheckboxStyle for="warehouse_upload">Выгрузка на склад</label>
         </div>
       </div>
 

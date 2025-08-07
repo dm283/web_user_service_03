@@ -140,6 +140,7 @@ class EntryRequestCreate(BaseModel):
     ntir_date: date | str | None = None
     customs_doc: str | None = None
     customs_doc_date: date | str | None = None
+    warehouse_upload: bool  # new
     comment: str | None = None
     status: str = 'open'
     carpass_created: bool = False

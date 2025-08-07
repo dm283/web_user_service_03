@@ -223,6 +223,7 @@ class EntryRequest(Base):
     ntir_date = Column(Date)
     customs_doc = Column(String(length=50))
     customs_doc_date = Column(Date)
+    warehouse_upload = Column(Boolean, default=False) # new
     comment = Column(String(length=250))
     status = Column(String)
     
