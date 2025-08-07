@@ -277,12 +277,7 @@ const handleSubmit = async () => {
     }
     isNeedSave.value = false;
     
-    //
-    if (!props.itemData) { emit('closeModal'); emit('openEditAfterCreate', state.responseItem, 'Партии товаров') }
-
-    //emit('docCreated'); 
-    //emit('closeModal');
-    //emit('reopenModal'); // new
+    emit('closeModal'); emit('openEditAfterCreate', state.responseItem, 'Партии товаров')
   } catch (error) {
     console.error('Error adding item', error);
     toast.error('Item has not added');

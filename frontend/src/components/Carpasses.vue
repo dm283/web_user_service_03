@@ -442,7 +442,7 @@ const openEditAfterCreate = (item, name) => {
   </div>
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" :itemData="selectedItem"/>
+    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
   <!-- **********************   MODAL CONTACT CARD   ************************** -->
