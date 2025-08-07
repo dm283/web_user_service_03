@@ -1055,7 +1055,6 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 
 # def get_users(db: Session, skip: int = 0, limit: int = 100):
-#     #
 #     return db.query(models.User).filter(models.User.is_active==True).offset(skip).limit(limit).all()
 
 
