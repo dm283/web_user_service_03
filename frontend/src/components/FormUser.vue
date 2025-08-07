@@ -13,15 +13,6 @@ var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
 
-const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
-const emit = defineEmits(['docCreated', 'closeModal'])
-
-const props = defineProps({
-  itemData: Object,  // card or edit - exists; create - empty
-  isCard: Boolean,   // card - true
-});
-
 const itemFields = [
     'contact_id',
     'contact_uuid',
@@ -30,6 +21,16 @@ const itemFields = [
     'email',
     'type',
   ]
+
+
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+const emit = defineEmits(['docCreated', 'closeModal'])
+
+const props = defineProps({
+  itemData: Object,  // card or edit - exists; create - empty
+  isCard: Boolean,   // card - true
+});
 
 const state = reactive({
   documents: [],
@@ -69,7 +70,7 @@ watch(isPwdChange, async(vl) => {
 
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/partners_posted/`, {headers: authHeader()});
       state.contacts = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -167,7 +168,7 @@ const setInitialForm = () => {
       form[field] = null
       form['contact_name_input'] = null  // fake form field for dropdown list
     }
-    form['type'] = 'V' // template for 'ncar'
+    //form['type'] = 'V' // template for 'ncar'
   };
 
   // if (userInfo.contact_id!=0) {  // for the client service
@@ -294,7 +295,7 @@ async function downloadFile(document_id) {
           </div>
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect['contact_name_input']=false; 
+                @click="showDropDownSelect['contact_name_input']=false; form['type']=item.type;
                   form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_id']=item.id;form['contact_uuid']=item.uuid;" >
                 {{ item.name }}
             </div>
@@ -304,12 +305,19 @@ async function downloadFile(document_id) {
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Тип контрагента</label>
+          <input type="text" v-model="form.type" :class="[errField['type']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div>
+      </div>
 
+      <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>email</label>
           <input type="email" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
-        </div>       
+        </div>
       </div>
+
 
       <div class="flex">
         <div class="formInputDiv" v-if="props.itemData && !props.isCard">

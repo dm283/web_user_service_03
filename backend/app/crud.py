@@ -80,6 +80,15 @@ def get_contacts_posted(db: Session, skip: int = 0, limit: int = 100):
         offset(skip).limit(limit).all()
 
 
+def get_partners(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Contact).filter(models.Contact.is_active==True).offset(skip).limit(limit).all()
+
+
+def get_partners_posted(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Contact).filter(models.Contact.is_active==True, models.Contact.posted==True).\
+        offset(skip).limit(limit).all()
+
+
 def get_brokers(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True).offset(skip).limit(limit).all()
 
