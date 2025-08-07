@@ -401,3 +401,8 @@ class Batch(BatchCreate):
 
     class Config:
         from_attributes = True
+
+
+class BatchJoined(Batch):
+    ncar: str           #new
+    contact_name: str   #new

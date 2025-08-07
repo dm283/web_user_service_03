@@ -1,7 +1,7 @@
 import datetime
 from fastapi import UploadFile, HTTPException, Depends, status
 from pydantic import ValidationError
-from sqlalchemy import or_
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
@@ -104,10 +104,26 @@ def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: 
         offset(skip).limit(limit).all()
 
 
+# def get_batches(db: Session, skip: int = 0, limit: int = 100):
+#     #
+#     return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
+#         offset(skip).limit(limit).all()
+
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
-        offset(skip).limit(limit).all()
+    stmt = select(models.Batch, models.Carpass, models.Contact).where(models.Batch.is_active==True,
+                                    models.Carpass.uuid == models.Batch.carpass_uuid, models.Contact.uuid == models.Batch.contact_uuid)
+    response = db.execute(stmt).all()
+
+    db_full_response = [schemas.BatchJoined(**row[0].__dict__, 
+                ncar=row[1].__dict__['ncar'], contact_name=row[2].__dict__['name']) for row in response]
+
+    return db_full_response
+
+    # return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
+    #     offset(skip).limit(limit).all()
+
+
 
 
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
