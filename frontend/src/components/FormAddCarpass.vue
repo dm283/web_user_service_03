@@ -14,6 +14,37 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+
+const itemFields = [
+    'ncar',
+    'dateen',
+    'timeen',
+    'ntir',
+    'ntir_date',
+    'customs_doc',
+    'customs_doc_date',
+    'nseal',
+    'nkont',
+    'driver',
+    'driver_fio',
+    'driver_phone',
+    'driver_licence',
+    'car_model',
+    'entry_type',
+    'contact',
+    'contact_name',
+    'contact_uuid',
+    'place_n',
+    'nav_seal',
+    'radiation',
+    'brokenAwning',
+    'brokenSeal',
+    'comment',
+    'dateex',
+    'timeex',
+  ]
+
+  
 const toast = useToast();
 
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -105,34 +136,6 @@ const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full
 const errField = reactive({});
 const form = reactive({});
 // const files = ref(null)
-
-const itemFields = [
-    'ncar',
-    'dateen',
-    'timeen',
-    'ntir',
-    'ntir_date',
-    'customs_doc',
-    'customs_doc_date',
-    'nseal',
-    'nkont',
-    'driver',
-    'driver_fio',
-    'driver_phone',
-    'driver_licence',
-    'car_model',
-    'entry_type',
-    'contact',
-    'contact_name',
-    'contact_uuid',
-    'place_n',
-    'radiation',
-    'brokenAwning',
-    'brokenSeal',
-    'comment',
-    'dateex',
-    'timeex',
-  ]
 
 const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
@@ -503,6 +506,13 @@ const setChoosenDocs = async (items) => {
         <div class=formInputDiv>
           <input type="checkbox" v-model='form.brokenSeal' id="brokenSeal" name="brokenSeal" class=formInputCheckboxStyle :disabled="isCard"/>
           <label class=formLabelCheckboxStyle for="brokenSeal">Повреждённая пломба</label>
+        </div>
+      </div>
+
+      <div class="flex">
+        <div class=formInputDiv>
+          <input type="checkbox" v-model='form.nav_seal' id="nav_seal" name="nav_seal" class=formInputCheckboxStyle :disabled="isCard"/>
+          <label class=formLabelCheckboxStyle for="nav_seal">Навигационная пломба</label>
         </div>
       </div>
 

@@ -153,6 +153,7 @@ class Carpass(Base):
     # broker = Column(Integer)
     # broker_name = Column(String(length=150))
     place_n = Column(String(length=250), unique=True)
+    nav_seal = Column(Boolean, default=False)  # new
     radiation = Column(Boolean, default=False)
     brokenAwning = Column(Boolean, default=False)
     brokenSeal = Column(Boolean, default=False)

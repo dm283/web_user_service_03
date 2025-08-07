@@ -26,6 +26,7 @@ class CarpassCreate(BaseModel):
     # contact_broker: int | str | None = None
     # broker_name: str | None = None
     place_n: str | None = None
+    nav_seal: bool
     radiation: bool
     brokenAwning: bool
     brokenSeal: bool
