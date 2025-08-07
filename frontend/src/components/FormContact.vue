@@ -13,15 +13,6 @@ var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
 
-const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
-const emit = defineEmits(['docCreated', 'closeModal', 'btnDelete'])
-
-const props = defineProps({
-  itemData: Object,  // card or edit - exists; create - empty
-  isCard: Boolean,   // card - true
-});
-
 const itemFields = [
     'linked_broker_uuid',
     'name',
@@ -34,6 +25,16 @@ const itemFields = [
     'idtelegram',
     'comment',
   ]
+
+
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+const emit = defineEmits(['docCreated', 'closeModal', 'btnDelete'])
+
+const props = defineProps({
+  itemData: Object,  // card or edit - exists; create - empty
+  isCard: Boolean,   // card - true
+});
 
 const state = reactive({
   documents: [],

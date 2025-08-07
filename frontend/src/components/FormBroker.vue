@@ -13,6 +13,18 @@ var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
 
+const itemFields = [
+    'name',
+    'inn',
+    'type',
+    'fio',
+    'contract',
+    'phone',
+    'email',
+    'idtelegram',
+    'comment',
+  ]
+
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['docCreated', 'closeModal'])
@@ -83,16 +95,6 @@ const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full
 const errField = reactive({});
 const form = reactive({});
 const files = ref(null)
-
-const itemFields = [
-    'name',
-    'inn',
-    'type',
-    'fio',
-    'email',
-    'idtelegram',
-    'comment',
-  ]
 
   const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
@@ -253,23 +255,31 @@ async function downloadFile(document_id) {
         <div class=formInputDiv>   <label class=formLabelStyle>ИНН</label>
           <input type="number" v-model="form.inn" :class="[errField['inn']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
-        </div>        
+        </div>   
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер договора</label>
+          <input type="text" v-model="form.contract" :class="[errField['contract']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>     
       </div>
       <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>ФИО</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Контактное лицо (ФИО)</label>
           <input type="text" v-model="form.fio" :class="[errField['fio']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>email</label>
-          <input type="email" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
+        <div class=formInputDiv>   <label class=formLabelStyle>Телефон(ы)</label>
+          <input type="text" v-model="form.phone" :class="[errField['phone']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>idtelegram</label>
-          <input type="text" v-model="form.idtelegram" :class="[errField['idtelegram']==1 ? formInputStyleErr : formInputStyle]" 
+        <div class=formInputDiv>   <label class=formLabelStyle>Email(s)</label>
+          <input type="text" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
-        </div>    
+        </div>  
       </div>
       <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Telegram ID</label>
+          <input type="text" v-model="form.idtelegram" :class="[errField['idtelegram']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
+        </div>   
         <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
