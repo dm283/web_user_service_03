@@ -149,7 +149,23 @@ def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
 
 def get_carpasses_client(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.Carpass).filter(models.Carpass.contact_uuid==contact_uuid).\
+    # + get client batches - get all batch.carpass_uuid - get add carpasses by carpass_uuid
+    db_client_carpasses = db.query(models.Carpass).filter(models.Carpass.contact_uuid==contact_uuid, models.Carpass.is_active==True).all()
+    db_client_batches = db.query(models.Batch).filter(models.Batch.contact_uuid==contact_uuid, models.Batch.is_active==True).all()
+    
+    carpass_uuid_list = []
+    for rec in db_client_carpasses:
+        if rec.uuid not in carpass_uuid_list:
+            carpass_uuid_list.append(rec.uuid)
+    
+    for rec in db_client_batches:
+        if rec.carpass_uuid not in carpass_uuid_list:
+            carpass_uuid_list.append(rec.carpass_uuid)
+    
+    # print('carpass_uuid_list =', carpass_uuid_list)
+    # filter(models.Carpass.contact_uuid==contact_uuid).\
+    return db.query(models.Carpass).\
+        filter(models.Carpass.uuid.in_(carpass_uuid_list)).\
         filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
         offset(skip).limit(limit).all()
 
