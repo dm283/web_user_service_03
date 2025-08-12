@@ -375,7 +375,7 @@ class BatchCreate(BaseModel):
     weight: float | str | None = None
     tnved: str | None = None  #new
     fito_control: bool  #new
-    vet_control: bool   #new
+    vet_control: bool  #new
     comment: str | None = None
 
 

@@ -171,6 +171,7 @@ const setInitialForm = () => {
     form.radiation = false
     form.brokenAwning = false
     form.brokenSeal = false
+    form.nav_seal = false
     state.entry_request_docs = null
   };
 };
@@ -179,7 +180,7 @@ setInitialForm();
 
 const setFormValues = () => {
   for (let field of itemFields) {form[field] = selectedItem.value[field]}
-  form.radiation = false; form.brokenAwning = false; form.brokenSeal = false;
+  form.radiation = false; form.brokenAwning = false; form.brokenSeal = false; form.nav_seal = false;
 }
 
 // const file = ref(null)

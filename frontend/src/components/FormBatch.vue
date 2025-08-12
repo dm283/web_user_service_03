@@ -173,7 +173,8 @@ const setInitialForm = () => {
       form['broker_name_input'] = null    // for dropdowns
       form['carpass_ncar_input'] = null          // for dropdowns
     }
-    //form.ncar = '_234РА23' // template for 'ncar'
+    form.fito_control = false
+    form.vet_control = false
   };
 
   if (userInfo.contact_id!=0) {  // for the client service
