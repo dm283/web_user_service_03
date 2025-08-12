@@ -130,7 +130,15 @@ def get_batches(db: Session, skip: int = 0, limit: int = 100):
     # return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
     #     offset(skip).limit(limit).all()
 
-
+def get_batches_client(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    #
+    stmt = select(models.Batch, models.Carpass, models.Contact).where(models.Batch.is_active==True,
+                                    models.Batch.contact_uuid==contact_uuid,
+                                    models.Carpass.uuid == models.Batch.carpass_uuid, models.Contact.uuid == models.Batch.contact_uuid)
+    response = db.execute(stmt).all()
+    db_full_response = [schemas.BatchJoined(**row[0].__dict__, 
+                ncar=row[1].__dict__['ncar'], contact_name=row[2].__dict__['name']) for row in response]
+    return db_full_response
 
 
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):

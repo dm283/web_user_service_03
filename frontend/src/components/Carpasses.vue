@@ -250,6 +250,8 @@ async function openItemCard(obj) {
 const openItem = (item, name) => {
   //
   if (item.posted) { itemCard(item, name) }
+  else if (userInfo.contact_id!=0 & name=='Пропуска ТС на въезд') { itemCard(item, name) }
+  else if (userInfo.contact_id!=0 & name=='Партии товаров') { itemCard(item, name) }
   else if (!item.posted) { editItem(item, name) }
 }
 

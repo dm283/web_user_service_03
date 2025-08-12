@@ -284,6 +284,11 @@ const signOut = async () => {
       :selected="state.selectedMenu=='svh_section' ? '1' : '0'" @click="state.selectedMenu='svh_section'"
       />
     </RouterLink>
+    <RouterLink to="/batches" v-if="state.userInfo.contact_id != 0">
+      <MenuSection :label="'Партии товаров'" :icon="'shopping-bag'" :description="'Работа с партиями товаров'"
+      :selected="state.selectedMenu=='batches' ? '1' : '0'" @click="state.selectedMenu='batches'"
+      />
+    </RouterLink>
 
     <RouterLink to="/catalogs" v-if="state.userInfo.contact_id == 0">
       <MenuSection :label="'Справочники'" :icon="'server'" :description="'Каталоги данных'"
