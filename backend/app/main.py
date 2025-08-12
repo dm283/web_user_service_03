@@ -337,6 +337,15 @@ def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_cur
     return item
 
 
+@app.get('/batch_by_uuid/{uuid}', response_model=schemas.Batch)
+def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    item = crud.get_batch_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 @app.get("/contacts/{contact_id}", response_model=schemas.Contact)
 def read_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                  contact_id: int, db: Session = Depends(get_db)):

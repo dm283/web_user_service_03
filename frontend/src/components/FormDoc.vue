@@ -18,7 +18,7 @@ const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 const emit = defineEmits(['docCreated', 'closeModal', 'returnedDocs', 'openItemcard'])
 
 const props = defineProps({
-  itemData: Object,  // card or edit - exists; create - empty
+  itemDataDoc: Object,  // card or edit - exists; create - empty
   isCard: Boolean,   // card - true
 });
 
@@ -77,15 +77,15 @@ onMounted(async () => {
     }
 });
 
-if (props.itemData) {
+if (props.itemDataDoc) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemDataDoc.uuid}`,
         {headers: authHeader()}
       );
       state.documents = response.data;
 
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_docs/${props.itemData.uuid}`,
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_docs/${props.itemDataDoc.uuid}`,
         {headers: authHeader()}
       );
       console.log('response2.data =', response2.data)
@@ -138,9 +138,9 @@ const setVars = (inputField, reserveField) => {
 
 const setInitialForm = () => {
   //
-  if (props.itemData) { // card and update
+  if (props.itemDataDoc) { // card and update
     for (let field of itemFields) {
-      form[field] = props.itemData[field]
+      form[field] = props.itemDataDoc[field]
     }
   } else {  // create
     for (let field of itemFields) {
@@ -163,8 +163,8 @@ setInitialForm();
 const postingItem = async () => {
   //
   try {
-    if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records_posting/${props.itemData.id}`,
+    if (props.itemDataDoc) {
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records_posting/${props.itemDataDoc.id}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else {
@@ -192,13 +192,13 @@ const handleSubmit = async () => {
   for (let field of itemFields) { formData.append(field, form[field]) };
 
   try {
-    if (!props.itemData) {
+    if (!props.itemDataDoc) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/document_records/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Новая документ добавлен');
       state.responseItem = response.data;
     } else {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records/${props.itemData.id}`, 
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records/${props.itemDataDoc.id}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Запись обновлёна');      
       state.responseItem = response.data;
@@ -252,7 +252,7 @@ async function downloadFile(related_doc_uuid) {
 <template>
   <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
-      Документ <span v-if="props.itemData">№ {{ props.itemData.id }}</span>
+      Документ <span v-if="props.itemDataDoc">№ {{ props.itemDataDoc.id }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
@@ -260,7 +260,7 @@ async function downloadFile(related_doc_uuid) {
 
     <div class="ml-6 mt-3" v-if="props.isCard">
       <!-- <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div> -->
-      <div class="inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
+      <div class="inline-block text-sm font-semibold text-red-400" v-if="!props.itemDataDoc.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
     </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
@@ -306,11 +306,11 @@ async function downloadFile(related_doc_uuid) {
       </div> -->
 
       <div class="flex">
-        <div class=formInputDiv v-if="props.itemData">   <label class=formLabelStyle>Дата загрузки</label>
+        <div class=formInputDiv v-if="props.itemDataDoc">   <label class=formLabelStyle>Дата загрузки</label>
           <input type="datetime" v-model="form.created_datetime" :class="[errField['created_datetime']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="true" />
         </div>   
-        <div class=formInputDiv v-if="props.itemData">   <label class=formLabelStyle>Загрузил пользователь</label>
+        <div class=formInputDiv v-if="props.itemDataDoc">   <label class=formLabelStyle>Загрузил пользователь</label>
           <input type="text" v-model="form.user_uuid_create" :class="[errField['user_uuid_create']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="true" />
         </div>
@@ -333,7 +333,7 @@ async function downloadFile(related_doc_uuid) {
           </thead>
           <tbody>
             <tr class="border-t text-slate-500 text-xs" v-for="obj in state.related_objects">
-              <td class="min-w-10 text-center" @click="selectedObj=obj; emit('openItemcard', selectedObj)">
+              <td class="min-w-10 text-center" @click="emit('openItemcard', obj)">
                 <div class="inline-block text-blue-500 border-b-2 border-blue-400 hover:text-cyan-300 hover:border-cyan-300 max-w-min cursor-pointer">
                   <i class="pi pi-file" style="font-size: 0.7rem"></i>
                 </div>
@@ -347,7 +347,7 @@ async function downloadFile(related_doc_uuid) {
         </div>
       </div>
 
-      <div v-if="props.isCard || props.itemData">
+      <div v-if="props.isCard || props.itemDataDoc">
         <!-- Show loading spinner while loading is true -->
         <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
           <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
@@ -370,12 +370,12 @@ async function downloadFile(related_doc_uuid) {
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" class="formInputFile" :required="!itemData"/>
+          <input ref="files" name="files" type="file" class="formInputFile" :required="!itemDataDoc" v-if="!props.itemDataDoc"/>
           <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
-        <div class="float-right" v-if="props.itemData">
+        <!-- <div class="float-right" v-if="props.itemData">
           <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
-        </div>
+        </div> -->
       </div>
 
       <div v-else class="mb-5"></div>

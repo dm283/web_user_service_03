@@ -87,6 +87,7 @@ const showCardDoc = ref(false)
 const showAddDoc = ref(false)
 const showUpdateDoc = ref(false)
 
+const selectedDocItem = ref('')
 const selectedItem = ref('')
 const itemName = ref('')
 const deletedItem = ref('')
@@ -242,6 +243,9 @@ async function openItemCard(obj) {
   else if (obj.obj_type_name == 'Пропуска ТС на въезд') { 
     state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${obj.obj_uuid}`
   }
+  else if (obj.obj_type_name == 'Партии товаров') { 
+    state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/batch_by_uuid/${obj.obj_uuid}`
+  }
   state.item_for_card = await axios.get(state.query_item_for_card, {headers: authHeader()})
   itemCard(state.item_for_card.data, obj.obj_type_name)
 }
@@ -266,7 +270,7 @@ const itemCard = (item, name) => {
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
   else if (name == 'Пользователи') { showCardUser.value = true }
-  else if (name == 'Электронный архив') { showCardDoc.value = true }
+  else if (name == 'Электронный архив') { selectedDocItem.value = item; showCardDoc.value = true }
 };
 
 const addItem = (section) => {
@@ -291,7 +295,7 @@ const editItem = (item, name) => {
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
   else if (name == 'Пользователи') { showUpdateUser.value = true }
-  else if (name == 'Электронный архив') { showUpdateDoc.value = true }
+  else if (name == 'Электронный архив') { selectedDocItem.value = item; showUpdateDoc.value = true }
 };
 
 // const deleteItem = (item, name) => {
@@ -491,7 +495,7 @@ const openEditAfterCreate = (item, name) => {
 
   <!-- **********************   MODAL DOC CARD   ************************** -->
   <div v-if="showCardDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDoc @close-modal="showCardDoc=false" @doc-created="getData" @open-itemcard="openItemCard" :itemData="selectedItem" :isCard="true"/>
+    <FormDoc @close-modal="showCardDoc=false" @doc-created="getData" @open-itemcard="openItemCard" :itemDataDoc="selectedDocItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL DOC ADD   ************************** -->
   <div v-if="showAddDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -499,7 +503,7 @@ const openEditAfterCreate = (item, name) => {
   </div>
   <!-- **********************   MODAL DOC EDIT  ************************** -->
   <div v-if="showUpdateDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDoc @close-modal="showUpdateDoc=false" @doc-created="getData" :itemData="selectedItem"/>
+    <FormDoc @close-modal="showUpdateDoc=false" @doc-created="getData" @open-itemcard="openItemCard" :itemDataDoc="selectedDocItem"/>
   </div>
 
 
