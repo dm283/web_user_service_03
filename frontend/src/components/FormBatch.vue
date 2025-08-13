@@ -177,10 +177,10 @@ const setInitialForm = () => {
     form.vet_control = false
   };
 
-  if (userInfo.contact_id!=0) {  // for the client service
-    form.contact_uuid = userInfo.contact_uuid
-    form.contact_name_input = userInfo.contact_name
-  }
+  // if (userInfo.contact_id!=0) {  // for the client service
+  //   form.contact_uuid = userInfo.contact_uuid
+  //   form.contact_name_input = userInfo.contact_name
+  // }
 
 };
 

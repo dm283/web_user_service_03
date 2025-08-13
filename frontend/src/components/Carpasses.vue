@@ -99,7 +99,7 @@ const modalStyleSecond = "absolute z-20 top-0 left-0 w-full h-full bg-black bg-o
 
 // queries
 const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/carpasses/`:
-  `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.contact_uuid}`
+  `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.type}/${userInfo.contact_uuid}`
 
 const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
   `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.contact_uuid}`
@@ -108,7 +108,7 @@ const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${b
   `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
 
 const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/batches/`:
-  `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.contact_uuid}`
+  `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.type}/${userInfo.contact_uuid}`
 
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`

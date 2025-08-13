@@ -462,11 +462,11 @@ def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return items
 
 
-@app.get('/batches_client/{contact_uuid}', response_model=list[schemas.BatchJoined])
+@app.get('/batches_client/{type}/{contact_uuid}', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                contact_uuid: str,
+                type: str, contact_uuid: str,
                 skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_batches_client(contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+    items = crud.get_batches_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
 
@@ -477,11 +477,11 @@ def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_
     return items
 
 
-@app.get('/carpasses_client/{contact_uuid}', response_model=list[schemas.Carpass])
+@app.get('/carpasses_client/{type}/{contact_uuid}', response_model=list[schemas.Carpass])
 def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   contact_uuid: str,
+                   type: str, contact_uuid: str,
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_carpasses_client(contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+    items = crud.get_carpasses_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
 
