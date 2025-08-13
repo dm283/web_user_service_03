@@ -1,8 +1,8 @@
 import datetime
 from fastapi import UploadFile, HTTPException, Depends, status
 from pydantic import ValidationError
-from sqlalchemy import select, or_
-from sqlalchemy.orm import Session
+from sqlalchemy import select, or_, join
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy.exc import IntegrityError
 from passlib.context import CryptContext
 from uuid import uuid4
@@ -113,32 +113,60 @@ def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: 
         offset(skip).limit(limit).all()
 
 
-# def get_batches(db: Session, skip: int = 0, limit: int = 100):
-#     #
-#     return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
-#         offset(skip).limit(limit).all()
-
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
     #
-    stmt = select(models.Batch, models.Carpass, models.Contact).where(models.Batch.is_active==True,
-                                    models.Carpass.uuid == models.Batch.carpass_uuid, models.Contact.uuid == models.Batch.contact_uuid)
-    response = db.execute(stmt).all()
-    db_full_response = [schemas.BatchJoined(**row[0].__dict__, 
-                ncar=row[1].__dict__['ncar'], contact_name=row[2].__dict__['name']) for row in response]
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+
+    response = db.query(main_table, contact_1, contact_2, carpass).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).all()
+
+    db_full_response = []
+    for row in response:
+        broker_name=row[1].__dict__['name'] if row[1] else None
+        contact_name=row[2].__dict__['name'] if row[2] else None
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, ncar=ncar))
+
     return db_full_response
 
-    # return db.query(models.Batch).filter(models.Batch.is_active == True).order_by(models.Batch.created_datetime.desc()).\
-    #     offset(skip).limit(limit).all()
 
 def get_batches_client(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
     #
-    stmt = select(models.Batch, models.Carpass, models.Contact).where(models.Batch.is_active==True,
-                                    models.Batch.contact_uuid==contact_uuid,
-                                    models.Carpass.uuid == models.Batch.carpass_uuid, models.Contact.uuid == models.Batch.contact_uuid)
-    response = db.execute(stmt).all()
-    db_full_response = [schemas.BatchJoined(**row[0].__dict__, 
-                ncar=row[1].__dict__['ncar'], contact_name=row[2].__dict__['name']) for row in response]
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+
+    response = db.query(main_table, contact_1, contact_2, carpass).\
+        filter(main_table.contact_uuid==contact_uuid).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).all()
+
+    db_full_response = []
+    for row in response:
+        broker_name=row[1].__dict__['name'] if row[1] else None
+        contact_name=row[2].__dict__['name'] if row[2] else None
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, ncar=ncar))
+
     return db_full_response
+
+
+# def get_batches_client(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+#     #
+#     stmt = select(models.Batch, models.Carpass, models.Contact).where(models.Batch.is_active==True,
+#                                     models.Batch.contact_uuid==contact_uuid,
+#                                     models.Carpass.uuid == models.Batch.carpass_uuid, models.Contact.uuid == models.Batch.contact_uuid)
+#     response = db.execute(stmt).all()
+#     db_full_response = [schemas.BatchJoined(**row[0].__dict__, 
+#                 ncar=row[1].__dict__['ncar'], contact_name=row[2].__dict__['name']) for row in response]
+#     return db_full_response
 
 
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):

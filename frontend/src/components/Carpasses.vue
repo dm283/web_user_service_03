@@ -157,7 +157,7 @@ else if (props.view_type == 'entryRequest') {
 else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   state.query = query_batches;
   state.listTableColumns = {
-    'tn_id':'№ ТН','ncar':'№ ТС','contact_name':'Клиент','goods':'Описание товаров',
+    'tn_id':'№ ТН','ncar':'№ ТС','contact_name':'Клиент','broker_name':'Брокер','goods':'Описание товаров',
     'places_cnt':'Кол-во мест','weight':'Вес'
   };
   state.additionalColumns = {  };

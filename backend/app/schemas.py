@@ -410,3 +410,4 @@ class Batch(BatchCreate):
 class BatchJoined(Batch):
     ncar: str           #new
     contact_name: str   #new
+    broker_name: str | None   #new
