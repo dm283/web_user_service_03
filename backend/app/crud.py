@@ -189,8 +189,6 @@ def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 
         if rec.carpass_uuid not in carpass_uuid_list:
             carpass_uuid_list.append(rec.carpass_uuid)
     
-    # print('carpass_uuid_list =', carpass_uuid_list)
-    # filter(models.Carpass.contact_uuid==contact_uuid).\
     return db.query(models.Carpass).\
         filter(models.Carpass.uuid.in_(carpass_uuid_list)).\
         filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
