@@ -1,5 +1,4 @@
 <script setup>
-// import router from '@/router';
 import {ref, reactive, computed, onMounted, watch} from 'vue';
 import { useToast } from 'vue-toastification';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
@@ -7,7 +6,6 @@ import axios from 'axios';
 import FormEAList from './FormEAList.vue';
 import FormDoc from './FormDoc.vue';
 import FormAskCloseWithoutSave from './FormAskCloseWithoutSave.vue';
-
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
 let parser = new ConfigIniParser(); //Use default delimiter
@@ -15,7 +13,17 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+const toast = useToast();
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
+}
 
+///////////
 const itemFields = [
     'carpass_uuid',
     'tn_id',
@@ -29,20 +37,6 @@ const itemFields = [
     'vet_control',
     'comment',
   ]
-
-
-const toast = useToast();
-
-const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
-const authHeader = () => {
-  let user = JSON.parse(localStorage.getItem('user')); 
-  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
-}
-
-const userAccessToken = () => {
-  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
-}
 
 const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate'])  
 
@@ -66,7 +60,6 @@ const showAddDoc = ref(false)
 const errField = reactive({});
 const form = reactive({});
 const showAskCloseWithoutSave = ref(false)
-
 
 const getBrokers = async (client_uuid) => {
   if (!client_uuid) { return }
