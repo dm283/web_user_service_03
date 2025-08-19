@@ -392,6 +392,19 @@ const openEditAfterCreate = (item, name) => {
     <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
   
+  <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->
+  <div v-if="showCardEntryRequest" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormEntryRequest @close-modal="showCardEntryRequest=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL ENTRY_REQUEST ADD   ************************** -->
+  <div v-if="showAddEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormEntryRequest @close-modal="showAddEntryRequest=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL ENTRY_REQUEST EDIT  ************************** -->
+  <div v-if="showUpdateEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormEntryRequest @close-modal="showUpdateEntryRequest=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
   <div v-if="showDeleteItem" :class="[deletedItemName=='открепить_брокера' ? modalStyleSecond : modalStyle]">
     <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemName="deletedItemName" :itemData="deletedItem"/>
@@ -434,21 +447,6 @@ const openEditAfterCreate = (item, name) => {
   <div v-if="showAddExitcarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormInitAddExitcarpass @close-modal="showAddExitcarpass=false" @doc-created="createExitCarpass" />
   </div>
-
-
-  <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->
-  <div v-if="showCardEntryRequest" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
-    <FormEntryRequest @close-modal="showCardEntryRequest=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
-  </div>
-  <!-- **********************   MODAL ENTRY_REQUEST ADD   ************************** -->
-  <div v-if="showAddEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormEntryRequest @close-modal="showAddEntryRequest=false" @doc-created="getData" />
-  </div>
-  <!-- **********************   MODAL ENTRY_REQUEST EDIT  ************************** -->
-  <div v-if="showUpdateEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormEntryRequest @close-modal="showUpdateEntryRequest=false" @doc-created="getData" :itemData="selectedItem"/>
-  </div>
-
 
   <!-- **********************   MODAL CONTACT CARD   ************************** -->
   <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
