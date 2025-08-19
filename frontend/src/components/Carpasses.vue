@@ -87,6 +87,7 @@ const showCardDoc = ref(false)
 const showAddDoc = ref(false)
 const showUpdateDoc = ref(false)
 
+const selectedDocItem = ref('')
 const selectedItem = ref('')
 const itemName = ref('')
 const deletedItem = ref('')
@@ -98,7 +99,7 @@ const modalStyleSecond = "absolute z-20 top-0 left-0 w-full h-full bg-black bg-o
 
 // queries
 const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/carpasses/`:
-  `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.contact_uuid}`
+  `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.type}/${userInfo.contact_uuid}`
 
 const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
   `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.contact_uuid}`
@@ -107,7 +108,7 @@ const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${b
   `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
 
 const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/batches/`:
-  `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.contact_uuid}`
+  `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.type}/${userInfo.contact_uuid}`
 
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
@@ -156,7 +157,7 @@ else if (props.view_type == 'entryRequest') {
 else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   state.query = query_batches;
   state.listTableColumns = {
-    'tn_id':'№ ТН','ncar':'№ ТС','contact_name':'Клиент','goods':'Описание товаров',
+    'tn_id':'№ ТН','ncar':'№ ТС','contact_name':'Клиент','broker_name':'Брокер','goods':'Описание товаров',
     'places_cnt':'Кол-во мест','weight':'Вес'
   };
   state.additionalColumns = {  };
@@ -242,6 +243,9 @@ async function openItemCard(obj) {
   else if (obj.obj_type_name == 'Пропуска ТС на въезд') { 
     state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${obj.obj_uuid}`
   }
+  else if (obj.obj_type_name == 'Партии товаров') { 
+    state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/batch_by_uuid/${obj.obj_uuid}`
+  }
   state.item_for_card = await axios.get(state.query_item_for_card, {headers: authHeader()})
   itemCard(state.item_for_card.data, obj.obj_type_name)
 }
@@ -266,7 +270,7 @@ const itemCard = (item, name) => {
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
   else if (name == 'Пользователи') { showCardUser.value = true }
-  else if (name == 'Электронный архив') { showCardDoc.value = true }
+  else if (name == 'Электронный архив') { selectedDocItem.value = item; showCardDoc.value = true }
 };
 
 const addItem = (section) => {
@@ -291,7 +295,7 @@ const editItem = (item, name) => {
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
   else if (name == 'Пользователи') { showUpdateUser.value = true }
-  else if (name == 'Электронный архив') { showUpdateDoc.value = true }
+  else if (name == 'Электронный архив') { selectedDocItem.value = item; showUpdateDoc.value = true }
 };
 
 // const deleteItem = (item, name) => {
@@ -491,7 +495,7 @@ const openEditAfterCreate = (item, name) => {
 
   <!-- **********************   MODAL DOC CARD   ************************** -->
   <div v-if="showCardDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDoc @close-modal="showCardDoc=false" @doc-created="getData" @open-itemcard="openItemCard" :itemData="selectedItem" :isCard="true"/>
+    <FormDoc @close-modal="showCardDoc=false" @doc-created="getData" @open-itemcard="openItemCard" :itemDataDoc="selectedDocItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL DOC ADD   ************************** -->
   <div v-if="showAddDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -499,7 +503,7 @@ const openEditAfterCreate = (item, name) => {
   </div>
   <!-- **********************   MODAL DOC EDIT  ************************** -->
   <div v-if="showUpdateDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDoc @close-modal="showUpdateDoc=false" @doc-created="getData" :itemData="selectedItem"/>
+    <FormDoc @close-modal="showUpdateDoc=false" @doc-created="getData" @open-itemcard="openItemCard" :itemDataDoc="selectedDocItem"/>
   </div>
 
 
