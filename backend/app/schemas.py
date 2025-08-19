@@ -100,7 +100,7 @@ class ExitcarpassValidation(BaseModel):
     driver_fio: str
     driver_phone: str
     driver_licence: str
-    ndexit: int
+    ndexit: str
     dateex: date
     timeex: time
 
