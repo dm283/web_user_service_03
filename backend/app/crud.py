@@ -72,30 +72,33 @@ def get_document_records_client(user_uuid: str, user_contact_uuid: str, db: Sess
 
 
 def get_contacts(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Contact).filter(models.Contact.type=='V', models.Contact.is_active==True).offset(skip).limit(limit).all()
+    return db.query(models.Contact).filter(models.Contact.type=='V', models.Contact.is_active==True).\
+        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_contacts_posted(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='V', models.Contact.is_active==True, models.Contact.posted==True).\
-        offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_partners(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Contact).filter(models.Contact.is_active==True).offset(skip).limit(limit).all()
+    return db.query(models.Contact).filter(models.Contact.is_active==True).\
+        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_partners_posted(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.is_active==True, models.Contact.posted==True).\
-        offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_brokers(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True).offset(skip).limit(limit).all()
+    return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True).\
+        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_brokers_posted(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True, models.Contact.posted==True).\
-        offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
@@ -110,7 +113,7 @@ def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: 
 
     return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True, models.Contact.posted==True,
                                            models.Contact.uuid.not_in(existing_brokers_uuid_list)).\
-        offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
@@ -123,7 +126,8 @@ def get_batches(db: Session, skip: int = 0, limit: int = 100):
     response = db.query(main_table, contact_1, contact_2, carpass).\
         join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
         join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
-        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).all()
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
 
     db_full_response = []
     for row in response:
@@ -147,13 +151,15 @@ def get_batches_client(type: str, contact_uuid: str, db: Session, skip: int = 0,
             filter(main_table.contact_uuid==contact_uuid).\
             join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
             join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
-            join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).all()
+            join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+            order_by(main_table.created_datetime.desc()).all()
     elif type == 'B':
         response = db.query(main_table, contact_1, contact_2, carpass).\
             filter(main_table.broker_uuid==contact_uuid).\
             join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
             join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
-            join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).all()  
+            join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+            order_by(main_table.created_datetime.desc()).all()
 
     db_full_response = []
     for row in response:
@@ -168,7 +174,7 @@ def get_batches_client(type: str, contact_uuid: str, db: Session, skip: int = 0,
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
-        offset(skip).limit(limit).all()
+        order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
@@ -176,9 +182,11 @@ def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 
     # + get client batches - get all batch.carpass_uuid - get add carpasses by carpass_uuid
     db_client_carpasses = db.query(models.Carpass).filter(models.Carpass.contact_uuid==contact_uuid, models.Carpass.is_active==True).all()
     if type == 'V':
-        db_client_batches = db.query(models.Batch).filter(models.Batch.contact_uuid==contact_uuid, models.Batch.is_active==True).all()
+        db_client_batches = db.query(models.Batch).filter(models.Batch.contact_uuid==contact_uuid, models.Batch.is_active==True).\
+            order_by(models.Batch.created_datetime.desc()).all()
     elif type == 'B':
-        db_client_batches = db.query(models.Batch).filter(models.Batch.broker_uuid==contact_uuid, models.Batch.is_active==True).all()
+        db_client_batches = db.query(models.Batch).filter(models.Batch.broker_uuid==contact_uuid, models.Batch.is_active==True).\
+            order_by(models.Batch.created_datetime.desc()).all()
     
     carpass_uuid_list = []
     for rec in db_client_carpasses:
@@ -225,7 +233,7 @@ def get_cars_at_terminal_for_exit(db: Session, skip: int = 0, limit: int = 100):
 def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Exitcarpass).filter(models.Exitcarpass.is_active == True).\
-        order_by(models.Exitcarpass.updated_datetime.desc(), models.Exitcarpass.created_datetime.desc()).\
+        order_by(models.Exitcarpass.created_datetime.desc()).\
         offset(skip).limit(limit).all()
 
 
