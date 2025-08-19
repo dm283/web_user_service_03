@@ -372,13 +372,25 @@ const openEditAfterCreate = (item, name) => {
   </div>
   <!-- **********************   MODAL ADD CARPASS   ************************** -->
   <div v-if="showAddItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormAddCarpass @close-modal="showAddItem=false" @doc-created="getData"/>
+    <FormAddCarpass @close-modal="showAddItem=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate"/>
   </div>
   <!-- **********************   MODAL EDIT CARPASS   ************************** -->
   <div v-if="showUpdateItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormAddCarpass @close-modal="showUpdateItem=false" @doc-created="getData" :itemData="selectedItem"/>
+    <FormAddCarpass @close-modal="showUpdateItem=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
+  <!-- **********************   MODAL BATCH CARD   ************************** -->
+  <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL BATCH ADD   ************************** -->
+  <div v-if="showAddBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBatch @close-modal="showAddBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL BATCH EDIT  ************************** -->
+  <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
   
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
   <div v-if="showDeleteItem" :class="[deletedItemName=='открепить_брокера' ? modalStyleSecond : modalStyle]">
@@ -437,19 +449,6 @@ const openEditAfterCreate = (item, name) => {
     <FormEntryRequest @close-modal="showUpdateEntryRequest=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
-
-  <!-- **********************   MODAL BATCH CARD   ************************** -->
-  <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
-    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
-  </div>
-  <!-- **********************   MODAL BATCH ADD   ************************** -->
-  <div v-if="showAddBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showAddBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate"/>
-  </div>
-  <!-- **********************   MODAL BATCH EDIT  ************************** -->
-  <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
-  </div>
 
   <!-- **********************   MODAL CONTACT CARD   ************************** -->
   <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">

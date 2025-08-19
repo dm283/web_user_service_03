@@ -4,8 +4,6 @@ import {ref, reactive, computed, onMounted} from 'vue';
 import { useToast } from 'vue-toastification';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
-import FormEAList from './FormEAList.vue';
-import FormDoc from './FormDoc.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
@@ -14,6 +12,80 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+const emit = defineEmits(['docCreated', 'closeModal'])
+
+const props = defineProps({
+  itemData: Object,
+  isCard: Boolean,
+});
+
+const state = reactive({
+  documents: [],
+  isLoading: true,
+  filteredList: [],
+  entiryRequests: [],
+  contacts: [],
+})
+
+const selectedItem = ref('')
+const showDropDownSelect = ref({});
+
+
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
+}
+
+
+if (!props.isCard) {
+onMounted(async () => {
+    try {
+      state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_posted/`;
+      const response = await axios.get(state.query, {headers: authHeader()});
+      state.entiryRequests = response.data;
+
+      state.query = `http://${backendIpAddress}:${backendPort}/contacts_posted/`;
+      const response_2 = await axios.get(state.query, {headers: authHeader()});
+      state.contacts = response_2.data;
+    } catch (error) {
+      console.error('Error fetching docs', error);
+    } finally {
+      state.isLoading = false;
+    }
+});
+};
+
+
+if (props.itemData) {
+onMounted(async () => {
+    try {
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`, 
+        {headers: authHeader()});
+      state.documents = response.data;
+    } catch (error) {
+      console.error('Error fetching docs', error);
+    } finally {
+      state.isLoading = false;
+    }
+});
+};
+
+const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
+const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
+const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+
+const errField = reactive({});
+const form = reactive({});
+const files = ref(null)
 
 const itemFields = [
     'ncar',
@@ -35,7 +107,6 @@ const itemFields = [
     'contact_name',
     'contact_uuid',
     'place_n',
-    'nav_seal',
     'radiation',
     'brokenAwning',
     'brokenSeal',
@@ -43,99 +114,6 @@ const itemFields = [
     'dateex',
     'timeex',
   ]
-
-
-const toast = useToast();
-
-const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
-const authHeader = () => {
-  let user = JSON.parse(localStorage.getItem('user')); 
-  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
-}
-
-const userAccessToken = () => {
-  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
-}
-
-const emit = defineEmits(['docCreated', 'closeModal'])
-
-const props = defineProps({
-  itemData: Object,
-  isCard: Boolean,
-});
-
-const state = reactive({
-  documents: [],
-  isLoading: true,
-  filteredList: [],
-  contacts: [],
-  choosenDocs: [],
-  entiryRequests: [],
-})
-
-const selectedItem = ref('')
-const showDropDownSelect = ref({});
-const showEAList = ref(false)
-const showAddDoc = ref(false)
-
-if (!props.isCard) {
-onMounted(async () => {
-    try {
-      // state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_posted/`;
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entry_requests_posted/`, {headers: authHeader()});
-      state.entiryRequests = response.data;
-
-      // state.query = `http://${backendIpAddress}:${backendPort}/contacts_posted/`;
-      const response_2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
-      state.contacts = response_2.data;
-    } catch (error) {
-      console.error('Error fetching docs', error);
-    } finally {
-      state.isLoading = false;
-    }
-});
-};
-
-// if (props.itemData) {
-// onMounted(async () => {
-//     try {
-//       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`, 
-//         {headers: authHeader()});
-//       state.documents = response.data;
-//     } catch (error) {
-//       console.error('Error fetching docs', error);
-//     } finally {
-//       state.isLoading = false;
-//     }
-// });
-// };
-
-if (props.itemData) {
-onMounted(async () => {
-    try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/obj_docs/${props.itemData.uuid}`,
-        {headers: authHeader()}
-      );
-      state.documents = response.data;
-    } catch (error) {
-      console.error('Error fetching docs', error);
-    } finally {
-      state.isLoading = false;
-    }
-});
-};
-
-const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
-const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
-const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
-
-const errField = reactive({});
-const form = reactive({});
-// const files = ref(null)
 
 const setFilter = (fieldForm, entity, fieldEntity) => {
   // filter setting
@@ -154,6 +132,25 @@ const setFilter = (fieldForm, entity, fieldEntity) => {
   }
 };
 
+const setFormValues = () => {
+  for (let field of itemFields) {form[field] = selectedItem.value[field]}
+  form.radiation = false; form.brokenAwning = false; form.brokenSeal = false;
+}
+
+
+const getDocs = async () => {
+  console.log('getting docs for entryRequest =', selectedItem.value['uuid'])
+  let uuid = selectedItem.value['uuid']
+  try {
+    const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${uuid}`, 
+      {headers: authHeader()});
+    state.entry_request_docs = response.data;
+  } catch (error) {
+    console.error('Error fetching entry_request_docs', error);
+  }
+  console.log('entry_request_docs =', state.entry_request_docs)
+}
+
 
 const setInitialForm = () => {
   //
@@ -167,30 +164,26 @@ const setInitialForm = () => {
       form[field] = null
       form['contact_name_input'] = null  // fake form field for dropdown list
     }
-    //form.ncar = '_234РА23' // template for 'ncar'
+    form.ncar = '_234РА23' // template for 'ncar'
     form.radiation = false
     form.brokenAwning = false
     form.brokenSeal = false
-    form.nav_seal = false
     state.entry_request_docs = null
   };
 };
 
 setInitialForm();
 
-const setFormValues = () => {
-  for (let field of itemFields) {form[field] = selectedItem.value[field]}
-  form.radiation = false; form.brokenAwning = false; form.brokenSeal = false; form.nav_seal = false;
-}
-
-// const file = ref(null)
+const file = ref(null)
+const toast = useToast();
 
 const postingItem = async () => {
   //
   try {
     if (props.itemData) {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`,
-        '', {headers: authHeader()});
+        '', {headers: authHeader()}
+      );
       toast.success('Запись проведена');
     } else {
       return;
@@ -198,88 +191,74 @@ const postingItem = async () => {
     emit('docCreated'); emit('closeModal');
   } catch (error) {
     let err = error.response.data.detail;
+    
+    // special validation
+    // if (err == 'Отсутствует разрешение на выезд') {
+    //   toast.error('Отсутствует разрешение на выезд');
+    // };
+
+    // common validation - check required fields are not empty and correct
     let errFlag = 0;
     if (error.response.data.detail.hasOwnProperty('validation_errors')){
       let validation_errors_list = err['validation_errors']
       for (let e of validation_errors_list) { errField[e] = 1; errFlag = 1; }
     }
     if (errFlag) { toast.error('Не корректные/пропущенные данные') }
+
     console.error('Error posting item', error.response.data);
   };
 };
 
-
 const handleSubmit = async () => {
   // form submit handling (carpass create or update)
   let formData = new FormData();
+
+  // item updating
   for (let field of itemFields) { formData.append(field, form[field]) };
 
   try {
-    if (!props.isCard) {
-      if (!props.itemData) {
-        const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
-          formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-        toast.success('Новый запись добавлена');
-        state.responseItem = response.data;
-      } else {
-        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`, 
-          formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-        toast.success('Запись обновлена');
-        state.responseItem = response.data;
-      }
+    if (!props.itemData) {
+      const response = await axios.post(`http://${backendIpAddress}:${backendPort}/carpasses/`, 
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+      toast.success('Новый запись добавлена');
+      state.responseItem = response.data;
+    } else {
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`, 
+        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+      toast.success('Запись обновлена');
+      state.responseItem = response.data;
     }
 
     // files uploading
-    // if (files.value) {
-    //   for (let file of files.value.files) {
-    //     formData.append('file', file);
-    //     formData.append('customer_name', form.contact_name_input); //deprecated
-    //     formData.append('contact_uuid', form.contact_uuid);
-    //     formData.append('post_user_id', userInfo.uuid);
-    //     try {
-    //       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
-    //         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-    //     } catch (error) {
-    //       console.error('Error uploading file', error);
-    //       toast.error('File has not been uploaded');
-    //     };
-    //   };
-    // };
-
-    // attach files from EA (creates record in related_docs table)
-    // if (!isCard) { state.obj_uuid = state.responseItem.uuid } else { state.obj_uuid = itemData.uuid }
-    state.obj_uuid = props.isCard ? props.itemData.uuid : state.responseItem.uuid
-    if (state.choosenDocs) {
-      for (let doc of state.choosenDocs){
-        let formData2 = new FormData();
-        formData2.append('obj_type_name', 'Пропуска ТС на въезд');
-        formData2.append('obj_type', 'Пропуск ТС на въезд');
-        formData2.append('contact_uuid', form.contact_uuid);
-        formData2.append('obj_uuid', state.obj_uuid);
-        formData2.append('user_uuid', userInfo.uuid);
-        formData2.append('doc_uuid', doc.uuid);
+    if (files.value) {
+      for (let file of files.value.files) {
+        formData.append('file', file);
+        formData.append('customer_name', form.contact_name_input); //deprecated
+        formData.append('contact_uuid', form.contact_uuid);
+        formData.append('post_user_id', userInfo.uuid);
         try {
-          const response = await axios.post(`http://${backendIpAddress}:${backendPort}/create_related_docs_record/`, 
-            formData2, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+          const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file_for_carpass/${state.responseItem.uuid}`, 
+            formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
         } catch (error) {
-          console.error('Error posting', error);
-        }
-      }
-    }
+          console.error('Error uploading file', error);
+          toast.error('File has not been uploaded');
+        };
+      };
+    };
 
     // attaching files of initial entry_request into creating carpass
-    // if (state.entry_request_docs) {
-    //   for (let doc of state.entry_request_docs) {
-    //     formData.append('doc_id', doc.id);
-    //     formData.append('entity_uuid', state.responseItem.uuid);
-    //     try {
-    //       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/attach_doc_to_additional_entity/`, 
-    //         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-    //     } catch (error) {
-    //       console.error('Error uploading file', error);
-    //     };        
-    //   }
-    // }
+    if (state.entry_request_docs) {
+      for (let doc of state.entry_request_docs) {
+        formData.append('doc_id', doc.id);
+        formData.append('entity_uuid', state.responseItem.uuid);
+        try {
+          const response = await axios.put(`http://${backendIpAddress}:${backendPort}/attach_doc_to_additional_entity/`, 
+            formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+        } catch (error) {
+          console.error('Error uploading file', error);
+        };        
+      }
+    }
 
     emit('docCreated'); emit('closeModal');
   } catch (error) {
@@ -289,11 +268,10 @@ const handleSubmit = async () => {
 };
 
 
-async function downloadFile(document_record_uuid) {
+async function downloadFile(document_id) {
   // downloads file
-  // let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_id}` // old
-  let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_record_uuid}`
-  const response = await axios.get(query, {responseType: "blob", headers: authHeader()});
+  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, 
+    {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -306,48 +284,17 @@ async function downloadFile(document_record_uuid) {
   window.URL.revokeObjectURL(url);
 }
 
-const getDocs = async () => {
-  // load docs of initial entry_request
-  let uuid = selectedItem.value['uuid']
-  try {
-    const response = await axios.get(`http://${backendIpAddress}:${backendPort}/obj_docs/${uuid}`,
-      {headers: authHeader()});
-    state.entry_request_docs = response.data;
-    setChoosenDocs(response.data)
-  } catch (error) {
-    console.error('Error fetching entry_request_docs', error);
-  }
-}
-
-const attachFileSys = async () => {
-  showAddDoc.value=true
-}
-
-const attachFileEA = async () => {
-  showEAList.value=true
-}
-
-const setChoosenDocs = async (items) => {
-  state.choosenDocs = state.choosenDocs.concat(items)
-  for (let item of items) {
-    item.filename = item.doc_name  //
-    state.documents.push(item)     //
-  }
-}
-
 </script>
 
 
 <template>
-  <div class="w-3/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
+  <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Пропуск на въезд <span v-if="props.itemData">№ {{ props.itemData.id_enter }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="emit('closeModal')"></i>
       </div>
     </header>
-
-    <div class=contStyle >
 
     <div class="ml-6 mt-3" v-if="props.isCard">
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
@@ -366,7 +313,7 @@ const setChoosenDocs = async (items) => {
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       
       <div class="flex">
-        <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Номер машины</label>
+        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Номер машины</label>
           <div :class=formInputStyle class="flex" @click="setFilter('ncar', 'entiryRequests', 'ncar'); 
               showDropDownSelect.ncar ? showDropDownSelect.ncar=false : showDropDownSelect.ncar=true;">
             <input class="w-64 focus:outline-none" type="text" v-model="form.ncar" @keyup="setFilter('ncar', 'entiryRequests', 'ncar')" 
@@ -388,7 +335,7 @@ const setChoosenDocs = async (items) => {
 
         
         <!-- fake field 'contact_name_input' for dropdown list -->
-        <div class="formInputDiv" v-if="!props.itemData">   <label class=formLabelStyle>Клиент</label>
+        <div class="formInputDiv" v-if="!props.isCard">   <label class=formLabelStyle>Клиент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
               showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
@@ -478,7 +425,7 @@ const setChoosenDocs = async (items) => {
           <input type="text" v-model="form.driver_phone" :class="[errField['driver_phone']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>№ водительских прав/паспорта</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер водительских прав</label>
           <input type="text" v-model="form.driver_licence" :class="[errField['driver_licence']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
@@ -510,55 +457,12 @@ const setChoosenDocs = async (items) => {
         </div>
       </div>
 
-      <div class="flex">
-        <div class=formInputDiv>
-          <input type="checkbox" v-model='form.nav_seal' id="nav_seal" name="nav_seal" class=formInputCheckboxStyle :disabled="isCard"/>
-          <label class=formLabelCheckboxStyle for="nav_seal">Навигационная пломба</label>
-        </div>
-      </div>
-
-
-      <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
-      <!-- <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto"> -->
-        <div class="float-left space-x-5">
-          <button class="formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="formBtn" type="button" @click="setInitialForm();">СБРОСИТЬ</button>
-          <!-- <input ref="files" name="files" type="file" multiple class="formInputFile"/> -->
-        </div>
-        <div class="float-right" v-if="props.itemData">
-          <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
-        </div>
-      </div>
-      <div v-else class="mb-5"></div>
-
-
-      <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
-        <div class="space-x-5 overflow-auto">
-          <label class="mx-1 text-sm font-semibold text-blue-500">ДОКУМЕНТЫ</label>
-          <button v-if="isCard" class="float-right formBtn" type="submit">СОХРАНИТЬ</button>
-          <button class="float-right formBtn" type="button" @click="attachFileEA()">ЗАГРУЗИТЬ ИЗ ЭА</button>
-          <button class="float-right formBtn" type="button" @click="attachFileSys()">СОЗДАТЬ В ЭА</button>
-        </div>
-        <!-- Show loading spinner while loading is true -->
-        <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
-          <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
-        </div>
-        <!-- Show when loading is done -->
-        <div class="flex space-x-3 mt-3" v-if="!state.isLoading && state.documents.length>0">
-          <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
-            <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.uuid)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
-            <div class="">{{ document.doc_name }}</div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- <div сlass="" v-if="props.isCard || props.itemData">
-      Show loading spinner while loading is true
+      <div сlass="" v-if="props.isCard || props.itemData">
+      <!-- Show loading spinner while loading is true -->
       <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
         <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
       </div>
-      Show when loading is done
+      <!-- Show when loading is done -->
       <div class="border-t border-slate-300 mx-6 pt-3" v-if="!state.isLoading && state.documents.length>0">
         <label class=formLabelStyle>Документы</label>
         <div class="flex space-x-3 mt-3">
@@ -568,11 +472,11 @@ const setChoosenDocs = async (items) => {
         </div>
         </div>
         </div>
-      </div> -->
+      </div>
 
 
       <!-- Show when carpass is creating fron entry_request and the last one has documents -->
-      <!-- <div class="border-t border-slate-300 mx-6 pt-3" v-if="state.entry_request_docs">
+      <div class="border-t border-slate-300 mx-6 pt-3" v-if="state.entry_request_docs">
         <label class=formLabelStyle>Документы</label>
         <div class="flex space-x-3 mt-3">
         <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.entry_request_docs">
@@ -580,31 +484,30 @@ const setChoosenDocs = async (items) => {
           <div class="">{{ document.filename }}</div>
         </div>
         </div>
-      </div>   -->
+      </div>  
+
+
+      <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
+        <div class="float-left space-x-5">
+          <button class="formBtn" type="submit">СОХРАНИТЬ</button>
+          <button class="formBtn" type="button" @click="setInitialForm();">СБРОСИТЬ</button>
+          <input ref="files" name="files" type="file" multiple class="formInputFile"/>
+          <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
+        </div>
+        <div class="float-right" v-if="props.itemData">
+          <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
+        </div>
+      </div>
+
+      <div v-else class="mb-5"></div>
 
     </form>
-  </div>
-  </div>
-
-  <!-- **********************   MODAL EA LIST   ************************** -->
-  <div v-if="showEAList" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormEAList @close-modal="showEAList=false" @returned-docs="setChoosenDocs" />
-  </div>
-
-  <!-- **********************   MODAL DOC ADD   ************************** -->
-  <div v-if="showAddDoc" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormDoc @close-modal="showAddDoc=false" @doc-created="" @returned-docs="setChoosenDocs" />
   </div>
 
 </template>
 
 
 <style lang="postcss" scoped>
-.contStyle {
-  max-height: 600px;
-  overflow-y: auto;
-}
-
 
 .formInputDiv {
   @apply w-64 mx-5 mb-2
