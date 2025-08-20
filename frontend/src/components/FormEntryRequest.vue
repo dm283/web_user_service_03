@@ -37,6 +37,7 @@ const itemFields = [
     'contact',
     'contact_name',
     'contact_uuid',
+    'broker_uuid',
     'ntir',
     'ntir_date',
     'customs_doc',
@@ -173,6 +174,10 @@ const setInitialForm = () => {
     form.contact_name = userInfo.contact_name
     form.contact_uuid = userInfo.contact_uuid
     form.contact_name_input = userInfo.contact_name
+  }
+
+  if (userInfo.contact_id!=0 & userInfo.type=='B') {  // for lk_broker
+    form.broker_uuid = userInfo.contact_uuid
   }
 };
 

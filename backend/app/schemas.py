@@ -137,6 +137,9 @@ class EntryRequestCreate(BaseModel):
     contact: int | str | None = None
     contact_name: str | None = None
     contact_uuid: str | None = None
+
+    broker_uuid: str | None = None  # new
+
     ntir: str | None = None
     ntir_date: date | str | None = None
     customs_doc: str | None = None

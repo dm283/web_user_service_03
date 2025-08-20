@@ -102,7 +102,7 @@ const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${bac
   `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.type}/${userInfo.contact_uuid}`
 
 const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
-  `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.contact_uuid}`
+  `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.type}/${userInfo.contact_uuid}`
 
 const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/document_records/`:
   `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
