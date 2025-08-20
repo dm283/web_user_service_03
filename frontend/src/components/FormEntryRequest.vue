@@ -168,7 +168,7 @@ const setInitialForm = () => {
     form.warehouse_upload = false
   };
 
-  if (userInfo.contact_id!=0) {  // for the client service
+  if (userInfo.contact_id!=0 & userInfo.type=='V') {  // for the client service
     form.contact = userInfo.contact_id
     form.contact_name = userInfo.contact_name
     form.contact_uuid = userInfo.contact_uuid
@@ -373,7 +373,7 @@ const closeIt = async () => {
             :required="true" :disabled="true" />
         </div> -->
 
-        <div class="formInputDiv" v-if="(!props.isCard) & userInfo.contact_id==0">   <label class=formLabelStyle>Клиент</label>
+        <div class="formInputDiv" v-if="(!props.isCard) & (userInfo.contact_id==0 || userInfo.type=='B')">   <label class=formLabelStyle>Клиент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
                 @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
