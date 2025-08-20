@@ -171,6 +171,27 @@ def get_batches_client(type: str, contact_uuid: str, db: Session, skip: int = 0,
     return db_full_response
 
 
+def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
+    #
+    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active == True).\
+        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
+        offset(skip).limit(limit).all()
+
+
+def get_entry_requests_client(type: str, contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    #
+    if type == 'V':
+        return db.query(models.EntryRequest).filter(models.EntryRequest.contact_uuid==contact_uuid).\
+            filter(models.EntryRequest.is_active == True).\
+            order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
+            offset(skip).limit(limit).all()
+    if type == 'B':
+        return db.query(models.EntryRequest).filter(models.EntryRequest.broker_uuid==contact_uuid).\
+            filter(models.EntryRequest.is_active == True).\
+            order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
+            offset(skip).limit(limit).all()
+
+
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
@@ -234,21 +255,6 @@ def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Exitcarpass).filter(models.Exitcarpass.is_active == True).\
         order_by(models.Exitcarpass.created_datetime.desc()).\
-        offset(skip).limit(limit).all()
-
-
-def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
-    #
-    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active == True).\
-        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
-        offset(skip).limit(limit).all()
-
-
-def get_entry_requests_client(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
-    #
-    return db.query(models.EntryRequest).filter(models.EntryRequest.contact_uuid==contact_uuid).\
-        filter(models.EntryRequest.is_active == True).\
-        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
         offset(skip).limit(limit).all()
 
 

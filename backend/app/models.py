@@ -219,6 +219,8 @@ class EntryRequest(Base):
     contact = Column(Integer)
     contact_name = Column(String(length=150))
     contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+
+    broker_uuid = Column(String) # new
     
     ntir = Column(String(length=50))
     ntir_date = Column(Date)
