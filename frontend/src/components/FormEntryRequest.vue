@@ -46,7 +46,7 @@ const itemFields = [
     'comment',
   ]
 
-const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate'])
+const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete'])
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -326,6 +326,10 @@ const closeIt = async () => {
   else { emit('docCreated'); emit('closeModal'); }
 }
 
+const reattachFile = async (doc_uuid, obj_uuid) => {
+  emit('btnDelete', {'doc_uuid': doc_uuid, 'obj_uuid': obj_uuid}, 'открепить_документ')
+}
+
 </script>
 
 
@@ -494,12 +498,60 @@ const closeIt = async () => {
           <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
         </div>
         <!-- Show when loading is done -->
-        <div class="flex space-x-3 mt-3" v-if="!state.isLoading && state.documents.length>0">
-          <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
-            <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.uuid)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
-            <div class="">{{ document.doc_name }}</div>
+        <!-- <div class="flex space-x-3 mt-3" v-if="!state.isLoading && state.documents.length>0">
+          <div class="border rounded-md p-1 w-20 h-30 text-center text-xs" v-for="document in state.documents">
+            <div class="overflow-auto">
+              <div class="float-left text-blue-500 cursor-pointer" @click="downloadFile(document.uuid)"><i class="pi pi-file" style="font-size: 1.5rem"></i></div>
+              <div class="float-right text-rose-400 cursor-pointer" @click="reattachFile(document.uuid, props.itemData.uuid)">
+                <i class="pi pi-times-circle" style="font-size: 0.8rem"></i></div>
+            </div>
+            <div class="w-18 text-wrap text-slate-700">{{ document.doc_name }}</div>
           </div>
+        </div> -->
+
+        <div class="mb-5" v-if="!state.isLoading">
+          <div v-if="state.documents.length>0" class="border rounded-md mt-2 overflow-hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
+                <td class="text-center"></td>
+                <td class="text-center">Наименование</td>
+                <td class="text-center">Номер</td>
+                <td class="text-center">Дата документа</td>
+                <td class="text-center">Файл</td>
+                <td class="text-center">Добавил [пользователь]</td>
+                <td class="text-center">Добавил [контрагент]</td>
+                <td class="text-center">Дата-время прикрепления</td>
+                <td class="text-center"></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t text-slate-500 text-xs" v-for="document in state.documents">
+                <td class="text-center"><div class="pl-0.5 text-blue-500 cursor-pointer" 
+                    @click="downloadFile(document.uuid)">
+                  <i class="pi pi-download" style="font-size: 0.8rem"></i></div></td>
+                <td class="text-center">{{ document.doc_name }}</td>
+                <td class="text-center">{{ document.doc_id }}</td>
+                <td class="text-center">{{ document.doc_date }}</td>
+                <td class="text-center">{{ document.file_name }}</td>
+                <td class="text-center">{{ document.login }}</td>
+                <td class="text-center">{{ document.contact }}</td>
+                <td class="text-center">{{ document.attachment_datetime }}</td>
+                <td class="text-center"><div class="pr-0.5 text-rose-400 cursor-pointer" 
+                    v-if="document.contact_uuid==userInfo.contact_uuid"
+                    @click="reattachFile(document.uuid, props.itemData.uuid)">
+                  <i class="pi pi-trash" style="font-size: 0.8rem"></i></div>
+                  <div class="pr-0.5 text-slate-400" v-else><i class="pi pi-trash" style="font-size: 0.8rem"></i></div>
+                
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+          <div class="max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет прикреплённых документов</div>
         </div>
+
+
       </div>
 
     </form>
