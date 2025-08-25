@@ -72,6 +72,8 @@ onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/partners_posted/`, {headers: authHeader()});
       state.contacts = response.data;
+      state.contacts.unshift({'name':'mts','type':'O','id':0,'uuid':null})
+      console.log('contacts=', state.contacts)
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -93,6 +95,10 @@ onMounted(async () => {
       );
       state.contact_name = response2.data.name;
       form['contact_name_input'] = response2.data.name
+      }
+      else if (props.itemData.type=='O') {
+        state.contact_name = 'mts';
+        form['contact_name_input'] = 'mts'
       }
       
     } catch (error) {
