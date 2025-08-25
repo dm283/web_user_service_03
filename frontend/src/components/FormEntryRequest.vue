@@ -322,7 +322,7 @@ const setChoosenDocs = async (items) => {
 }
 
 const closeIt = async () => {
-  if (isNeedSave.value) { console.log('IS NEEDED SAVE IS TRUE +++++++'); showAskCloseWithoutSave.value = true }
+  if (isNeedSave.value) { showAskCloseWithoutSave.value = true }
   else { emit('docCreated'); emit('closeModal'); }
 }
 
