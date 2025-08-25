@@ -14,7 +14,6 @@ var backendPort = parser.get("main", "backend_port");
 
 
 const itemFields = [
-    'linked_broker_uuid',
     'name',
     'inn',
     'type',
@@ -93,12 +92,12 @@ onMounted(async () => {
         {headers: authHeader()} );
       state.related_brokers = response1.data;
 
-      if (props.itemData.linked_broker_uuid) {
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.linked_broker_uuid}`,
-        {headers: authHeader()} );
-      state.linked_broker_name = response2.data.name;
-      // form['linked_broker_name_input'] = response2.data.name
-      }
+      // if (props.itemData.linked_broker_uuid) {
+      // const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.linked_broker_uuid}`,
+      //   {headers: authHeader()} );
+      // state.linked_broker_name = response2.data.name;
+      // // form['linked_broker_name_input'] = response2.data.name
+      // }
 
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -375,7 +374,7 @@ async function downloadFile(document_id) {
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['linked_broker_name_input']=false; 
                   state.new_brokers.push({'name': item.name, 'inn': item.inn, 'uuid': item.uuid});
-                  form['reserve_1']=item.name;form['linked_broker_name_input']='';form['linked_broker_uuid']=item.uuid" >
+                  form['reserve_1']=item.name;form['linked_broker_name_input']=''" >
                 {{ item.name }}
             </div>
           </div>

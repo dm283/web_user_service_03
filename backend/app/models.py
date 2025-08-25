@@ -39,8 +39,8 @@ class Contact(Base):
     phone = Column(String) #
     email = Column(String)     #
     idtelegram = Column(String)
-    linked_broker_uuid = Column(String, ForeignKey('contacts.uuid'))  # deprecated
-    related_obj_uuid = Column(String)  # deprecated
+    #linked_broker_uuid = Column(String, ForeignKey('contacts.uuid'))  # deprecated
+    #related_obj_uuid = Column(String)  # deprecated
     
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)

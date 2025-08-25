@@ -297,7 +297,7 @@ class ContactCreate(BaseModel):
     phone: str | None = None
     email: str | None = None
     idtelegram: str | None = None
-    linked_broker_uuid: str | None = None   # deprecated
+    #linked_broker_uuid: str | None = None   # deprecated
     comment: str | None = None
 
 def is_emails_list(value: str) -> str:
@@ -324,7 +324,7 @@ class ContactUpdate(ContactCreate):
 class Contact(ContactCreate):
     id: int
     uuid: str
-    related_obj_uuid: str | None
+    #related_obj_uuid: str | None
     created_datetime: datetime
     updated_datetime: datetime | None
     post_date: datetime | None
