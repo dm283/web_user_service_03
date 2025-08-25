@@ -284,7 +284,7 @@ class User(UserBase):
         from_attributes = True
 
 class UserJoined(User):
-    contact_name: str
+    contact_name: str | None
     
         
 #####

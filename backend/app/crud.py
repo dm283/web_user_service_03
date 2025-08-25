@@ -1121,13 +1121,31 @@ def get_user_by_login(db: Session, login: str):
     return db.query(models.User).filter(models.User.login==login, models.User.posted==True, models.User.is_active==True).first()
 
 
+# def get_users(db: Session, skip: int = 0, limit: int = 100):
+#     #
+#     stmt = select(models.User, models.Contact).where(models.User.is_active==True,
+#                                     models.Contact.uuid == models.User.contact_uuid)
+#     response = db.execute(stmt).all()
+#     db_full_response = [schemas.UserJoined(**row[0].__dict__, 
+#                 contact_name=row[1].__dict__['name']) for row in response]
+#     return db_full_response
+
+
 def get_users(db: Session, skip: int = 0, limit: int = 100):
     #
-    stmt = select(models.User, models.Contact).where(models.User.is_active==True,
-                                    models.Contact.uuid == models.User.contact_uuid)
-    response = db.execute(stmt).all()
-    db_full_response = [schemas.UserJoined(**row[0].__dict__, 
-                contact_name=row[1].__dict__['name']) for row in response]
+    main_table = aliased(models.User)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+            filter(main_table.is_active==True).\
+            join(contact_1, contact_1.uuid==main_table.contact_uuid, isouter=True).\
+            order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        db_full_response.append(schemas.UserJoined(**row[0].__dict__, contact_name=contact_name))
+
     return db_full_response
 
 
