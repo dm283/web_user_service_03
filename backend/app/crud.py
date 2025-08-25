@@ -1137,7 +1137,7 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
     contact_1 = aliased(models.Contact)
 
     response = db.query(main_table, contact_1).\
-            filter(main_table.is_active==True).\
+            filter(main_table.is_active==True, main_table.login!='operator-1').\
             join(contact_1, contact_1.uuid==main_table.contact_uuid, isouter=True).\
             order_by(main_table.created_datetime.desc()).all()
 
