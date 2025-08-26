@@ -381,15 +381,15 @@ const openEditAfterCreate = (item, name) => {
 
   <!-- **********************   MODAL BATCH CARD   ************************** -->
   <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
-    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL BATCH ADD   ************************** -->
   <div v-if="showAddBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showAddBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate"/>
+    <FormBatch @close-modal="showAddBatch=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
   </div>
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
   
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->

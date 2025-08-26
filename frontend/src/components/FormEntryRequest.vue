@@ -545,7 +545,6 @@ const reattachFile = async (doc_uuid, obj_uuid) => {
                     @click="reattachFile(document.uuid, props.itemData.uuid)">
                   <i class="pi pi-trash" style="font-size: 0.8rem"></i></div>
                   <div class="pr-0.5 text-slate-400" v-else><i class="pi pi-trash" style="font-size: 0.8rem"></i></div>
-                
                 </td>
               </tr>
             </tbody>
@@ -553,10 +552,7 @@ const reattachFile = async (doc_uuid, obj_uuid) => {
           </div>
           <div class="max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет прикреплённых документов</div>
         </div>
-
-
       </div>
-
     </form>
   </div>
   </div>
