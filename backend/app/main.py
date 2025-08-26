@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Annotated, Union
 from urllib.parse import quote
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import select
 from passlib.context import CryptContext
 from uuid import uuid4
@@ -537,6 +537,10 @@ def get_entity_documents(current_user: Annotated[UserAuth, Depends(get_current_a
     #     order_by(models.Document.created_datetime.desc()).all()
     return documents
 
+def formatted_datetime(ov):
+    nv = f'{ov:%d-%m-%Y %H:%M}'
+    return nv
+
 @app.get('/obj_docs/{obj_uuid}')
 def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          obj_uuid: str, db: Session = Depends(get_db)):
@@ -547,10 +551,33 @@ def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_use
     doc_uuid_list = []
     for rec in db_related_docs:
         doc_uuid_list.append(rec.doc_uuid)
+    
+    main_table = aliased(models.DocumentRecord)
+    table_2 = aliased(models.RelatedDocs)
+    table_3 = aliased(models.Document)
+    table_4 = aliased(models.User)
+    table_5 = aliased(models.Contact)
+    response = db.query(main_table, table_2, table_3, table_4, table_5).\
+            filter(main_table.uuid.in_(doc_uuid_list)).\
+            join(table_2, table_2.doc_uuid==main_table.uuid, isouter=True).\
+            filter(table_2.obj_uuid==obj_uuid).\
+            join(table_3, table_3.related_doc_uuid==main_table.uuid, isouter=True).\
+            join(table_4, table_4.uuid==table_2.user_uuid, isouter=True).\
+            join(table_5, table_5.uuid==table_4.contact_uuid, isouter=True).\
+            order_by(main_table.created_datetime.desc()).all()
+    db_full_response = []
+    for row in response:
+        user_uuid=row[1].__dict__['user_uuid'] if row[1] else None
+        attachment_datetime=formatted_datetime(row[1].__dict__['created_datetime']) if row[1] else None
+        file_name=row[2].__dict__['filename'] if row[2] else None
+        login=row[3].__dict__['login'] if row[3] else None
+        contact=row[4].__dict__['name'] if row[4] else 'mts'
+        contact_uuid=row[4].__dict__['uuid'] if row[4] else None
+        db_full_response.append(schemas.DocumentRecordJoined(**row[0].__dict__, 
+            user_uuid=user_uuid, file_name=file_name, login=login, contact=contact, attachment_datetime=attachment_datetime, 
+            contact_uuid=contact_uuid))
 
-    documents =  db.query(models.DocumentRecord).filter(models.DocumentRecord.uuid.in_(doc_uuid_list)).\
-          order_by(models.DocumentRecord.created_datetime.desc()).all()
-    return documents
+    return db_full_response
 
 @app.get('/related_docs/{doc_uuid}')
 def get_related_doc(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -764,6 +791,12 @@ def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def delete_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
     return crud.delete_related_contact_broker(db=db, item_id=item_id)
+
+
+@app.delete('/related_docs_record/{doc_uuid}/{obj_uuid}')
+def delete_related_docs_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         doc_uuid: str, obj_uuid: str, db: Session = Depends(get_db)):
+    return crud.delete_related_docs_record(db=db, doc_uuid=doc_uuid, obj_uuid=obj_uuid)
 
 
 @app.delete('/document_records/{item_id}')

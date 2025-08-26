@@ -246,6 +246,15 @@ class DocumentRecord(DocumentRecordCreate):
         from_attributes = True
 
 
+class DocumentRecordJoined(DocumentRecord):
+    user_uuid: str
+    file_name: str
+    login: str
+    contact: str | None
+    contact_uuid: str | None
+    attachment_datetime: str
+
+
 ################
 class UserBase(BaseModel):
     login: str

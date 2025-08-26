@@ -683,6 +683,20 @@ def delete_related_contact_broker(db: Session, item_id: int):
     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
+def delete_related_docs_record(db: Session, doc_uuid: str, obj_uuid: str):
+    #
+    item_from_db =  db.query(models.RelatedDocs).filter(models.RelatedDocs.doc_uuid==doc_uuid,
+                                                              models.RelatedDocs.obj_uuid==obj_uuid).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    return {"message": f"Item ID {item_from_db.id} deleted successfully"}
+
+
 def delete_exitcarpass(db: Session, carpass_id: int):
     #
     exitcarpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()

@@ -397,7 +397,8 @@ async function downloadFile(document_id) {
             <tr class="border-t text-slate-500 text-xs" v-for="rec in state.related_brokers">
               <td class="text-center">{{ rec.broker_name }}</td>
               <td class="text-center">{{ rec.broker_inn }}</td>
-              <td class="text-center"><div v-if="!props.isCard" class="text-rose-400 cursor-pointer" @click="emit('btnDelete', {'id': rec.id}, 'открепить_брокера')">
+              <td class="text-center"><div v-if="!props.isCard" class="text-rose-400 cursor-pointer" 
+                  @click="emit('btnDelete', {'id': rec.id}, 'открепить_брокера')">
                 <i class="pi pi-trash" style="font-size: 0.8rem"></i></div></td>
             </tr>
             <tr class="border-t text-orange-500 text-xs" v-for="rec in state.new_brokers">
