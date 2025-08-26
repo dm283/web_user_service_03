@@ -397,12 +397,12 @@ const reopenCard = (type, item, name) => {
   </div>
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData"  @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
   
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->
   <div v-if="showCardEntryRequest" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
-    <FormEntryRequest @close-modal="showCardEntryRequest=false" @doc-created="getData" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
+    <FormEntryRequest @close-modal="showCardEntryRequest=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL ENTRY_REQUEST ADD   ************************** -->
   <div v-if="showAddEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -410,7 +410,7 @@ const reopenCard = (type, item, name) => {
   </div>
   <!-- **********************   MODAL ENTRY_REQUEST EDIT  ************************** -->
   <div v-if="showUpdateEntryRequest" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormEntryRequest @close-modal="showUpdateEntryRequest=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+    <FormEntryRequest @close-modal="showUpdateEntryRequest=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
