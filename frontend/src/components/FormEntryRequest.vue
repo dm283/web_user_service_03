@@ -350,8 +350,7 @@ const refreshCard = async () => {
         <i class="pi pi-times" style="font-size: 1rem" @click="closeIt()"></i>
       </div>
       <div v-if="props.itemData" class="absolute top-2 right-12 cursor-pointer hover:text-gray-500">
-        <i class="pi pi-refresh" style="font-size: 1rem" 
-        @click="refreshCard()"></i>
+        <i class="pi pi-refresh" style="font-size: 1rem" @click="refreshCard()"></i>
       </div>
     </header>
 
