@@ -564,7 +564,7 @@ def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_use
             join(table_3, table_3.related_doc_uuid==main_table.uuid, isouter=True).\
             join(table_4, table_4.uuid==table_2.user_uuid, isouter=True).\
             join(table_5, table_5.uuid==table_4.contact_uuid, isouter=True).\
-            order_by(main_table.created_datetime.desc()).all()
+            order_by(table_2.created_datetime.desc()).all()
     db_full_response = []
     for row in response:
         user_uuid=row[1].__dict__['user_uuid'] if row[1] else None

@@ -354,6 +354,13 @@ const openEditAfterCreate = (item, name) => {
   getData(); editItem(item, name)
 }
 
+const reopenCard = (type, item, name) => {
+  //
+  getData();
+  if (type=='card') { editItem(item, name) }
+  if (type=='edit') { itemCard(item, name) }
+}
+
 </script>
 
 <template>
@@ -381,7 +388,7 @@ const openEditAfterCreate = (item, name) => {
 
   <!-- **********************   MODAL BATCH CARD   ************************** -->
   <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
-    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
+    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL BATCH ADD   ************************** -->
   <div v-if="showAddBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -389,7 +396,7 @@ const openEditAfterCreate = (item, name) => {
   </div>
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData"  @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
   
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->

@@ -38,7 +38,7 @@ const itemFields = [
     'comment',
   ]
 
-const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete'])  
+const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard'])  
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -326,6 +326,14 @@ const reattachFile = async (doc_uuid, obj_uuid) => {
   emit('btnDelete', {'doc_uuid': doc_uuid, 'obj_uuid': obj_uuid}, 'открепить_документ')
 }
 
+const refreshCard = async () => {
+  let query = `http://${backendIpAddress}:${backendPort}/batch_by_uuid/${props.itemData.uuid}`
+  let response = await axios.get(query, {headers: authHeader()});
+  let item = response.data;
+  let reopenType = props.isCard ? 'card' : 'edit'
+  emit('closeModal'); emit('reopenCard', reopenType, item, 'Партии товаров')
+}
+
 </script>
 
 
@@ -335,6 +343,10 @@ const reattachFile = async (doc_uuid, obj_uuid) => {
       Партия товаров <span v-if="props.itemData">№ {{ props.itemData.id }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="closeIt()"></i>
+      </div>
+      <div v-if="props.itemData" class="absolute top-2 right-12 cursor-pointer hover:text-gray-500">
+        <i class="pi pi-refresh" style="font-size: 1rem" 
+        @click="refreshCard()"></i>
       </div>
     </header>
 
