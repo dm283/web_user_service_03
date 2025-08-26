@@ -28,12 +28,10 @@ const state = reactive({
   
 const showItemCard = ref(false)
 
-
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
   if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
 }
-
 
 </script>
 
@@ -44,6 +42,11 @@ const authHeader = () => {
     <div class="inline-block mt-5 ml-5">
       <RouterLink to="/users">
         <CatalogSection :label="'Пользователи'" :icon="'user'" :description="'Администрирование пользователей'" />
+      </RouterLink>
+    </div>
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/upload_lists_excel">
+        <CatalogSection :label="'Загрузка списков Excel'" :icon="'file-excel'" :description="'Загрузка списков Excel'" />
       </RouterLink>
     </div>
 
