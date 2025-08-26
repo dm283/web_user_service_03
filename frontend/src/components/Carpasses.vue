@@ -357,8 +357,9 @@ const openEditAfterCreate = (item, name) => {
 const reopenCard = (type, item, name) => {
   //
   getData();
-  if (type=='card') { editItem(item, name) }
-  if (type=='edit') { itemCard(item, name) }
+  console.log('reopen ', type)
+  if (type=='edit') { editItem(item, name) }
+  if (type=='card') { itemCard(item, name) }
 }
 
 </script>
