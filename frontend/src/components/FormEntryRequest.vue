@@ -497,7 +497,7 @@ const reattachFile = async (doc_uuid, obj_uuid) => {
         <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
           <PulseLoader /> ЗАГРУЗКА ДОКУМЕНТОВ...
         </div>
-        <!-- Show when loading is done -->
+
         <!-- <div class="flex space-x-3 mt-3" v-if="!state.isLoading && state.documents.length>0">
           <div class="border rounded-md p-1 w-20 h-30 text-center text-xs" v-for="document in state.documents">
             <div class="overflow-auto">
