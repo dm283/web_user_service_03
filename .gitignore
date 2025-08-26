@@ -35,5 +35,6 @@ backend/venv/
 backend/logs/
 backend/config.ini
 backend/saved_files
+backend/uploaded_files
 
 todo.txt
