@@ -368,15 +368,15 @@ const openEditAfterCreate = (item, name) => {
 
   <!-- **********************   MODAL CARPASS CARD   ************************** -->
   <div v-if="showItemCard" :class="[state.item_for_card ? modalStyleSecond : modalStyle]">
-    <FormAddCarpass @close-modal="showItemCard=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+    <FormAddCarpass @close-modal="showItemCard=false" @doc-created="getData" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL ADD CARPASS   ************************** -->
   <div v-if="showAddItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormAddCarpass @close-modal="showAddItem=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate"/>
+    <FormAddCarpass @close-modal="showAddItem=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
   </div>
   <!-- **********************   MODAL EDIT CARPASS   ************************** -->
   <div v-if="showUpdateItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormAddCarpass @close-modal="showUpdateItem=false" @doc-created="getData" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+    <FormAddCarpass @close-modal="showUpdateItem=false" @doc-created="getData"@btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
   <!-- **********************   MODAL BATCH CARD   ************************** -->
