@@ -224,6 +224,71 @@ def document_download(current_user: Annotated[UserAuth, Depends(get_current_acti
     return response
 
 
+# upload file excel (new 26.08.25)
+def load_excel(entity, file_location, db):
+    #
+    import pandas as pd
+
+    if not os.path.exists(file_location):
+        return f"file {file_location} doesn't exits"
+    
+    try:
+        df = pd.read_excel(file_location)
+        print(df)
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'неверный формат файла')
+
+    df = df.fillna('')
+    if len(df) == 0:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'0 записей в файле')
+
+    try:
+        cnt = 0
+        if entity == 'clients':
+            for index, row in df.iterrows():
+                dict_row = row.to_dict()
+                dict_row.update(type='V')
+                for i in dict_row:
+                    dict_row[i] = str(dict_row[i])
+                dict_row.update(inn=str(int(dict_row['inn'])))
+                data = schemas.ContactCreate(**dict_row)
+                data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
+                print('data_none_values_redefined =', data_none_values_redefined)
+                prevalidation = schemas.ContactValidation(**data_none_values_redefined.model_dump())
+                print('prevalidation =', prevalidation)
+                res = crud.create_contact(db=db, item=data_none_values_redefined)
+                res = crud.posting_contact(db=db, item_id=res.id)
+                cnt += 1
+    except Exception as e:
+        msg = {'status': 'error', 'message': f'создано {cnt} объектов, на строке {cnt+1} ошибка контента', 'exception': str(e)}
+        print(msg)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'создано объектов - {cnt}, на строке {cnt+1} ошибка контента')
+
+    
+    return {'status_code': status.HTTP_201_CREATED, 'detail': f'ok. создано объектов - {cnt}'}
+
+
+# upload file excel (new 26.08.25)
+@app.put("/upload_file/")
+async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    entity: Annotated[str, Form()], file: UploadFile, db: Session = Depends(get_db)):
+    try:
+        filecontent = file.file.read()
+        if not os.path.exists('uploaded_files'):
+            os.makedirs("uploaded_files")
+        file_location = f"uploaded_files/{file.filename}"
+        with open(file_location, "wb+") as file_object:
+            file_object.write(filecontent)
+    except Exception as e:
+        msg = {'status': 'error', 'message': 'file uploading or saving error', 'exception': str(e)}
+        print(msg)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'ошибка загрузки или сохранения файла на сервере')
+
+    load_res = load_excel(entity, file_location, db=db)
+
+    return load_res
+
 
 # upload file (document)
 @app.put("/upload_file_for_carpass/{related_doc_uuid}")

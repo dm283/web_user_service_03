@@ -12,7 +12,6 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
-
 const itemFields = [
     'name',
     'inn',
@@ -25,11 +24,8 @@ const itemFields = [
     'comment',
   ]
 
-
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
 const emit = defineEmits(['docCreated', 'closeModal', 'btnDelete'])
-
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
   isCard: Boolean,   // card - true
