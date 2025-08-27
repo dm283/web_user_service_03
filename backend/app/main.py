@@ -236,31 +236,37 @@ def load_excel(entity, file_location, db):
         df = pd.read_excel(file_location)
         print(df)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'error - file {file_location} wrong format, exception={str(e)}')
-        # msg = {'status': 'error', 'message': f'error - file {file_location} wrong format'}
-        # print(msg)
-        # return msg
-    
+        print(e)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'неверный формат файла')
+
     df = df.fillna('')
+    if len(df) == 0:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'0 записей в файле')
 
     try:
+        cnt = 0
         if entity == 'clients':
             for index, row in df.iterrows():
                 dict_row = row.to_dict()
                 dict_row.update(type='V')
-                dict_row.update(inn=str(dict_row['inn']))
+                for i in dict_row:
+                    dict_row[i] = str(dict_row[i])
+                dict_row.update(inn=str(int(dict_row['inn'])))
                 data = schemas.ContactCreate(**dict_row)
                 data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
-                #print('data_none_values_redefined =', data_none_values_redefined)
+                print('data_none_values_redefined =', data_none_values_redefined)
+                prevalidation = schemas.ContactValidation(**data_none_values_redefined.model_dump())
+                print('prevalidation =', prevalidation)
                 res = crud.create_contact(db=db, item=data_none_values_redefined)
                 res = crud.posting_contact(db=db, item_id=res.id)
+                cnt += 1
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'error - file {file_location} wrong content, exception={str(e)}')
-        # msg = {'status': 'error', 'message': f'error - file {file_location} wrong content', 'exception': str(e)}
-        # print(msg)
-        # return msg
+        msg = {'status': 'error', 'message': f'создано {cnt} объектов, на строке {cnt+1} ошибка контента', 'exception': str(e)}
+        print(msg)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'создано объектов - {cnt}, на строке {cnt+1} ошибка контента')
+
     
-    return {'status_code': status.HTTP_403_FORBIDDEN, 'detail': f'ok, file_location: {file_location}'}
+    return {'status_code': status.HTTP_201_CREATED, 'detail': f'ok. создано объектов - {cnt}'}
 
 
 # upload file excel (new 26.08.25)
@@ -275,8 +281,9 @@ async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_acti
         with open(file_location, "wb+") as file_object:
             file_object.write(filecontent)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'file uploading or saving error, exception={str(e)}')
-        return {'status': 'error', 'message': 'file uploading or saving error', 'exception': str(e)}
+        msg = {'status': 'error', 'message': 'file uploading or saving error', 'exception': str(e)}
+        print(msg)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'ошибка загрузки или сохранения файла на сервере')
 
     load_res = load_excel(entity, file_location, db=db)
 

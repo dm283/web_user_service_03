@@ -23,8 +23,11 @@ const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
 
+const msgOkStyle = 'text-green-500'
+const msgErrStyle = 'text-red-500'
+
 const file = ref(null)
-const res_message = ref()
+const res_message = reactive({})
 
 const previewFiles = async (entity) => {
   let formData = new FormData();
@@ -35,10 +38,13 @@ const previewFiles = async (entity) => {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_file/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       console.log('Ok', response.data)
-      res_message.value = response.data
+      res_message['msg'] = response.data.detail
+      res_message['status'] = 'ok'
     } catch (error) {
       console.error('Error uploading file', error.response.data);
-      res_message.value = error.response.data
+      res_message['msg'] = error.response.data.detail
+      res_message['status'] = 'error'
+
     }; } }
 
 </script>
@@ -47,9 +53,11 @@ const previewFiles = async (entity) => {
 <template>
 <div class="p-3">
   <div class="text-xl font-normal mb-5">Загрузка списков Excel</div>
-  <div class="" >Загрузить список клиентов</div>
-  <input ref="file" name="file" type="file" @change="previewFiles('clients')" class="formInputFile"/>
-  <div class="">{{ res_message }}</div>
+  <div class="inline-block mr-5" >Загрузить список клиентов</div>
+  <input ref="file" name="file" type="file" @change="previewFiles('clients')" class="formInputFile inline-block mr-5"/>
+  <div class="inline-block mr-5" :class="[res_message['status']=='ok' ? msgOkStyle : msgErrStyle]">
+    {{ res_message['msg'] }}
+  </div>
 </div>
 </template>
 
