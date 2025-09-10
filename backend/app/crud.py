@@ -455,7 +455,6 @@ def create_user(db: Session, user: schemas.UserCreate):
     uuid=str(uuid4())
     hashed_password=password_context.hash(user.password)
 
-    print('user.password=',user.password)
     db_user = models.User(
         **user.model_dump(exclude='password'),
         uuid=uuid,
@@ -559,7 +558,6 @@ def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd):
     if new_pwd:
         password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         hashed_password=password_context.hash(new_pwd)
-        print(new_pwd, 'hashed_password=',hashed_password)
         setattr(item_from_db, 'hashed_password', hashed_password)
         db.commit()
 
@@ -1132,7 +1130,7 @@ def get_user(db: Session, user_id: int):
 
 def get_user_by_login(db: Session, login: str):
     #
-    return db.query(models.User).filter(models.User.login==login, models.User.posted==True, models.User.is_active==True).first()
+    return db.query(models.User).filter(models.User.login==login, models.User.posted==True).first()
 
 
 # def get_users(db: Session, skip: int = 0, limit: int = 100):
