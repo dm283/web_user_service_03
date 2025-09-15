@@ -377,7 +377,7 @@ class RelatedBrokerContactWithJoins(BaseModel):
 
 #############
 class BatchCreate(BaseModel):
-    carpass_uuid: str | None = None
+    carpass_uuid: str
     status: str = 'terminal'
     tn_id: str
     contact_uuid: str
