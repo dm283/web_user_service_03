@@ -387,21 +387,6 @@ const refreshCard = async () => {
           :required="true" :disabled="isCard" />
         </div>
 
-        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
-                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect['contact_name_input']=false; 
-                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid;
-                  getBrokers(item.uuid);form['broker_name_input']=null;form['broker_uuid']=null" >
-                {{ item.name }}
-            </div>
-          </div>
-        </div> -->
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
             <div :class=formInputStyle class="flex">
               <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
@@ -424,29 +409,12 @@ const refreshCard = async () => {
             </div>
           </div>
         </div>
+        
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
 
-        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
-            <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none" type="text" v-model="form.broker_name_input" 
-                  @keyup="setFilter('broker_name_input', 'brokers', 'broker_name')" :required="false"/>
-              <span @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
-                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['broker_name_input']=false; 
-                  form['reserve_2']=null;form['broker_name_input']=null;form['broker_uuid']=null">
-                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
-            </div>
-          <div v-if="showDropDownSelect['broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect['broker_name_input']=false; 
-                  form['reserve_2']=item.broker_name;form['broker_name_input']=item.broker_name;form['broker_uuid']=item.broker_uuid" >
-                {{ item.broker_name }}
-            </div>
-          </div>
-        </div> -->
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
             <div :class=formInputStyle class="flex">
               <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.broker_name_input" 
@@ -475,22 +443,6 @@ const refreshCard = async () => {
       </div>
 
       <div class="flex">
-        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Номер машины</label>
-          <div :class=formInputStyle class="flex">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.carpass_ncar_input" 
-                @keyup="setFilter('carpass_ncar_input', 'carpasses', 'ncar')" :required="true"/>
-            <span @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_2');">
-              <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect['carpass_ncar_input']" class="bg-white border border-slate-400 rounded-md shadow-xl 
-              w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect['carpass_ncar_input']=false; 
-                  form['reserve_2']=item.ncar;form['carpass_ncar_input']=item.ncar;form['carpass_uuid']=item.uuid" >
-                {{ item.ncar }}
-            </div>
-          </div>
-        </div> -->
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Номер машины</label>
             <div :class=formInputStyle class="flex">
               <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.carpass_ncar_input" 
