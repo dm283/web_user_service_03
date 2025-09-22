@@ -34,7 +34,9 @@ backend/app/__pycache__/
 backend/venv/
 backend/logs/
 backend/config.ini
+backend/alembic.ini
 backend/saved_files
 backend/uploaded_files
+backend/alembic
 
 todo.txt

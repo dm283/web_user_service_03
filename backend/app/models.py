@@ -1,10 +1,7 @@
-import datetime
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, Float, String, Date, Time, DateTime, LargeBinary
-from sqlalchemy.orm import relationship
-
 from app.database import Base
 
-
+  
 class RelatedDocs(Base):
     __tablename__ = 'related_docs'
     id = Column(Integer, primary_key=True)
