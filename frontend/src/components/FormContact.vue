@@ -368,10 +368,10 @@ async function downloadFile(document_id) {
           </div>
           <div v-if="showDropDownSelect['linked_broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect['linked_broker_name_input']=false; 
-                  state.new_brokers.push({'name': item.name, 'inn': item.inn, 'uuid': item.uuid});
-                  form['reserve_1']=item.name;form['linked_broker_name_input']=''" >
-                {{ item.name }}
+              @click="showDropDownSelect['linked_broker_name_input']=false; 
+                if(!state.new_brokers.some(el=>el.uuid===item.uuid)){state.new_brokers.push({'name': item.name, 'inn': item.inn, 'uuid': item.uuid})};
+                form['reserve_1']=item.name;form['linked_broker_name_input']=''" >
+              {{ item.name }}
             </div>
           </div>
         </div>

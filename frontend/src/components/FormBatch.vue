@@ -62,7 +62,7 @@ const form = reactive({});
 const showAskCloseWithoutSave = ref(false)
 
 const getBrokers = async (client_uuid) => {
-  if (!client_uuid) { return }
+  if (!client_uuid) { state.brokers = []; return }
   let response = await axios.get(`http://${backendIpAddress}:${backendPort}/related_contact_broker/${client_uuid}`,
         {headers: authHeader()} );
   state.brokers = response.data;
@@ -89,14 +89,14 @@ onMounted(async () => {
       if (props.itemData.contact_uuid) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
         {headers: authHeader()} );
-      form['contact_name_input'] = response2.data.name
-      state.initial_contact_name = response2.data.name
+      form['contact_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
+      state.initial_contact_name = response2.data.name + ' (' + response2.data.inn + ')'
       }
       if (props.itemData.broker_uuid) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.broker_uuid}`,
         {headers: authHeader()} );
-      form['broker_name_input'] = response2.data.name
-      state.initial_broker_name = response2.data.name
+      form['broker_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
+      state.initial_broker_name = response2.data.name + ' (' + response2.data.inn + ')'
       }
       if (props.itemData.carpass_uuid) {
       const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
@@ -137,12 +137,23 @@ const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border bo
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 
 
-const setFilter = (fieldForm, entity, fieldEntity) => {
+// const setFilter = (fieldForm, entity, fieldEntity) => {
+//   // for dropdowns
+//   state.filteredList = [];
+//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
+//   for (let rec of state[entity]) {
+//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); }; }; };
+
+const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
   // for dropdowns
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
   for (let rec of state[entity]) {
-    if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); }; }; };
+    if ( rec[fieldEntity1].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); };
+    if (fieldEntity2) {
+      if ( rec[fieldEntity2].toString().toUpperCase().indexOf(state.formValue) > -1 ) { 
+        if ( !state.filteredList.includes(rec) ) {state.filteredList.push(rec)} }; }
+  }; };
 
 const setVars = (inputField, reserveField) => {
   // for dropdowns
@@ -279,7 +290,7 @@ const handleSubmit = async () => {
     emit('closeModal'); emit('openEditAfterCreate', state.responseItem, 'Партии товаров')
   } catch (error) {
     console.error('Error adding item', error);
-    toast.error('Item has not added');
+    toast.error('Ошибка записи');
   };
 };
 
@@ -377,43 +388,38 @@ const refreshCard = async () => {
         </div>
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
-                @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
+                @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');"
+                @keyup="setFilter('contact_name_input', 'contacts', 'name', 'inn')" :required="true"/>
+              <span @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['contact_name_input']=false; 
+                  form['reserve_1']=null;form['contact_name_input']=null;form['contact_uuid']=null;
+                  getBrokers(null);form['reserve_2']=null;form['broker_name_input']=null;form['broker_uuid']=null">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['contact_name_input']=false; 
-                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid;
+                  form['reserve_1']=item.name;form['contact_name_input']=(item.name+' ('+item.inn+')');
+                  form['contact_uuid']=item.uuid 
                   getBrokers(item.uuid);form['broker_name_input']=null;form['broker_uuid']=null" >
-                {{ item.name }}
+                {{ item.name }} ({{ item.inn }})
             </div>
           </div>
         </div>
+        
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
 
-         <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
-            <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
-              <input class="w-64 focus:outline-none" type="text" v-model="form.broker_name_input" 
-                  @keyup="setFilter('broker_name_input', 'brokers', 'broker_name')" :required="false"/>
-              <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-            </div>
-          <div v-if="showDropDownSelect['broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect['broker_name_input']=false; 
-                  form['reserve_2']=item.broker_name;form['broker_name_input']=item.broker_name;form['broker_uuid']=item.broker_uuid" >
-                {{ item.broker_name }}
-            </div>
-          </div>
-        </div> -->
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
             <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none" type="text" v-model="form.broker_name_input" 
-                  @keyup="setFilter('broker_name_input', 'brokers', 'broker_name')" :required="false"/>
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.broker_name_input" 
+                @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2')"
+                @keyup="setFilter('broker_name_input', 'brokers', 'broker_name', 'broker_inn')" :required="false"/>
               <span @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
                 <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
               <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['broker_name_input']=false; 
@@ -423,8 +429,9 @@ const refreshCard = async () => {
           <div v-if="showDropDownSelect['broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['broker_name_input']=false; 
-                  form['reserve_2']=item.broker_name;form['broker_name_input']=item.broker_name;form['broker_uuid']=item.broker_uuid" >
-                {{ item.broker_name }}
+                  form['reserve_2']=item.broker_name;form['broker_name_input']=(item.broker_name+' ('+item.broker_inn+')');
+                  form['broker_uuid']=item.broker_uuid" >
+                {{ item.broker_name }} ({{ item.broker_inn }})
             </div>
           </div>
         </div>
@@ -437,17 +444,20 @@ const refreshCard = async () => {
 
       <div class="flex">
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Номер машины</label>
-          <div :class=formInputStyle class="flex">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.carpass_ncar_input" 
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.carpass_ncar_input" 
+                @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_3')"
                 @keyup="setFilter('carpass_ncar_input', 'carpasses', 'ncar')" :required="true"/>
-            <span @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_2');">
-              <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect['carpass_ncar_input']" class="bg-white border border-slate-400 rounded-md shadow-xl 
-              w-64 max-h-24 overflow-auto p-1 absolute z-10">
+              <span @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_3');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['carpass_ncar_input']=false; 
+                  form['reserve_3']=null;form['carpass_ncar_input']=null;form['carpass_uuid']=null">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['carpass_ncar_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['carpass_ncar_input']=false; 
-                  form['reserve_2']=item.ncar;form['carpass_ncar_input']=item.ncar;form['carpass_uuid']=item.uuid" >
+                  form['reserve_3']=item.ncar;form['carpass_ncar_input']=item.ncar;form['carpass_uuid']=item.uuid" >
                 {{ item.ncar }}
             </div>
           </div>
