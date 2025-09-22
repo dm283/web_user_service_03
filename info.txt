@@ -1,7 +1,18 @@
+INITIAL DEPLOY
+...
+alembic init alembic
+alembic/env.py:
+	import models
+	target_metadata = models.Base.metadata
+	SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:pwd@localhost/dbname'
+	config.set_main_option('sqlalchemy.url', SQLALCHEMY_DATABASE_URL)
+alembic revision --autogenerate -m "init (or any next)"
+alembic upgrade head
 
+
+START APPLICATION
 === backend ===
 uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8000
-
 uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8000 --reload
 
 === frontend ===
