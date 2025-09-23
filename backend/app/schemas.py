@@ -6,6 +6,7 @@ from fastapi import UploadFile
 
 class CarpassCreate(BaseModel):
     ncar: str
+    contact_uuid: str
     dateen: date | str | None = None
     timeen: time | str | None = None
     ntir: str | None = None
@@ -20,11 +21,6 @@ class CarpassCreate(BaseModel):
     driver_licence: str | None = None
     car_model: str | None = None
     entry_type: str | None = None
-    contact: int | str | None = None
-    contact_name: str | None = None
-    contact_uuid: str | None = None
-    # contact_broker: int | str | None = None
-    # broker_name: str | None = None
     place_n: str | None = None
     nav_seal: bool
     radiation: bool
@@ -35,7 +31,6 @@ class CarpassCreate(BaseModel):
     timeex: time | str | None = None
     status: str = 'parking'
     exitcarpass_created: bool = False
-
 
 class CarpassValidation(BaseModel):
     ncar: str
@@ -53,18 +48,12 @@ class CarpassValidation(BaseModel):
     driver_licence: str
     car_model: str
     entry_type: str
-    contact: int
-    contact_name: str
     contact_uuid: str
-    # contact_broker: int
-    # broker_name: str
     place_n: str
-
 
 class CarpassUpdate(CarpassCreate):
     updated_datetime: datetime
     
-
 class Carpass(CarpassCreate):
     id: int
     uuid: str
@@ -78,6 +67,10 @@ class Carpass(CarpassCreate):
 
     class Config:
         from_attributes = True
+
+class CarpassJoined(Carpass):
+    contact_name: str
+    
 
 ##############
 class ExitcarpassCreate(BaseModel):
@@ -93,7 +86,6 @@ class ExitcarpassCreate(BaseModel):
     timeex: time | str | None = None
     status: str = 'default'
 
-
 class ExitcarpassValidation(BaseModel):
     id_enter: str
     ncar: str
@@ -104,11 +96,9 @@ class ExitcarpassValidation(BaseModel):
     dateex: date
     timeex: time
 
-
 class ExitcarpassUpdate(ExitcarpassCreate):
     updated_datetime: datetime
     
-
 class Exitcarpass(ExitcarpassCreate):
     id: int
     uuid: str

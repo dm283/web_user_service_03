@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from typing import Union
 from datetime import datetime
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 config = configparser.ConfigParser()
@@ -14,6 +13,27 @@ if os.path.exists(config_file):
 else:
     print("error! config file doesn't exist"); sys.exit()
 
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from urllib.parse import quote_plus
+
+DB2_USER = config['db2']['user']
+DB2_PWD = quote_plus(config['db2']['pwd'])
+DB2_SERVER = config['db2']['server']
+DB2_NAME = config['db2']['db_name']
+
+#SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:%s@localhost/mts_pro' % quote_plus('s2d3f4!@')
+SQLALCHEMY_DATABASE_URL = f'postgresql://{DB2_USER}:{DB2_PWD}@{DB2_SERVER}/{DB2_NAME}'
+# SQLALCHEMY_DATABASE_URL = 'mssql+pyodbc://' + 'LAPTOP-MR8NJ1DK\SQLEXPRESS' + '/' + 'dev_db_1' + '?trusted_connection=yes&encrypt=no&driver=ODBC+Driver+18+for+SQL+Server'
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+################
 
 DB_CONNECTION_STRING = config['db']['db_connection_string']
 DB_NAME = config['db']['db_name']
@@ -285,20 +305,4 @@ def select_dashboard_data(selects_keys_list=select, filters:Union[dict, None]=No
 
 #################
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
-from urllib.parse import quote_plus
-
-#SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
-SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:%s@localhost/mts_pro' % quote_plus('s2d3f4!@')
-# SQLALCHEMY_DATABASE_URL = 'mssql+pyodbc://' + 'LAPTOP-MR8NJ1DK\SQLEXPRESS' + '/' + 'dev_db_1' + '?trusted_connection=yes&encrypt=no&driver=ODBC+Driver+18+for+SQL+Server'
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    # connect_args={"check_same_thread": False} # for sqlite
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()

@@ -535,14 +535,14 @@ def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return items
 
 
-@app.get('/carpasses/', response_model=list[schemas.Carpass])
+@app.get('/carpasses/', response_model=list[schemas.CarpassJoined])
 def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_carpasses(db, skip=skip, limit=limit)
     return items
 
 
-@app.get('/carpasses_client/{type}/{contact_uuid}', response_model=list[schemas.Carpass])
+@app.get('/carpasses_client/{type}/{contact_uuid}', response_model=list[schemas.CarpassJoined])
 def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    type: str, contact_uuid: str,
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -564,7 +564,7 @@ def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_
     return items
 
 
-@app.get('/car_terminal/', response_model=list[schemas.Carpass])
+@app.get('/car_terminal/', response_model=list[schemas.CarpassJoined])
 def read_car_at_terminal(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_cars_at_terminal(db, skip=skip, limit=limit)

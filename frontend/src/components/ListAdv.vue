@@ -600,7 +600,7 @@ const rowClick = (index, item) => {
       @click="emit('btnRollback', selectedItem, props.name)" 
       :disabled="!selectedItem | !selectedItem.posted | selectedItem.exitcarpass_created | selectedItem.carpass_created" 
       v-if="(['Пропуска ТС на въезд','Партии товаров'].includes(props.name) & userInfo.contact_id==0) | 
-      ['Пропуска ТС на выезд','Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name)"
+      ['Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name)"
     >
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>
     </button>

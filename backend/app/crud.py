@@ -194,8 +194,19 @@ def get_entry_requests_client(type: str, contact_uuid: str, db: Session, skip: i
 
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.Carpass).filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
-        order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
+    main_table = aliased(models.Carpass)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+
+    return db_full_response
 
 
 def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
@@ -218,10 +229,20 @@ def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 
         if rec.carpass_uuid not in carpass_uuid_list:
             carpass_uuid_list.append(rec.carpass_uuid)
     
-    return db.query(models.Carpass).\
-        filter(models.Carpass.uuid.in_(carpass_uuid_list)).\
-        filter(models.Carpass.is_active == True).order_by(models.Carpass.created_datetime.desc()).\
-        offset(skip).limit(limit).all()
+    main_table = aliased(models.Carpass)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        filter(main_table.uuid.in_(carpass_uuid_list)).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+
+    return db_full_response
 
 
 def get_carpasses_posted(db: Session, skip: int = 0, limit: int = 100):
@@ -240,8 +261,23 @@ def get_carpasses_posted_not_archival(db: Session, skip: int = 0, limit: int = 1
 
 def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.Carpass).filter(models.Carpass.is_active==True, models.Carpass.posted==True, models.Carpass.dateex==None).\
-        order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
+    main_table = aliased(models.Carpass)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        filter(main_table.is_active==True, main_table.posted==True, main_table.dateex==None).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+
+    return db_full_response
+
+    # return db.query(models.Carpass).filter(models.Carpass.is_active==True, models.Carpass.posted==True, models.Carpass.dateex==None).\
+    #     order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_cars_at_terminal_for_exit(db: Session, skip: int = 0, limit: int = 100):
@@ -360,6 +396,10 @@ def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
 
 def create_carpass(db: Session, item: schemas.CarpassCreate):
     # creates a enter carpass
+    if db.query(models.Carpass).filter(models.Carpass.ncar==item.ncar, models.Carpass.status!='archival').first():
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Ошибка: пропуск для ТС {item.ncar} создан и активен.")
+
+
     last_created_carpass_from_db =  db.query(models.Carpass).order_by(models.Carpass.id.desc()).first()
     id_enter = '1' if last_created_carpass_from_db is None else str(int(last_created_carpass_from_db.id_enter) + 1)
     created_datetime = datetime.datetime.now()

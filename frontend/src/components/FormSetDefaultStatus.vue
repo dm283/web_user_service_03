@@ -55,7 +55,7 @@ const handleSubmit = async () => {
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mt-5">
       
-      <div class="my-3 space-x-5 py-3 text-center">
+      <div class="my-3 flex justify-left space-x-5 py-3 px-5 text-center">
         <button
           class="formBtn"
           type="submit"
