@@ -505,14 +505,14 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
     return contacts
 
 
-@app.get('/entry_requests/', response_model=list[schemas.EntryRequest])
+@app.get('/entry_requests/', response_model=list[schemas.EntryRequestJoined])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_entry_requests(db, skip=skip, limit=limit)
     return items
 
 
-@app.get('/entry_requests_client/{type}/{contact_uuid}', response_model=list[schemas.EntryRequest])
+@app.get('/entry_requests_client/{type}/{contact_uuid}', response_model=list[schemas.EntryRequestJoined])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         type: str, contact_uuid: str,
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

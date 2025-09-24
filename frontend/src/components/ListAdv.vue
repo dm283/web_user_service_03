@@ -413,6 +413,9 @@ const dataRender = () => {
     if (props.name=='Заявки на въезд ТС') {
       if (renderedData[i].status=='entered') { listRowStyle[i] = 'bg-blue-50' }
     }
+    if (props.name=='Пропуска ТС на въезд') {
+      if (renderedData[i].status=='archival') { listRowStyle[i] = 'bg-blue-50' }
+    }
     listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
 

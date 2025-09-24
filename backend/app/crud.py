@@ -173,23 +173,43 @@ def get_batches_client(type: str, contact_uuid: str, db: Session, skip: int = 0,
 
 def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
     #
-    return db.query(models.EntryRequest).filter(models.EntryRequest.is_active == True).\
-        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
-        offset(skip).limit(limit).all()
+    main_table = aliased(models.EntryRequest)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        db_full_response.append(schemas.EntryRequestJoined(**row[0].__dict__, contact_name=contact_name))
+
+    return db_full_response
 
 
 def get_entry_requests_client(type: str, contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
-    #
+    #   
+    main_table = aliased(models.EntryRequest)
+    contact_1 = aliased(models.Contact)
+
     if type == 'V':
-        return db.query(models.EntryRequest).filter(models.EntryRequest.contact_uuid==contact_uuid).\
-            filter(models.EntryRequest.is_active == True).\
-            order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
-            offset(skip).limit(limit).all()
+        response = db.query(main_table, contact_1).\
+            filter(main_table.contact_uuid==contact_uuid).filter(main_table.is_active == True).\
+            join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+            order_by(main_table.dateen, main_table.timeen).all()
     if type == 'B':
-        return db.query(models.EntryRequest).filter(models.EntryRequest.broker_uuid==contact_uuid).\
-            filter(models.EntryRequest.is_active == True).\
-            order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
-            offset(skip).limit(limit).all()
+        response = db.query(main_table, contact_1).\
+            filter(main_table.broker_uuid==contact_uuid).filter(main_table.is_active == True).\
+            join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+            order_by(main_table.dateen, main_table.timeen).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        db_full_response.append(schemas.EntryRequestJoined(**row[0].__dict__, contact_name=contact_name))
+
+    return db_full_response
 
 
 def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
@@ -398,7 +418,6 @@ def create_carpass(db: Session, item: schemas.CarpassCreate):
     # creates a enter carpass
     if db.query(models.Carpass).filter(models.Carpass.ncar==item.ncar, models.Carpass.status!='archival').first():
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Ошибка: пропуск для ТС {item.ncar} создан и активен.")
-
 
     last_created_carpass_from_db =  db.query(models.Carpass).order_by(models.Carpass.id.desc()).first()
     id_enter = '1' if last_created_carpass_from_db is None else str(int(last_created_carpass_from_db.id_enter) + 1)

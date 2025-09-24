@@ -92,16 +92,16 @@ onMounted(async () => {
 };
 
 // for dropdowns
+const setContactNameInput = async (uuid) => {
+  let res = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${uuid}`,{headers: authHeader()} );
+  form['contact_name_input'] = res.data.name; state.initial_contact_name = res.data.name
+}
+
+// for dropdowns
 if (props.itemData) {
 onMounted(async () => {
-    try {
-      if (props.itemData.contact_uuid) {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
-        {headers: authHeader()} );
-      form['contact_name_input'] = response.data.name
-      state.initial_contact_name = response.data.name
-      }
-    } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
+    try { if (props.itemData.contact_uuid) { setContactNameInput(props.itemData.contact_uuid) } } 
+    catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };
 
 // get documents
@@ -131,31 +131,6 @@ const saveBtnStyle0 = 'text-slate-400 text-sm font-semibold border border-slate-
 const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border border-slate-400 rounded-lg \
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 
-// const setFilter = (fieldForm, entity, fieldEntity) => {
-//   // filter setting
-//   state.filteredList = [];
-//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-//   for (let rec of state[entity]) {
-//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
-//       state.filteredList.push(rec);
-//     };
-//   };
-//   if (state.filteredList.length == 0) {
-//     for (let xobj of state[entity]) {
-//       let clonedObj = {...xobj};
-//       state.filteredList.push(clonedObj);
-//     };
-//   }
-// };
-
-// const setFilter = (fieldForm, entity, fieldEntity) => {
-//   // for dropdowns
-//   state.filteredList = [];
-//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-//   for (let rec of state[entity]) {
-//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); }; }; };
-
-
 const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
   // for dropdowns
   state.filteredList = [];
@@ -178,7 +153,6 @@ const setInitialForm = () => {
   if (props.itemData) { // card and update
     for (let field of itemFields) {
       form[field] = props.itemData[field]
-      //form['contact_name_input'] = props.itemData.contact_name  // fake form field for dropdown list
       form['contact_name_input'] = state.initial_contact_name  // for dropdowns
     }
   } else {  // create
@@ -199,6 +173,7 @@ setInitialForm();
 // set values from choosen entry_request
 const setFormValues = () => {
   for (let field of itemFields) {form[field] = selectedItem.value[field]}
+  setContactNameInput(selectedItem.value['contact_uuid']);
   form.radiation = false; form.brokenAwning = false; form.brokenSeal = false; form.nav_seal = false;
 }
 

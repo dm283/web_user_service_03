@@ -34,8 +34,8 @@ const itemFields = [
     'driver_licence',
     'car_model',
     'entry_type',
-    'contact',
-    'contact_name',
+    // 'contact',
+    // 'contact_name',
     'contact_uuid',
     'broker_uuid',
     'ntir',
@@ -123,29 +123,17 @@ const saveBtnStyle0 = 'text-slate-400 text-sm font-semibold border border-slate-
 const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border border-slate-400 rounded-lg \
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 
-const setFilter = (fieldForm, entity, fieldEntity) => {
+
+const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
   // for dropdowns
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
   for (let rec of state[entity]) {
-    if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); }; }; };
-
-// const setFilter = (fieldForm, entity, fieldEntity) => {
-//   // filter setting
-//   state.filteredList = [];
-//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-//   for (let rec of state[entity]) {
-//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
-//       state.filteredList.push(rec);
-//     };
-//   };
-//   if (state.filteredList.length == 0) {
-//     for (let xobj of state[entity]) {
-//       let clonedObj = {...xobj};
-//       state.filteredList.push(clonedObj);
-//     };
-//   }
-// };
+    if ( rec[fieldEntity1].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); };
+    if (fieldEntity2) {
+      if ( rec[fieldEntity2].toString().toUpperCase().indexOf(state.formValue) > -1 ) { 
+        if ( !state.filteredList.includes(rec) ) {state.filteredList.push(rec)} }; }
+  }; };
 
 const setVars = (inputField, reserveField) => {
   // for dropdowns
@@ -170,8 +158,8 @@ const setInitialForm = () => {
   };
 
   if (userInfo.contact_id!=0 & userInfo.type=='V') {  // for the client service
-    form.contact = userInfo.contact_id
-    form.contact_name = userInfo.contact_name
+    // form.contact = userInfo.contact_id
+    // form.contact_name = userInfo.contact_name
     form.contact_uuid = userInfo.contact_uuid
     form.contact_name_input = userInfo.contact_name
   }
@@ -192,7 +180,6 @@ watch(form, (nV, oV) => {
       if (props.itemData) {  // edit card
         if (form[field] == '' & props.itemData[field] == null) { isNV[field] = false; continue; }
         if (form[field] != props.itemData[field]) { 
-          // console.log('new value!!!!!!!', form[field], props.itemData[field])
           isNV[field] = true;
         } else { isNV[field] = false; }
       }
@@ -203,7 +190,6 @@ watch(form, (nV, oV) => {
   }
   isNeedSave.value = false
   for (let field of itemFields) { if (isNV[field] == true) { 
-    // console.log('NEEDED TO SAVE FOR NV!'); 
     isNeedSave.value = true; break; 
   } }
 });
@@ -272,7 +258,6 @@ const handleSubmit = async () => {
       }
     }
 
-    // emit('docCreated'); emit('closeModal');
     for (let field of itemFields) { 
       isNV[field] = false; 
       errField[field] = 0; 
@@ -345,7 +330,7 @@ const refreshCard = async () => {
   <!-- <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden"> -->
   <div class="w-3/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
-      Заявка на въезд <span v-if="props.itemData">№ {{ props.itemData.id_entry_request }}</span>
+      Заявка на въезд <span v-if="props.itemData">#{{ props.itemData.id_entry_request }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="closeIt()"></i>
       </div>
@@ -374,29 +359,7 @@ const refreshCard = async () => {
           :required="true" :disabled="isCard" />
         </div>
 
-        <!-- fake field 'contact_name_input' for dropdown list -->
-        <!-- <div class="formInputDiv" v-if="(!props.itemData) & userInfo.contact_id==0">
-          <label class=formLabelStyle>Клиент</label>
-          <div :class=formInputStyle class="flex" @click="setFilter('contact_name_input', 'contacts', 'name'); 
-              showDropDownSelect.contact_name_input ? showDropDownSelect.contact_name_input=false : showDropDownSelect.contact_name_input=true;">
-            <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
-              @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
-            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-          </div>
-          <div v-if="showDropDownSelect.contact_name_input" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-              @click="form.contact=item.id; showDropDownSelect.contact_name_input=false; 
-                form.contact_name=item.name;form.contact_name_input=item.name;form.contact_uuid=item.uuid" >
-              {{ item.name }}
-            </div>
-          </div>
-        </div>
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
-          <input type="text" v-model="form.contact_name" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="true" />
-        </div> -->
-
-        <div class="formInputDiv" v-if="(!props.isCard) & (userInfo.contact_id==0 || userInfo.type=='B')">   <label class=formLabelStyle>Клиент</label>
+        <!-- <div class="formInputDiv" v-if="(!props.isCard) & (userInfo.contact_id==0 || userInfo.type=='B')">   <label class=formLabelStyle>Клиент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
                 @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
@@ -405,12 +368,32 @@ const refreshCard = async () => {
           <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['contact_name_input']=false; 
-                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid;
-                  form['contact']=item.id;form['contact_name']=item.name;" >
+                  form['reserve_1']=item.name;form['contact_name_input']=item.name;form['contact_uuid']=item.uuid;" >
                 {{ item.name }}
             </div>
           </div>
+        </div> -->
+
+        <div class="formInputDiv" v-if="(!props.isCard) & (userInfo.contact_id==0 || userInfo.type=='B')">   <label class=formLabelStyle>Клиент</label>
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
+                @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');"
+                @keyup="setFilter('contact_name_input', 'contacts', 'name', 'inn')" :required="true"/>
+              <span @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['contact_name_input']=false; 
+                  form['reserve_1']=null;form['contact_name_input']=null;form['contact_uuid']=null;">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['contact_name_input']=false; 
+                  form['reserve_1']=item.name;form['contact_name_input']=(item.name+' ('+item.inn+')');form['contact_uuid']=item.uuid" >
+                {{ item.name }} ({{ item.inn }})
+            </div>
+          </div>
         </div>
+
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />

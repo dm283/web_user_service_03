@@ -195,28 +195,25 @@ class EntryRequest(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
-    id_entry_request = Column(String(length=8), unique=True)
-    ncar = Column(String(length=60), unique=True)   # remove unique and add check if it exists and not archival
+    id_entry_request = Column(String, unique=True)
+    ncar = Column(String)   # remove unique and add check if it exists and not archival
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
     dateen = Column(Date)  # plan_dateen
     timeen = Column(Time)   # plan_timeen_from
     plan_timeen_to = Column(Time)
-    driver_fio = Column(String(length=50))
+    driver_fio = Column(String)
     driver_licence = Column(String)
     car_model = Column(String)
     entry_type = Column(String)
-
-    contact = Column(Integer)                   # deprecated
-    contact_name = Column(String(length=150))   # deprecated
-    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
-
+    #contact = Column(Integer)                   # deprecated
+    #contact_name = Column(String(length=150))   # deprecated
     broker_uuid = Column(String)
-    
-    ntir = Column(String(length=50))
+    ntir = Column(String)
     ntir_date = Column(Date)
-    customs_doc = Column(String(length=50))
+    customs_doc = Column(String)
     customs_doc_date = Column(Date)
     warehouse_upload = Column(Boolean, default=False)
-    comment = Column(String(length=250))
+    comment = Column(String)
     status = Column(String)
     
     carpass_created = Column(Boolean, default=False)

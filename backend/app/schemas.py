@@ -117,6 +117,7 @@ class Exitcarpass(ExitcarpassCreate):
 #############
 class EntryRequestCreate(BaseModel):
     ncar: str
+    contact_uuid: str
     dateen: date | str | None = None    # plan_dateen
     timeen: time | str | None = None   # plan_timeen_from
     plan_timeen_to: time | str | None = None
@@ -124,24 +125,21 @@ class EntryRequestCreate(BaseModel):
     driver_licence: str | None = None
     car_model: str | None = None
     entry_type: str | None = None
-    contact: int | str | None = None
-    contact_name: str | None = None
-    contact_uuid: str | None = None
-
-    broker_uuid: str | None = None  # new
-
+    # contact: int | str | None = None
+    # contact_name: str | None = None
+    broker_uuid: str | None = None
     ntir: str | None = None
     ntir_date: date | str | None = None
     customs_doc: str | None = None
     customs_doc_date: date | str | None = None
-    warehouse_upload: bool  # new
+    warehouse_upload: bool
     comment: str | None = None
     status: str = 'open'
     carpass_created: bool = False
 
-
 class EntryRequestValidation(BaseModel):
     ncar: str
+    contact_uuid: str
     dateen: date
     timeen: time
     plan_timeen_to: time
@@ -149,18 +147,15 @@ class EntryRequestValidation(BaseModel):
     driver_licence: str
     car_model: str
     entry_type: str
-    contact: int
-    contact_name: str
-    contact_uuid: str
+    # contact: int
+    # contact_name: str
     ntir: str
     ntir_date: date
     customs_doc: str
     customs_doc_date: date
 
-
 class EntryRequestUpdate(EntryRequestCreate):
     updated_datetime: datetime
-
 
 class EntryRequest(EntryRequestCreate):
     id: int
@@ -175,6 +170,9 @@ class EntryRequest(EntryRequestCreate):
 
     class Config:
         from_attributes = True
+
+class EntryRequestJoined(EntryRequest):
+    contact_name: str
 
 
 #####################
