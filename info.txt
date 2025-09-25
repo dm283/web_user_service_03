@@ -2,7 +2,7 @@ INITIAL DEPLOY
 ...
 alembic init alembic
 alembic/env.py:
-	import models
+	from app import models
 	target_metadata = models.Base.metadata
 	SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:pwd@localhost/dbname'
 	config.set_main_option('sqlalchemy.url', SQLALCHEMY_DATABASE_URL)
@@ -18,3 +18,9 @@ uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8000 --reload
 === frontend ===
 npm run dev -- --host
 
+
+UPDATE
+git pull
+pip install -r requirements.txt (if it necessary)
+alembic revision --autogenerate -m "init (or any next)"
+alembic upgrade head
