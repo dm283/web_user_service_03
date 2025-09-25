@@ -405,6 +405,7 @@ const dataRender = () => {
 
   for (let i = 0; i < renderedData.length; i++) {
     listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
+    if (['Электронный архив','Выбор документов'].includes(props.name)) { listRowStyle[i] = '' }
     if (props.name=='ТС на терминале') {
       if (renderedData[i].status=='exit_permitted') { listRowStyle[i] = 'bg-green-50' }
       else if (renderedData[i].status=='exit_prohibited') { listRowStyle[i] = 'bg-red-50' }

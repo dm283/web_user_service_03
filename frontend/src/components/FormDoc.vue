@@ -26,12 +26,9 @@ const itemFields = [
     'doc_name',
     'doc_id',
     'doc_date',
-    // 'contact_uuid',
-    // 'related_objects_uuid',
     'comment',
     'created_datetime',
     'user_uuid_create',
-    // 'post_user_id',
   ]
 
 const state = reactive({

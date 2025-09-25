@@ -99,25 +99,20 @@ class Document(Base):
 
 class DocumentRecord(Base):
     __tablename__ = "document_records"
-
     doc_name = Column(String)
     doc_id = Column(String)
     doc_date = Column(Date)
-    # contact_uuid = Column(String, ForeignKey('contacts.uuid'))   # depracated
-    # related_objects_uuid = Column(String)                        # depracated
     
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
     comment = Column(String)
     created_datetime = Column(DateTime)
-    
     user_uuid_create = Column(String)
-    
     updated_datetime = Column(DateTime, nullable=True, default=None)
-    post_date = Column(DateTime, nullable=True, default=None)
-    post_user_id = Column(String, nullable=True, default=None)
-    posted = Column(Boolean, default=False)
-    was_posted = Column(Boolean, default=False)
+    post_date = Column(DateTime, nullable=True, default=None)   # depracated
+    post_user_id = Column(String, nullable=True, default=None)  # depracated
+    posted = Column(Boolean, default=False)                      
+    was_posted = Column(Boolean, default=False)                  # depracated
     is_active = Column(Boolean, default=True)
 
 

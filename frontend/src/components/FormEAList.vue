@@ -42,7 +42,7 @@ state.query = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort
   `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
 // state.query = `http://${backendIpAddress}:${backendPort}/document_records/`
 state.listTableColumns = {
-    'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','created_datetime':'Дата загрузки'
+    'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','filename':'Файл','created_datetime':'Дата загрузки'
   };
 state.additionalColumns = {  };
 state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};

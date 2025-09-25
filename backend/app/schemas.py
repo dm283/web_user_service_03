@@ -242,6 +242,8 @@ class DocumentRecordJoined(DocumentRecord):
     contact_uuid: str | None
     attachment_datetime: str
 
+class DocumentRecordJoined2(DocumentRecord):
+    filename: str
 
 ################
 class UserBase(BaseModel):

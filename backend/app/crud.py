@@ -52,8 +52,23 @@ def get_document_by_uuid(db: Session, uuid: str):
 # def get_documents(db: Session, skip: int = 0, limit: int = 100):
 def get_document_records(db: Session, skip: int = 0, limit: int = 100):
     # retrives all document_records from database
-    return db.query(models.DocumentRecord).filter(models.DocumentRecord.is_active==True).\
-        order_by(models.DocumentRecord.created_datetime.desc()).offset(skip).limit(limit).all()
+    main_table = aliased(models.DocumentRecord)
+    tbl_2 = aliased(models.Document)
+
+    response = db.query(main_table, tbl_2).\
+        filter(main_table.is_active==True).\
+        join(tbl_2, tbl_2.related_doc_uuid == main_table.uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        filename=row[1].__dict__['filename'] if row[1] else None
+        db_full_response.append(schemas.DocumentRecordJoined2(**row[0].__dict__, filename=filename))
+
+    return db_full_response
+
+    # return db.query(models.DocumentRecord).filter(models.DocumentRecord.is_active==True).\
+    #     order_by(models.DocumentRecord.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_document_records_client(user_uuid: str, user_contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):

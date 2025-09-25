@@ -439,7 +439,7 @@ def get_document_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_a
 
 #########################################################    GET LIST OF ITEMS ENDPOINTS
 # @app.get('/documents/', response_model=list[schemas.Document])
-@app.get('/document_records/', response_model=list[schemas.DocumentRecord])
+@app.get('/document_records/', response_model=list[schemas.DocumentRecordJoined2])
 def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     # documents = crud.get_documents(db, skip=skip, limit=limit)
