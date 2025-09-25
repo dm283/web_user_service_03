@@ -87,10 +87,10 @@ if (props.itemData) {
 onMounted(async () => {
     try {
       if (props.itemData.contact_uuid) {
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
+      const res = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
         {headers: authHeader()} );
-      form['contact_name_input'] = response2.data.name
-      state.initial_contact_name = response2.data.name
+      form['contact_name_input'] = res.data.name + ' (' + res.data.inn + ')'
+      state.initial_contact_name = res.data.name + ' (' + res.data.inn + ')'
       }
     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };

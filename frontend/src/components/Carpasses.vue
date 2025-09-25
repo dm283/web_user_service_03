@@ -117,15 +117,14 @@ const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
 
 
-
 if (props.view_type == 'enter') {
   state.query = query_carpass;
   state.listTableColumns = {
     'id_enter':'№','ncar':'№ ТС','contact_name':'Клиент','nseal':'Номер пломбы',
     'place_n':'№ стоянки', 'dateen':'Дата въезда', 'timeen':'Время въезда','dateex':'Дата выезда', 'timeex':'Время выезда'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  if (userInfo.type=='V') { delete state.listTableColumns.contact_name; }
 } 
 else if (props.view_type == 'terminal') {
   state.query = query_car_terminal;
@@ -133,8 +132,7 @@ else if (props.view_type == 'terminal') {
     'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Клиент', 
     'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 } 
 else if (props.view_type == 'exitCarpass') {
   state.query = query_exitcarpass;
@@ -142,8 +140,7 @@ else if (props.view_type == 'exitCarpass') {
     'id_exit':'№', 'id_enter':'№ пропуска на въезд', 'ncar':'№ ТС', 'driver_fio':'ФИО водителя','driver_phone':'Телефон водителя для связи',
     'ndexit':'№ документа выпуска', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 else if (props.view_type == 'entryRequest') {
   state.query = query_entry_requests;
@@ -151,8 +148,8 @@ else if (props.view_type == 'entryRequest') {
     'dateen':'Дата въезда','timeen':'Время въезда с','plan_timeen_to':'Время въезда по','ncar':'№ ТС',
     'contact_name':'Клиент','entry_type':'Тип въезда'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  if (userInfo.type=='V') { delete state.listTableColumns.contact_name; }
 }
 else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   state.query = query_batches;
@@ -160,40 +157,37 @@ else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
     'tn_id':'№ ТН','ncar':'№ ТС','contact_name':'Клиент','broker_name':'Брокер','goods':'Описание товаров',
     'places_cnt':'Кол-во мест','weight':'Вес','created_datetime':'Дата создания'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  if (userInfo.type=='V') { delete state.listTableColumns.contact_name; }
+  if (userInfo.type=='B') { delete state.listTableColumns.broker_name; }
 }
 else if (props.view_type == 'contacts') {
   state.query = query_contacts;
   state.listTableColumns = {
     'name':'Наименование','inn':'ИНН', 'fio':'ФИО','email':'email','idtelegram':'idtelegram'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 else if (props.view_type == 'brokers') {
   state.query = query_brokers;
   state.listTableColumns = {
     'name':'Наименование','inn':'ИНН', 'fio':'ФИО','email':'email','idtelegram':'idtelegram'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 else if (props.view_type == 'users') {
   state.query = query_users;
   state.listTableColumns = {
     'login':'Логин','email':'email', 'contact_name':'Контрагент','type':'Тип контрагента'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 else if (props.view_type == 'documents') {
   state.query = query_documents;
   state.listTableColumns = {
     'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','filename':'Файл','created_datetime':'Дата загрузки'
   };
-  state.additionalColumns = {  };
-  state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 
 //

@@ -94,7 +94,8 @@ onMounted(async () => {
 // for dropdowns
 const setContactNameInput = async (uuid) => {
   let res = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${uuid}`,{headers: authHeader()} );
-  form['contact_name_input'] = res.data.name; state.initial_contact_name = res.data.name
+  form['contact_name_input'] = res.data.name + ' (' + res.data.inn + ')'
+  state.initial_contact_name = res.data.name + ' (' + res.data.inn + ')'
 }
 
 // for dropdowns
@@ -482,7 +483,7 @@ const refreshCard = async () => {
             </div>
           </div>
         </div>
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
+        <div class=formInputDiv v-if="props.isCard & userInfo.type!='V'">   <label class=formLabelStyle>Клиент</label>
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
