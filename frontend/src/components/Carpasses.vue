@@ -178,7 +178,7 @@ else if (props.view_type == 'brokers') {
 else if (props.view_type == 'users') {
   state.query = query_users;
   state.listTableColumns = {
-    'login':'Логин','email':'email', 'contact_name':'Контрагент','type':'Тип контрагента'
+    'login':'Логин','email':'email', 'contact_name':'Контрагент','type':'Тип контрагента','role_name':'Роль'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }

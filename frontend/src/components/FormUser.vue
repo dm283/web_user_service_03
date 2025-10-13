@@ -12,7 +12,17 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
+const toast = useToast();
+const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+const authHeader = () => {
+  let user = JSON.parse(localStorage.getItem('user')); 
+  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
+}
 
+//////////
 const itemFields = [
     'contact_id',
     'contact_uuid',
@@ -20,10 +30,8 @@ const itemFields = [
     'password',
     'email',
     'type',
+    'role_id',
   ]
-
-
-const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['docCreated', 'closeModal'])
 
@@ -35,16 +43,29 @@ const props = defineProps({
 const state = reactive({
   documents: [],
   isLoading: true,
+  filteredList: [],
   contacts: [],
+  roles: [],
 })
 
 const showDropDownSelect = reactive({});
 const errField = reactive({});
 const form = reactive({});
 const files = ref(null)
-const file = ref(null)
-const toast = useToast();
+
+const getRoles = async (partner_type) => {
+  if (!partner_type) { state.roles = []; return }
+  let response = await axios.get(`http://${backendIpAddress}:${backendPort}/roles/${partner_type}`,
+        {headers: authHeader()} );
+  state.roles = response.data;
+} 
+
 const isPwdChange = props.itemData ? ref(false) : ref(true)
+watch(isPwdChange, async(vl) => {
+  if (!vl) { 
+    form.password=''
+  }
+});
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
@@ -53,27 +74,11 @@ const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
 const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 
-const authHeader = () => {
-  let user = JSON.parse(localStorage.getItem('user')); 
-  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
-}
-
-const userAccessToken = () => {
-  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
-}
-
-watch(isPwdChange, async(vl) => {
-  if (!vl) { 
-    form.password=''
-  }
-});
-
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/partners_posted/`, {headers: authHeader()});
       state.contacts = response.data;
-      state.contacts.unshift({'name':'mts','type':'O','id':0,'uuid':null})
-      console.log('contacts=', state.contacts)
+      state.contacts.unshift({'name':'mts','type':'O','id':0,'uuid':null, 'inn':''})
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -93,14 +98,22 @@ onMounted(async () => {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
         {headers: authHeader()}
       );
-      state.contact_name = response2.data.name;
-      form['contact_name_input'] = response2.data.name
+      form['contact_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
+      state.initial_contact_name = response2.data.name + ' (' + response2.data.inn + ')'
       }
       else if (props.itemData.type=='O') {
         state.contact_name = 'mts';
         form['contact_name_input'] = 'mts'
+        state.initial_contact_name = 'mts'
       }
-      
+
+      if (props.itemData.role_id) {
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/role/${props.itemData.role_id}`,
+        {headers: authHeader()} );
+      form['role_name_input'] = response2.data.role_name
+      state.initial_role_name = response2.data.role_name
+      }
+      getRoles(props.itemData.type)
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -108,6 +121,7 @@ onMounted(async () => {
     }
 });
 };
+
 
 // const setFilter = (fieldForm, entity, fieldEntity) => {
 //   // filter setting
@@ -118,56 +132,32 @@ onMounted(async () => {
 //       state.filteredList.push(rec);
 //     };
 //   };
-//   if (state.filteredList.length == 0) {
-//     for (let xobj of state[entity]) {
-//       let clonedObj = {...xobj};
-//       state.filteredList.push(clonedObj);
-//     };
-//   }
-//   console.log('state.filteredList=',state.filteredList)
 // };
 
-//'linked_broker_name_input', 'brokers', 'name'
 
-const setFilter = (fieldForm, entity, fieldEntity) => {
-  // filter setting
+const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
+  // for dropdowns
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
   for (let rec of state[entity]) {
-    if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) {
-      state.filteredList.push(rec);
-    };
-  };
-
-  // if (state.filteredList.length == 0) {
-  //   for (let xobj of state[entity]) {
-  //     let clonedObj = {...xobj};
-  //     state.filteredList.push(clonedObj);
-  //   };
-  // }
-};
-
+    if ( rec[fieldEntity1].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); };
+    if (fieldEntity2) {
+      if ( rec[fieldEntity2].toString().toUpperCase().indexOf(state.formValue) > -1 ) { 
+        if ( !state.filteredList.includes(rec) ) {state.filteredList.push(rec)} }; }
+  }; };
 
 const setVars = (inputField, reserveField) => {
-  //
-  if (!form[reserveField]) {
-    form[reserveField] = form[inputField]
-  }
-  if (showDropDownSelect[inputField]) { 
-    showDropDownSelect[inputField]=false 
-    form[inputField]=form[reserveField]
-  }
-  else { 
-    showDropDownSelect[inputField]=true 
-    form[inputField]=null
-  };
-};
+  // for dropdowns
+  if (!form[reserveField]) { form[reserveField] = form[inputField] }
+  if (showDropDownSelect[inputField]) { showDropDownSelect[inputField]=false; form[inputField]=form[reserveField] }
+  else { showDropDownSelect[inputField]=true; form[inputField]=null }; };
 
 const setInitialForm = () => {
   //
   if (props.itemData) { // card and update
     for (let field of itemFields) {
       form[field] = props.itemData[field]
+      form['contact_name_input'] = state.initial_contact_name  // for dropdowns
     }
   } else {  // create
     for (let field of itemFields) {
@@ -176,12 +166,6 @@ const setInitialForm = () => {
     }
     //form['type'] = 'V' // template for 'ncar'
   };
-
-  // if (userInfo.contact_id!=0) {  // for the client service
-  //   form.contact = userInfo.contact_id
-  //   form.contact_name = userInfo.contact_name
-  //   form.contact_name_input = userInfo.contact_name
-  // }
 };
 
 setInitialForm();
@@ -293,7 +277,7 @@ async function downloadFile(document_id) {
           :required="true" :disabled="isCard" />
         </div>
 
-        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Контрагент</label>
+        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Контрагент</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.contact_name_input" 
                 @keyup="setFilter('contact_name_input', 'contacts', 'name')" :required="true"/>
@@ -310,7 +294,38 @@ async function downloadFile(document_id) {
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Контрагент</label>
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_name']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
+        </div> -->
+
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Контрагент</label>
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
+                @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');"
+                @keyup="setFilter('contact_name_input', 'contacts', 'name', 'inn')" :required="true"/>
+              <span @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['contact_name_input']=false; 
+                  form['reserve_1']=null;form['contact_name_input']=null;form['contact_uuid']=null;form['type']=null;
+                  getRoles(null);form['reserve_2']=null;form['role_name_input']=null;form['role_id']=null
+                  " >
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['contact_name_input']=false;form['type']=item.type;
+                  form['reserve_1']=item.name;form['contact_name_input']=(item.name+' ('+item.inn+')');
+                  form['contact_uuid']=item.uuid;form['contact_id']=item.id;
+                  getRoles(item.type);form['role_name_input']=null;form['role_id']=null
+                  " >
+                {{ item.name }} ({{ item.inn }})
+            </div>
+          </div>
         </div>
+        
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Контрагент</label>
+          <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
         <div class=formInputDiv>   <label class=formLabelStyle>Тип контрагента</label>
           <input type="text" v-model="form.type" :class="[errField['type']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="true" />
@@ -318,6 +333,37 @@ async function downloadFile(document_id) {
       </div>
 
       <div class="flex">
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Роль</label>
+          <input type="number" v-model="form.role_id" :class="[errField['role_id']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="true" :disabled="isCard" />
+        </div> -->
+
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Роль</label>
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.role_name_input" 
+                @click="setFilter('null', 'roles', 'role_name'); setVars('role_name_input', 'reserve_2')"
+                @keyup="setFilter('role_name_input', 'roles', 'role_name')" :required="true"/>
+              <span @click="setFilter('null', 'roles', 'role_name'); setVars('role_name_input', 'reserve_2');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['role_name_input']=false; 
+                  form['reserve_2']=null;form['role_name_input']=null;form['role_id']=null">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['role_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['role_name_input']=false; 
+                  form['reserve_2']=item.role_name;form['role_name_input']=item.role_name;
+                  form['role_id']=item.role_id" >
+                {{ item.role_name }}
+            </div>
+          </div>
+        </div>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Роль</label>
+          <input type="text" v-model="form.role_name_input" :class="[errField['role_id']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
+
         <div class=formInputDiv>   <label class=formLabelStyle>email</label>
           <input type="email" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />

@@ -246,12 +246,19 @@ class DocumentRecordJoined2(DocumentRecord):
     filename: str
 
 ################
+class Role(BaseModel):
+    role_id: int
+    role_name: str
+    role_type: str
+
+################
 class UserBase(BaseModel):
     login: str
     email: str | None = None
     contact_id: int  # deprecated
     contact_uuid: str | None = None
     type: str
+    role_id: int
     comment: str | None = None
 
 class UserCreate(UserBase):
@@ -263,6 +270,7 @@ class UserValidation(BaseModel):
     contact_id: int   # deprecated
     contact_uuid: str | None = None
     type: str 
+    role_id: int
 
 class UserUpdate(UserBase):
     updated_datetime: datetime
@@ -284,6 +292,7 @@ class User(UserBase):
 
 class UserJoined(User):
     contact_name: str | None
+    role_name: str | None
     
         
 #####
