@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DocumentsView from "@/views/DocumentsView.vue";
+import TransportSectionView from "@/views/TransportSectionView.vue";
 import CarpassesView from "@/views/CarpassesView.vue";
 import CarTerminalView from "@/views/CarTerminalView.vue";
 import ExitcarpassesView from "@/views/ExitcarpassesView.vue";
@@ -22,11 +23,15 @@ import UploadListsView from "@/views/UploadListsView.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', name: 'carpasses', component: CarpassesView, },
+    { path: '/', name: 'initial', component: CarpassesView, },
+    { path: '/transport_section', name: 'transport_section', component: TransportSectionView, },
+    { path: '/carpasses', name: 'carpasses', component: CarpassesView, },
     { path: '/car_terminal', name: 'car_terminal', component: CarTerminalView, },
     { path: '/exitcarpasses', name: 'exitcarpasses', component: ExitcarpassesView, },
+    
     { path: '/entry_requests', name: 'entry_requests', component: EntryRequestsView, },
     { path: '/parking_map', name: 'parking_map', component: ParkingMapView, },
+    
     { path: '/catalogs', name: 'catalogs', component: CatalogsView, },
     { path: '/contacts', name: 'contacts', component: ContactsView, },
     { path: '/brokers', name: 'brokers', component: BrokersView, },

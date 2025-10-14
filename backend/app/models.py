@@ -49,12 +49,21 @@ class Contact(Base):
     is_active = Column(Boolean, default=True)
 
 
+class Role(Base):
+    __tablename__ = 'roles'
+    id = Column(Integer, primary_key=True)
+    role_id = Column(Integer, unique=True)
+    role_name = Column(String)
+    role_type = Column(String)
+    
+
 class User(Base):
     __tablename__ = "users"
     contact_id = Column(Integer)  # deprecated
     # contact_uuid = Column(String, ForeignKey('contacts.uuid'))
     contact_uuid = Column(String)
     type = Column(String)
+    role_id = Column(Integer, ForeignKey('roles.role_id')) # new
     login = Column(String, unique=True, index=True)
     email = Column(String)
     hashed_password = Column(String)

@@ -258,39 +258,51 @@ const signOut = async () => {
 <!-- **************   MAIN MENU SIDEBAR    ******************* -->
 <div v-if="showMenuBar" :class=sidebarColor class="w-60 h-full fixed text-white">
   <div class="">
-    <RouterLink to="/entry_requests">
+    <RouterLink to="/entry_requests" v-if="[2,3,5].includes(state.userInfo.role_id)">
       <MenuSection :label="'Заявки на въезд ТС'" :icon="'pen-to-square'" :description="'Информация о заявках на въезд ТС'"
       :selected="state.selectedMenu=='entryRequest' ? '1' : '0'" @click="state.selectedMenu='entryRequest'"
       />
     </RouterLink>
-    <RouterLink to="/">
+    <RouterLink to="/carpasses" v-if="[2,3,5].includes(state.userInfo.role_id)">
       <MenuSection :label="'Пропуска ТС на въезд'" :icon="'truck'" :description="'Информация о пропусках ТС на въезд'"
       :selected="state.selectedMenu=='carEnter' ? '1' : '0'" @click="state.selectedMenu='carEnter'"
       />
     </RouterLink>
-    <RouterLink to="/car_terminal" v-if="state.userInfo.contact_id == 0">
+    <RouterLink to="/car_terminal" v-if="[5].includes(state.userInfo.role_id)">
       <MenuSection :label="'ТС на терминале'" :icon="'car'" :description="'Информация о ТС на терминале'"
       :selected="state.selectedMenu=='carTerminal' ? '1' : '0'" @click="state.selectedMenu='carTerminal'"
       />
     </RouterLink>
-    <RouterLink to="/exitcarpasses" v-if="state.userInfo.contact_id == 0">
+    <RouterLink to="/exitcarpasses" v-if="[5].includes(state.userInfo.role_id)">
       <MenuSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'"
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
       />
     </RouterLink>
 
-    <RouterLink to="/svh_section" v-if="state.userInfo.contact_id == 0">
-      <MenuSection :label="'Диспетчер СВХ'" :icon="'warehouse'" :description="'Раздел работы диспетчера СВХ'"
-      :selected="state.selectedMenu=='svh_section' ? '1' : '0'" @click="state.selectedMenu='svh_section'"
-      />
-    </RouterLink>
-    <RouterLink to="/batches" v-if="state.userInfo.contact_id != 0">
-      <MenuSection :label="'Партии товаров'" :icon="'shopping-bag'" :description="'Работа с партиями товаров'"
-      :selected="state.selectedMenu=='batches' ? '1' : '0'" @click="state.selectedMenu='batches'"
+    <RouterLink to="/transport_section" v-if="[1,4].includes(state.userInfo.role_id)">
+      <MenuSection :label="'Транспортный отдел'" :icon="'truck'" :description="'Оператор транспортного отдела'"
+      :selected="state.selectedMenu=='transport_section' ? '1' : '0'" @click="state.selectedMenu='transport_section'"
       />
     </RouterLink>
 
-    <RouterLink to="/catalogs" v-if="state.userInfo.contact_id == 0">
+    <RouterLink to="/svh_section" v-if="[1,4].includes(state.userInfo.role_id)">
+      <MenuSection :label="'Диспетчер СВХ'" :icon="'warehouse'" :description="'Раздел работы диспетчера СВХ'"
+      :selected="state.selectedMenu=='svh_section' ? '1' : '0'" @click="state.selectedMenu='svh_section'" />
+    </RouterLink>
+    <RouterLink to="/add_batch" v-if="[6].includes(state.userInfo.role_id)">
+      <MenuSection :label="'Добавить партию товаров'" :icon="'file-plus'" :description="'Добавление новой партии товаров'"
+      :selected="state.selectedMenu=='add_batch' ? '1' : '0'" @click="state.selectedMenu='add_batch'" />
+    </RouterLink>
+    <RouterLink to="/batches" v-if="[2,3,6].includes(state.userInfo.role_id)">
+      <MenuSection :label="'Партии товаров'" :icon="'shopping-bag'" :description="'Работа с партиями товаров'"
+      :selected="state.selectedMenu=='batches' ? '1' : '0'" @click="state.selectedMenu='batches'" />
+    </RouterLink>
+    <RouterLink to="/registration_dt" v-if="[6].includes(state.userInfo.role_id)">
+      <MenuSection :label="'Регистрация ДТ'" :icon="'clipboard'" :description="'в работе'"
+      :selected="state.selectedMenu=='registration_dt' ? '1' : '0'" @click="state.selectedMenu='registration_dt'" />
+    </RouterLink>
+
+    <RouterLink to="/catalogs" v-if="[1,4,5,6].includes(state.userInfo.role_id)">
       <MenuSection :label="'Справочники'" :icon="'server'" :description="'Каталоги данных'"
       :selected="state.selectedMenu=='catalogs' ? '1' : '0'" @click="state.selectedMenu='catalogs'"
       />
@@ -300,12 +312,12 @@ const signOut = async () => {
       :selected="state.selectedMenu=='documents' ? '1' : '0'" @click="state.selectedMenu='documents'"
       />
     </RouterLink>
-    <RouterLink to="/administration" v-if="state.userInfo.contact_id == 0">
+    <RouterLink to="/administration" v-if="state.userInfo.role_id == 1">
       <MenuSection :label="'Администрирование'" :icon="'android'" :description="'Администрирование сервиса'"
       :selected="state.selectedMenu=='administration' ? '1' : '0'" @click="state.selectedMenu='administration'"
       />
     </RouterLink>
-    <RouterLink to="/parking_map" v-if="state.userInfo.contact_id == 0">
+    <RouterLink to="/parking_map" v-if="[1,4,5,6].includes(state.userInfo.role_id)">
       <MenuSection :label="'План стоянки ТС'" :icon="'th-large'" :description="'в работе'"
       :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
       />

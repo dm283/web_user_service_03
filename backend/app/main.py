@@ -411,6 +411,15 @@ def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_act
     return item
 
 
+@app.get("/role/{role_id}", response_model=schemas.Role)
+def read_role(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                role_id: int, db: Session = Depends(get_db)):
+    db_role = crud.get_role(db, role_id=role_id)
+    if db_role is None:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return db_role
+
+
 @app.get("/contacts/{contact_id}", response_model=schemas.Contact)
 def read_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                  contact_id: int, db: Session = Depends(get_db)):
@@ -503,6 +512,13 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     contacts = crud.get_partners_posted(db, skip=skip, limit=limit)
     return contacts
+
+
+@app.get("/roles/{partner_type}", response_model=list[schemas.Role])
+def read_roles(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                partner_type: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    roles = crud.get_roles(partner_type, db, skip=skip, limit=limit)
+    return roles
 
 
 @app.get('/entry_requests/', response_model=list[schemas.EntryRequestJoined])

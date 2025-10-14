@@ -106,6 +106,11 @@ def get_partners_posted(db: Session, skip: int = 0, limit: int = 100):
         order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
+def get_roles(partner_type: str, db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Role).filter(models.Role.role_type==partner_type).\
+        order_by(models.Role.role_id).offset(skip).limit(limit).all()
+
+
 def get_brokers(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True).\
         order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
@@ -1221,16 +1226,19 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
     #
     main_table = aliased(models.User)
     contact_1 = aliased(models.Contact)
+    role_2 = aliased(models.Role)
 
-    response = db.query(main_table, contact_1).\
+    response = db.query(main_table, contact_1, role_2).\
             filter(main_table.is_active==True, main_table.login!='operator-1').\
             join(contact_1, contact_1.uuid==main_table.contact_uuid, isouter=True).\
+            join(role_2, role_2.role_id==main_table.role_id, isouter=True).\
             order_by(main_table.created_datetime.desc()).all()
 
     db_full_response = []
     for row in response:
         contact_name=row[1].__dict__['name'] if row[1] else None
-        db_full_response.append(schemas.UserJoined(**row[0].__dict__, contact_name=contact_name))
+        role_name=row[2].__dict__['role_name'] if row[2] else None
+        db_full_response.append(schemas.UserJoined(**row[0].__dict__, contact_name=contact_name, role_name=role_name))
 
     return db_full_response
 
@@ -1246,3 +1254,8 @@ def get_contact(db: Session, contact_id: int):
 
 def get_contact_by_uuid(db: Session, uuid: str):
     return db.query(models.Contact).filter(models.Contact.uuid == uuid).first()
+
+
+#########################################################    ROLE FUNCTIONS
+def get_role(db: Session, role_id: int):
+    return db.query(models.Role).filter(models.Role.role_id == role_id).first()

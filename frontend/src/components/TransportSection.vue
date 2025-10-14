@@ -39,21 +39,26 @@ const authHeader = () => {
 
 <template>
 <div class="bg-white">
-  <div class="h-12 pl-5 py-4 text-xl font-normal">Диспетчер СВХ</div>
+  <div class="h-12 pl-5 py-4 text-xl font-normal">Транспортный отдел</div>
   <div class="">
     <div class="inline-block mt-5 ml-5">
-      <RouterLink to="/add_batch">
-        <CatalogSection :label="'Добавить партию товаров'" :icon="'file-plus'" :description="'Добавление новой партии товаров'" />
+      <RouterLink to="/entry_requests">
+        <CatalogSection :label="'Заявки на въезд ТС'" :icon="'pen-to-square'" :description="'Информация о заявках на въезд ТС'" />
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
-      <RouterLink to="/batches">
-        <CatalogSection :label="'Партии товаров'" :icon="'shopping-bag'" :description="'Работа с партиями товаров'" />
+      <RouterLink to="/carpasses">
+        <CatalogSection :label="'Пропуска ТС на въезд'" :icon="'truck'" :description="'Информация о пропусках ТС на въезд'" />
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
-      <RouterLink to="/registration_dt">
-        <CatalogSection :label="'Регистрация ДТ'" :icon="'clipboard'" :description="'в работе'" />
+      <RouterLink to="/car_terminal">
+        <CatalogSection :label="'ТС на терминале'" :icon="'car'" :description="'Информация о ТС на терминале'" />
+      </RouterLink>
+    </div>
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/exitcarpasses">
+        <CatalogSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'" />
       </RouterLink>
     </div>
   </div>
