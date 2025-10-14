@@ -158,11 +158,13 @@ const setInitialForm = () => {
     for (let field of itemFields) {
       form[field] = props.itemData[field]
       form['contact_name_input'] = state.initial_contact_name  // for dropdowns
+      form['role_name_input'] = state.initial_role_name  // for dropdowns
     }
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
       form['contact_name_input'] = null  // fake form field for dropdown list
+      form['role_name_input'] = null // for dropdowns
     }
     //form['type'] = 'V' // template for 'ncar'
   };
