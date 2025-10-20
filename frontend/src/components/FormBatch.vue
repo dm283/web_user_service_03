@@ -38,7 +38,7 @@ const itemFields = [
     'comment',
   ]
 
-const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard'])  
+const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard', 'notification'])  
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -222,10 +222,11 @@ const postingItem = async () => {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/batch_posting/${props.itemData.id}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
+      //emit('notification', 'проводка', 'партия_товаров', response.data.id, response.data.contact_uuid)
     } else {
       return;
     }
-    emit('docCreated'); emit('closeModal');
+    emit('docCreated'); emit('closeModal'); 
   } catch (error) {
     let err = error.response.data.detail;
     let errFlag = 0;

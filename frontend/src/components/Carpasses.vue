@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps, computed, reactive, onMounted, ref } from 'vue';
+import { useToast } from 'vue-toastification';
 import axios from 'axios';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import ListAdv from '@/components/ListAdv.vue';
@@ -26,7 +27,7 @@ parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
-
+const toast = useToast();
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const authHeader = () => {
@@ -208,10 +209,38 @@ async function getData() {
     }
 }
 
+//////////   WEB-SOCKET SECTION
+// const messages = ref([])
+// const ws = new WebSocket(`ws://localhost:8000/ws/${userInfo.uuid}`);
+// function sendMessage() {
+//     //
+//     // if (!selectedUser.value) {
+//     //   return 1
+//     // }
+//     //const messageData = { receiver: selectedUser.value, message: messageText.value}
+//     const messageData = { receiver: 'operator', message: 'test msg'}
+//     ws.send(JSON.stringify(messageData))
+//     //ws.send(messageText.value)
+//     //messageText.value = null;
+// }
+
+// ws.onmessage = function(event) {
+//     const message = event.data  // JSON.parse(event.data);
+//     messages.value.push(message);
+//     toast.success(message, {timeout: null});
+//   };
+
+const notification = (operation, entity, obj_id, partner_uuid) => {
+  //
+  const messageData = { receiver: '05a6bd70-f38f-4912-a516-4578c87002ab', 
+    message: `Оповещение: ${operation} - ${entity} #${obj_id} - контрагент ${partner_uuid}` }
+  //ws.send(JSON.stringify(messageData))
+}
+/////////
+
 onMounted(async () => {
     await getData()
 });
-
 
 async function downloadFile(document_id, section) {
   //
@@ -368,6 +397,9 @@ const reopenCard = (type, item, name) => {
   <!-- Show when loading is done -->
   <div v-else>
 
+  <!-- websocket messages test -->
+  <!-- <div v-for="message in messages">{{ message }}</div> -->
+
   <!-- **********************   MODAL CARPASS CARD   ************************** -->
   <div v-if="showItemCard" :class="[state.item_for_card ? modalStyleSecond : modalStyle]">
     <FormAddCarpass @close-modal="showItemCard=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
@@ -391,7 +423,7 @@ const reopenCard = (type, item, name) => {
   </div>
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showUpdateBatch=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+    <FormBatch @close-modal="showUpdateBatch=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
   
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->
