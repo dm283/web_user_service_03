@@ -9,6 +9,22 @@ from uuid import uuid4
 from app import models, schemas
 
 
+def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: Session):
+    # logging
+    log_rec = schemas.LogRecordCreate(
+        obj_uuid = item_from_db.uuid,
+        obj_type = obj_type,
+        action = action,
+        obj_after_action_state = str(schema.model_validate(item_from_db).model_dump()),
+        user_uuid = user_uuid,
+    )
+    log_rec = models.LogRecord(**log_rec.model_dump())
+    try:
+        db.add(log_rec); db.commit(); db.refresh(log_rec)
+    except Exception as err:
+        print(err)
+        #raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
 
 def attach_doc_to_additional_entity(db: Session, doc_id: int, entity_uuid: str):
     #
@@ -395,7 +411,7 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
 #     db.delete(db_ro)
 #     db.commit()
 
-def create_batch(db: Session, item: schemas.BatchCreate):
+def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
     #
     created_datetime = datetime.datetime.now()
     uuid=str(uuid4())
@@ -410,6 +426,8 @@ def create_batch(db: Session, item: schemas.BatchCreate):
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     
+    logging_action(obj_type='batch', schema=schemas.Batch, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
     return db_item
 
 
@@ -584,15 +602,17 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
     return item_from_db
 
 
-def update_batch(db: Session, item_id: int, item: schemas.BatchUpdate):
+def update_batch(db: Session, item_id: int, item: schemas.BatchUpdate, user_uuid: str):
     #
-    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+    item_from_db = db.query(models.Batch).filter(models.Batch.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
     for field, value in item.model_dump(exclude_unset=True).items():
         setattr(item_from_db, field, value)
     db.commit()
+
+    logging_action(obj_type='batch', schema=schemas.Batch, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
     return item_from_db
 
@@ -734,7 +754,7 @@ def delete_entry_request(db: Session, item_id: int):
     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
-def delete_batch(db: Session, item_id: int):
+def delete_batch(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
     if item_from_db is None:
@@ -744,6 +764,7 @@ def delete_batch(db: Session, item_id: int):
     except Exception as err:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
     db.commit()
+    logging_action(obj_type='batch', schema=schemas.Batch, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
@@ -973,7 +994,7 @@ def posting_entry_request(db: Session, item_id: int):
     return item_from_db
 
 
-def posting_batch(db: Session, item_id: int):
+def posting_batch(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -990,6 +1011,8 @@ def posting_batch(db: Session, item_id: int):
                                schema_obj=schemas.BatchValidation,
                                foo_fields_validation=foo_fields_validation,
                                foo_check_conditions=foo_check_conditions)
+
+    logging_action(obj_type='batch', schema=schemas.Batch, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
     return item_from_db
 
@@ -1076,7 +1099,7 @@ def rollback_entry_requests(db: Session, item_id: int):
     return item_from_db.id
 
 
-def rollback_batches(db: Session, item_id: int):
+def rollback_batches(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
     if item_from_db is None:
@@ -1086,6 +1109,8 @@ def rollback_batches(db: Session, item_id: int):
     
     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
+
+    logging_action(obj_type='batch', schema=schemas.Batch, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
     return item_from_db.id
 

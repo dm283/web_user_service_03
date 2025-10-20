@@ -770,10 +770,10 @@ def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
 
 @app.post("/batches/", response_model=schemas.Batch)
 def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
+                data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate) 
-    return crud.create_batch(db=db, item=data_none_values_redefined)
+    return crud.create_batch(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
 @app.post("/carpasses/", response_model=schemas.Carpass)
@@ -846,7 +846,7 @@ def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
     item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_batch(db=db, item_id=item_id, item=item)
+    return crud.update_batch(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/contacts/{item_id}', response_model=schemas.Contact)
@@ -917,7 +917,7 @@ def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
 @app.delete('/batches/{item_id}')
 def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_batch(db=db, item_id=item_id)
+    return crud.delete_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.delete('/related_contact_broker/{item_id}')
@@ -978,7 +978,7 @@ def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_
 def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_batch(db=db, item_id=item_id)
+    return crud.posting_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/contacts_posting/{item_id}')
@@ -1026,7 +1026,7 @@ def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_curren
 @app.put('/batches_rollback/{item_id}')
 def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_batches(db=db, item_id=item_id)
+    return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/contacts_rollback/{item_id}')
