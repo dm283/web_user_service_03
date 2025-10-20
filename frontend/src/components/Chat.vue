@@ -18,7 +18,6 @@
   ws.onmessage = function(event) {
     const message = event.data  // JSON.parse(event.data);
     messages.value.push(message);
-
   };
 
   function sendMessage(event) {
