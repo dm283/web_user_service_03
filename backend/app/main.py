@@ -757,7 +757,7 @@ def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_act
                        data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)  
-    return crud.create_exitcarpass(db=db, item=data_none_values_redefined)
+    return crud.create_exitcarpass(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
 @app.post("/entry_requests/", response_model=schemas.EntryRequest)
@@ -765,7 +765,7 @@ def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
                          data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate) 
-    return crud.create_entry_request(db=db, item=data_none_values_redefined)
+    return crud.create_entry_request(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
 @app.post("/batches/", response_model=schemas.Batch)
@@ -781,22 +781,21 @@ def create_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_
                    data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
     #
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)  
-    return crud.create_carpass(db=db, item=data_none_values_redefined)
+    return crud.create_carpass(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
 @app.post("/contacts/", response_model=schemas.Contact)
 def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.ContactCreate, Form()], db: Session = Depends(get_db)):
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
-    return crud.create_contact(db=db, item=data_none_values_redefined)
+    return crud.create_contact(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
-# @app.post("/documents/", response_model=schemas.Document)
 @app.post("/document_records/", response_model=schemas.DocumentRecord)
 def create_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
-    return crud.create_document_record(db=db, item=data_none_values_redefined)
+    return crud.create_document_record(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
 @app.post("/users/", response_model=schemas.User)
@@ -806,7 +805,7 @@ def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_use
     db_user = crud.get_user_by_login(db, login=data_none_values_redefined.login)
     if db_user:
         raise HTTPException(status_code=400, detail="Login already registered")
-    return crud.create_user(db=db, user=data_none_values_redefined)
+    return crud.create_user(db=db, user=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
 #########################################################    UPDATE ITEM ENDPOINTS
@@ -817,7 +816,7 @@ def update_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)
     item = schemas.CarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_carpass(db=db, item_id=item_id, item=item)
+    return crud.update_carpass(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/exitcarpasses/{item_id}', response_model=schemas.Exitcarpass)
@@ -826,7 +825,7 @@ def update_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_act
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)
     item = schemas.ExitcarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_exitcarpass(db=db, item_id=item_id, item=item)
+    return crud.update_exitcarpass(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/entry_requests/{item_id}', response_model=schemas.EntryRequest)
@@ -836,7 +835,7 @@ def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
     item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_entry_request(db=db, item_id=item_id, item=item)
+    return crud.update_entry_request(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/batches/{item_id}', response_model=schemas.Batch)
@@ -856,7 +855,7 @@ def update_contact(current_user: Annotated[UserAuth, Depends(get_current_active_
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
     item = schemas.ContactUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_contact(db=db, item_id=item_id, item=item)
+    return crud.update_contact(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/document_records/{item_id}', response_model=schemas.DocumentRecord)
@@ -865,7 +864,7 @@ def update_document_record(current_user: Annotated[UserAuth, Depends(get_current
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
     item = schemas.DocumentRecordUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_document_record(db=db, item_id=item_id, item=item)
+    return crud.update_document_record(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/users/{item_id}', response_model=schemas.User)
@@ -875,43 +874,42 @@ def update_user(current_user: Annotated[UserAuth, Depends(get_current_active_use
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
     item = schemas.UserUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-
-    return crud.update_user(db=db, item_id=item_id, item=item, new_pwd=data_none_values_redefined.password)
+    return crud.update_user(db=db, item_id=item_id, item=item, new_pwd=data_none_values_redefined.password, user_uuid=current_user.uuid)
 
 #########################################################    DELETE ITEM ENDPOINTS
 @app.delete('/contacts/{item_id}')
 def delete_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.delete_contact(db=db, item_id=item_id)
+    return crud.delete_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.delete('/users/{item_id}')
 def delete_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.delete_user(db=db, item_id=item_id)
+    return crud.delete_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.delete('/carpasses/{item_id}')
 def delete_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.delete_carpass(db=db, item_id=item_id)
+    return crud.delete_carpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.delete('/exitcarpasses/{id}')
 def delete_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                        id: int, db: Session = Depends(get_db)):
     #
-    return crud.delete_exitcarpass(db=db, carpass_id=id)
+    return crud.delete_exitcarpass(db=db, carpass_id=id, user_uuid=current_user.uuid)
 
 
 @app.delete('/entry_requests/{item_id}')
 def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.delete_entry_request(db=db, item_id=item_id)
+    return crud.delete_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.delete('/batches/{item_id}')
@@ -936,7 +934,7 @@ def delete_related_docs_record(current_user: Annotated[UserAuth, Depends(get_cur
 def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.delete_document_records(db=db, item_id=item_id)
+    return crud.delete_document_records(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/carpasses_deactivate/{carpass_id}')
@@ -957,21 +955,21 @@ def deactivate_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current
 def posting_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_carpass(db=db, item_id=item_id)
+    return crud.posting_carpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/exitcarpasses_posting/{item_id}')
 def posting_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_exitcarpass(db=db, item_id=item_id)
+    return crud.posting_exitcarpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/entry_requests_posting/{item_id}')
 def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_entry_request(db=db, item_id=item_id)
+    return crud.posting_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/batch_posting/{item_id}', response_model=schemas.Batch)
@@ -985,21 +983,21 @@ def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_u
 def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_contact(db=db, item_id=item_id)
+    return crud.posting_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/document_records_posting/{item_id}')
 def posting_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_document_record(db=db, item_id=item_id)
+    return crud.posting_document_record(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/users_posting/{item_id}')
 def posting_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
     #
-    return crud.posting_user(db=db, item_id=item_id)
+    return crud.posting_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 #########################################################    ROLLBACK ENDPOINTS
@@ -1007,20 +1005,20 @@ def posting_user(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def rollback_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                      carpass_id: int, db: Session = Depends(get_db)):
     #
-    return crud.rollback_carpass(db=db, carpass_id=carpass_id)
+    return crud.rollback_carpass(db=db, carpass_id=carpass_id, user_uuid=current_user.uuid)
 
 
 @app.put('/exitcarpasses_rollback/{carpass_id}')
 def rollback_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          carpass_id: int, db: Session = Depends(get_db)):
     #
-    return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id)
+    return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id, user_uuid=current_user.uuid)
 
 
 @app.put('/entry_requests_rollback/{item_id}')
 def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_entry_requests(db=db, item_id=item_id)
+    return crud.rollback_entry_requests(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/batches_rollback/{item_id}')
@@ -1032,7 +1030,7 @@ def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_activ
 @app.put('/contacts_rollback/{item_id}')
 def rollback_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_contact(db=db, item_id=item_id)
+    return crud.rollback_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/document_records_rollback/{item_id}')
@@ -1044,7 +1042,7 @@ def rollback_document_record(current_user: Annotated[UserAuth, Depends(get_curre
 @app.put('/users_rollback/{item_id}')
 def rollback_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_user(db=db, item_id=item_id)
+    return crud.rollback_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 #########################################################    STATUS MANAGING ENDPOINTS

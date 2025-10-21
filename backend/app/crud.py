@@ -365,7 +365,7 @@ def get_ncars_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
 
 
 #########################################################    CREATE FUNCTIONS
-def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
+def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate, user_uuid: str):
     #
     last_created_item_from_db =  db.query(models.Exitcarpass).order_by(models.Exitcarpass.id.desc()).first()
     id_exit = '1' if last_created_item_from_db is None else str(int(last_created_item_from_db.id_exit) + 1)
@@ -386,30 +386,10 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate):
     setattr(carpass_from_db, 'exitcarpass_created', True)
     db.commit()
     
+    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
     return db_item
 
-#########################################################    RELATED OBJECTS FUNCTIONS
-# def create_rec_related_objects(primary_obj_uuid, secondary_obj_uuid, db: Session):
-#     # creates record in table related_objects
-#     db_ro = models.RelatedObjects(
-#         primary_obj_uuid=primary_obj_uuid, secondary_obj_uuid=secondary_obj_uuid, created_datetime=datetime.datetime.now()
-#     )
-#     try:
-#         db.add(db_ro); db.commit(); db.refresh(db_ro)
-#     except Exception as err:
-#         print(err)
-#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-
-
-# def delete_rec_related_objects(primary_obj_uuid, secondary_obj_uuid, db: Session):
-#     # delete record in table related_objects
-#     db_ro =  db.query(models.RelatedObjects).filter(models.RelatedObjects.primary_obj_uuid==primary_obj_uuid, 
-#                 models.RelatedObjects.secondary_obj_uuid==secondary_obj_uuid).first()
-#     if db_ro is None:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-#     db.delete(db_ro)
-#     db.commit()
 
 def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
     #
@@ -419,9 +399,6 @@ def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
     db_item = models.Batch(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
     try:
         db.add(db_item); db.commit(); db.refresh(db_item)
-        # create records in related_objects
-        # if db_item.contact_uuid:
-        #     create_rec_related_objects(db_item.contact_uuid, uuid, db=db)
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
@@ -432,7 +409,7 @@ def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
 
 
 
-def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
+def create_entry_request(db: Session, item: schemas.EntryRequestCreate, user_uuid: str):
     #
     last_created_item_from_db =  db.query(models.EntryRequest).order_by(models.EntryRequest.id.desc()).first()
     id_entry_request = '1' if last_created_item_from_db is None else str(int(last_created_item_from_db.id_entry_request) + 1)
@@ -442,17 +419,16 @@ def create_entry_request(db: Session, item: schemas.EntryRequestCreate):
     db_item = models.EntryRequest(**item.model_dump(), uuid=uuid, id_entry_request=id_entry_request, created_datetime=created_datetime)
     try:
         db.add(db_item); db.commit(); db.refresh(db_item)
-        # create records in related_objects
-        # if db_item.contact_uuid:
-        #     create_rec_related_objects(db_item.contact_uuid, uuid, db=db)
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     
+    logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
     return db_item
 
 
-def create_carpass(db: Session, item: schemas.CarpassCreate):
+def create_carpass(db: Session, item: schemas.CarpassCreate, user_uuid: str):
     # creates a enter carpass
     if db.query(models.Carpass).filter(models.Carpass.ncar==item.ncar, models.Carpass.status!='archival').first():
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Ошибка: пропуск для ТС {item.ncar} создан и активен.")
@@ -472,42 +448,67 @@ def create_carpass(db: Session, item: schemas.CarpassCreate):
     # update entry_request set carpass_created = true (if carpass is creating from entry_request)
     entry_request_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item.ncar).first()
     if entry_request_from_db:
-        # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
         setattr(entry_request_from_db, 'carpass_created', True)
         db.commit()
+
+    logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
 
     return db_item
 
 
-def create_contact(db: Session, item: schemas.ContactCreate):
+def create_contact(db: Session, item: schemas.ContactCreate, user_uuid: str):
     # creates a contact in database
     created_datetime = datetime.datetime.now()
     uuid=str(uuid4())
 
-    db_contact = models.Contact(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    db_item = models.Contact(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
     try:
-        db.add(db_contact); db.commit(); db.refresh(db_contact)
+        db.add(db_item); db.commit(); db.refresh(db_item)
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
-    return db_contact
+    logging_action(obj_type='contact', schema=schemas.Contact, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+    return db_item
 
 
-# def create_document(db: Session, item: schemas.DocumentCreate):
-def create_document_record(db: Session, item: schemas.DocumentRecordCreate):
+def create_user(db: Session, user: schemas.UserCreate, user_uuid: str):
+    # creates a user in database
+    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    hashed_password=password_context.hash(user.password)
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+    
+    db_item = models.User(
+        **user.model_dump(exclude='password'),
+        uuid=uuid,
+        hashed_password=hashed_password, 
+        created_datetime=created_datetime
+        )
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    
+    logging_action(obj_type='user', schema=schemas.User, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+    return db_item
+
+
+def create_document_record(db: Session, item: schemas.DocumentRecordCreate, user_uuid: str):
     # creates a record in documents table in database
     created_datetime = datetime.datetime.now()
     uuid=str(uuid4())
 
-    db_doc_rec = models.DocumentRecord(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    db_item = models.DocumentRecord(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
     try:
-        db.add(db_doc_rec); db.commit(); db.refresh(db_doc_rec)
+        db.add(db_item); db.commit(); db.refresh(db_item)
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
-    return db_doc_rec
+    logging_action(obj_type='document_record', schema=schemas.DocumentRecord, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+    return db_item
 
 
 def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
@@ -543,27 +544,8 @@ def create_related_contact_broker(db: Session, data: schemas.RelatedContactBroke
 
     return record
 
-
-def create_user(db: Session, user: schemas.UserCreate):
-    # creates a user in database
-    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-    created_datetime = datetime.datetime.now()
-    uuid=str(uuid4())
-    hashed_password=password_context.hash(user.password)
-
-    db_user = models.User(
-        **user.model_dump(exclude='password'),
-        uuid=uuid,
-        hashed_password=hashed_password, 
-        created_datetime=created_datetime
-        )
-    db.add(db_user); db.commit(); db.refresh(db_user)
-
-    return db_user
-
 #########################################################    UPDATE FUNCTIONS
-def update_carpass(db: Session, item_id: int, item: schemas.CarpassUpdate):
+def update_carpass(db: Session, item_id: int, item: schemas.CarpassUpdate, user_uuid: str):
     #
     item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
     if item_from_db is None:
@@ -573,23 +555,25 @@ def update_carpass(db: Session, item_id: int, item: schemas.CarpassUpdate):
         setattr(item_from_db, field, value)
     db.commit()
 
+    logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
-def update_exitcarpass(db: Session, item_id: int, item: schemas.ExitcarpassUpdate):
+def update_exitcarpass(db: Session, item_id: int, item: schemas.ExitcarpassUpdate, user_uuid: str):
     #
-    carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == item_id).first()
-    if carpass_from_db is None:
+    item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == item_id).first()
+    if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
     for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(carpass_from_db, field, value)
+        setattr(item_from_db, field, value)
     db.commit()
 
-    return carpass_from_db
+    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db
 
 
-def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUpdate):
+def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUpdate, user_uuid: str):
     #
     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
     if item_from_db is None:
@@ -599,6 +583,7 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
         setattr(item_from_db, field, value)
     db.commit()
 
+    logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
@@ -613,11 +598,10 @@ def update_batch(db: Session, item_id: int, item: schemas.BatchUpdate, user_uuid
     db.commit()
 
     logging_action(obj_type='batch', schema=schemas.Batch, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-
     return item_from_db
 
 
-def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate):
+def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate, user_uuid: str):
     #
     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
     if item_from_db is None:
@@ -627,10 +611,11 @@ def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate):
         setattr(item_from_db, field, value)
     db.commit()
 
+    logging_action(obj_type='contact', schema=schemas.Contact, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
-def update_document_record(db: Session, item_id: int, item: schemas.DocumentRecordUpdate):
+def update_document_record(db: Session, item_id: int, item: schemas.DocumentRecordUpdate, user_uuid: str):
     #
     item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
     if item_from_db is None:
@@ -640,10 +625,12 @@ def update_document_record(db: Session, item_id: int, item: schemas.DocumentReco
         setattr(item_from_db, field, value)
     db.commit()
 
+    logging_action(obj_type='document_record', schema=schemas.DocumentRecord, action='update', 
+                   item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
-def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd):
+def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd: str, user_uuid: str):
     #
     item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
     if item_from_db is None:
@@ -660,10 +647,11 @@ def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd):
         setattr(item_from_db, 'hashed_password', hashed_password)
         db.commit()
 
+    logging_action(obj_type='user', schema=schemas.User, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 #########################################################    DELETE FUNCTIONS
-def delete_contact(db: Session, item_id: int):
+def delete_contact(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
     if item_from_db is None:
@@ -679,10 +667,12 @@ def delete_contact(db: Session, item_id: int):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
     db.commit()
 
+    logging_action(obj_type='contact', schema=schemas.Contact, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
     return {"message": f"Contact id {item_id} deleted successfully"}
 
 
-def delete_document_records(db: Session, item_id: int):
+def delete_document_records(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
     if item_from_db is None:
@@ -698,10 +688,13 @@ def delete_document_records(db: Session, item_id: int):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
     db.commit()
 
+    logging_action(obj_type='document_record', schema=schemas.DocumentRecord, action='delete', 
+                   item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
     return {"message": f"DocumentRecord id {item_id} deleted successfully"}
 
 
-def delete_user(db: Session, item_id: int):
+def delete_user(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
     if item_from_db is None:
@@ -717,10 +710,12 @@ def delete_user(db: Session, item_id: int):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
     db.commit()
 
+    logging_action(obj_type='user', schema=schemas.User, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
     return {"message": f"User id {item_id} deleted successfully"}
 
 
-def delete_carpass(db: Session, item_id: int):
+def delete_carpass(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
     if item_from_db is None:
@@ -735,10 +730,11 @@ def delete_carpass(db: Session, item_id: int):
         setattr(entry_request_from_db, 'carpass_created', False)
         db.commit()
 
+    logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return {"message": f"Carpass id {item_id} deleted successfully"}
 
 
-def delete_entry_request(db: Session, item_id: int):
+def delete_entry_request(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
     if item_from_db is None:
@@ -750,6 +746,8 @@ def delete_entry_request(db: Session, item_id: int):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
 
     db.commit()
+
+    logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
     return {"message": f"Item ID {item_id} deleted successfully"}
 
@@ -795,22 +793,23 @@ def delete_related_docs_record(db: Session, doc_uuid: str, obj_uuid: str):
     return {"message": f"Item ID {item_from_db.id} deleted successfully"}
 
 
-def delete_exitcarpass(db: Session, carpass_id: int):
+def delete_exitcarpass(db: Session, carpass_id: int, user_uuid: str):
     #
-    exitcarpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
-    if exitcarpass_from_db is None:
+    item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
+    if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    db.delete(exitcarpass_from_db)
+    db.delete(item_from_db)
     db.commit()
 
     # update carpass set exitcarpass_created = false
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == exitcarpass_from_db.id_enter).first()
+    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item_from_db.id_enter).first()
     if carpass_from_db:
         setattr(carpass_from_db, 'exitcarpass_created', False)
         db.commit()
 
     ### [ !!! DEVELOPMENT !!! ]  enrich this with saving deleted record into archive table
-
+    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    
     return {"message": f"Exitcarpass id {carpass_id} deleted successfully"}
 
 
@@ -883,7 +882,7 @@ def common_posting_entity_item(db: Session, item_id: int, db_model, schema_obj, 
     return item_from_db
 
 
-def posting_carpass(db: Session, item_id: int):
+def posting_carpass(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -908,10 +907,11 @@ def posting_carpass(db: Session, item_id: int):
         setattr(entry_request_from_db, 'status', 'entered')
         db.commit()
 
+    logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
-def posting_contact(db: Session, item_id: int):
+def posting_contact(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -928,10 +928,11 @@ def posting_contact(db: Session, item_id: int):
                                foo_fields_validation=foo_fields_validation,
                                foo_check_conditions=foo_check_conditions)
 
+    logging_action(obj_type='contact', schema=schemas.Contact, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
-def posting_document_record(db: Session, item_id: int):
+def posting_document_record(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -948,10 +949,12 @@ def posting_document_record(db: Session, item_id: int):
                                foo_fields_validation=foo_fields_validation,
                                foo_check_conditions=foo_check_conditions)
 
+    logging_action(obj_type='document_record', schema=schemas.DocumentRecord, action='posting', 
+                   item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
-def posting_user(db: Session, item_id: int):
+def posting_user(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -968,10 +971,11 @@ def posting_user(db: Session, item_id: int):
                                foo_fields_validation=foo_fields_validation,
                                foo_check_conditions=foo_check_conditions)
 
+    logging_action(obj_type='user', schema=schemas.User, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
-def posting_entry_request(db: Session, item_id: int):
+def posting_entry_request(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -990,6 +994,8 @@ def posting_entry_request(db: Session, item_id: int):
                                schema_obj=schemas.EntryRequestValidation,
                                foo_fields_validation=foo_fields_validation,
                                foo_check_conditions=foo_check_conditions)
+
+    logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
     return item_from_db
 
@@ -1017,7 +1023,7 @@ def posting_batch(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_exitcarpass(db: Session, item_id: int):
+def posting_exitcarpass(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1049,43 +1055,47 @@ def posting_exitcarpass(db: Session, item_id: int):
     setattr(carpass_enter_from_db, 'status', 'archival')
     db.commit()
 
+    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
     return item_from_db
 
 
 #########################################################    ROLLBACK FUNCTIONS
-def rollback_carpass(db: Session, carpass_id: int):
+def rollback_carpass(db: Session, carpass_id: int, user_uuid: str):
     #
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
-    if carpass_from_db is None:
+    item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+    if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not carpass_from_db.posted:
+    if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(carpass_from_db, 'posted', False)
-    setattr(carpass_from_db, 'post_date', None)
-    setattr(carpass_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False)
+    setattr(item_from_db, 'post_date', None)
+    setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
-    return carpass_from_db.id
+    logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db.id
 
 
-def rollback_exitcarpass(db: Session, carpass_id: int):
+def rollback_exitcarpass(db: Session, carpass_id: int, user_uuid: str):
     #
-    carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
-    if carpass_from_db is None:
+    item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
+    if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not carpass_from_db.posted:
+    if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(carpass_from_db, 'posted', False)
-    setattr(carpass_from_db, 'post_date', None)
-    setattr(carpass_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False)
+    setattr(item_from_db, 'post_date', None)
+    setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
-    return carpass_from_db.id
+    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db.id
 
 
-def rollback_entry_requests(db: Session, item_id: int):
+def rollback_entry_requests(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
     if item_from_db is None:
@@ -1096,6 +1106,8 @@ def rollback_entry_requests(db: Session, item_id: int):
     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
+    logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='rollback', 
+                   item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db.id
 
 
@@ -1111,11 +1123,10 @@ def rollback_batches(db: Session, item_id: int, user_uuid: str):
     db.commit()
 
     logging_action(obj_type='batch', schema=schemas.Batch, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-
     return item_from_db.id
 
 
-def rollback_contact(db: Session, item_id: int):
+def rollback_contact(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
     if item_from_db is None:
@@ -1128,6 +1139,7 @@ def rollback_contact(db: Session, item_id: int):
     setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
+    logging_action(obj_type='contact', schema=schemas.Contact, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db.id
 
 
@@ -1147,7 +1159,7 @@ def rollback_document_record(db: Session, item_id: int):
     return item_from_db.id
 
 
-def rollback_user(db: Session, item_id: int):
+def rollback_user(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
     if item_from_db is None:
@@ -1160,6 +1172,7 @@ def rollback_user(db: Session, item_id: int):
     setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
+    logging_action(obj_type='user', schema=schemas.User, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db.id
 
 #########################################################    STATUS MANAGING FUNCTIONS
