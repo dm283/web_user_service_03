@@ -204,7 +204,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str, db: Session =
             print('data_dict =', data_dict)
             receiver = data_dict['receiver']      ###########
             msg_text = data_dict['message']
-            # await manager.send_personal_message(msg_text, manager.active_connections_mapping[receiver]) 
+            await manager.send_personal_message(msg_text, manager.active_connections_mapping[receiver])
             # await manager.send_personal_message(f"{msg_text}", websocket)
             # await manager.send_personal_message(f"[{client_id}] {msg_text}", manager.active_connections_mapping[receiver])   ################
             # await manager.broadcast(f"Client #{client_id} says: {data}")
