@@ -269,4 +269,5 @@ class LogRecord(Base):
     user_uuid = Column(String)
 
     id = Column(Integer, primary_key=True)
-    created_datetime = Column(DateTime, default=datetime.datetime.now())
+    created_date = Column(Date)
+    created_time = Column(Time)

@@ -433,3 +433,8 @@ class LogRecordCreate(BaseModel):
 
 class LogRecord(LogRecordCreate):
     id: int
+    created_date: date
+    created_time: time
+
+class LogRecordJoined(LogRecord):
+    user_login: str

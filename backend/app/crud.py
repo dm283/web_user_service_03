@@ -16,9 +16,13 @@ def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: S
         obj_type = obj_type,
         action = action,
         obj_after_action_state = str(schema.model_validate(item_from_db).model_dump()),
-        user_uuid = user_uuid,
+        user_uuid = user_uuid
     )
-    log_rec = models.LogRecord(**log_rec.model_dump())
+    created_date = datetime.date.today()
+    created_time = datetime.datetime.now().strftime("%H:%M:%S")
+    print('datetime.datetime.now() =', datetime.datetime.now())
+    print('created_date, created_time =', created_date, created_time)
+    log_rec = models.LogRecord(**log_rec.model_dump(), created_date = created_date, created_time = created_time)
     try:
         db.add(log_rec); db.commit(); db.refresh(log_rec)
     except Exception as err:
@@ -100,6 +104,26 @@ def get_document_records_client(user_uuid: str, user_contact_uuid: str, db: Sess
         filter( or_(models.DocumentRecord.user_uuid_create==user_uuid, models.DocumentRecord.uuid.in_(doc_uuid_list)) ).\
         filter(models.DocumentRecord.is_active==True).\
         order_by(models.DocumentRecord.created_datetime.desc()).offset(skip).limit(limit).all()
+
+
+def get_log_records(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.LogRecord)
+    table_2 = aliased(models.User)
+
+    response = db.query(main_table, table_2).\
+        join(table_2, table_2.uuid == main_table.user_uuid, isouter=True).\
+        order_by(main_table.created_date.desc(), main_table.created_time.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        user_login=row[1].__dict__['login'] if row[1] else None
+        db_full_response.append(schemas.LogRecordJoined(**row[0].__dict__, user_login=user_login))
+
+    return db_full_response
+
+    return db.query(models.LogRecord).\
+        order_by(models.LogRecord.created_datetime.desc()).offset(skip).limit(limit).all()
 
 
 def get_contacts(db: Session, skip: int = 0, limit: int = 100):

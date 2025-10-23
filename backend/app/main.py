@@ -499,11 +499,9 @@ def get_document_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_a
     return db_document
 
 #########################################################    GET LIST OF ITEMS ENDPOINTS
-# @app.get('/documents/', response_model=list[schemas.Document])
 @app.get('/document_records/', response_model=list[schemas.DocumentRecordJoined2])
 def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # documents = crud.get_documents(db, skip=skip, limit=limit)
     documents = crud.get_document_records(db, skip=skip, limit=limit)
     return documents
 
@@ -515,6 +513,13 @@ def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_
     # documents = crud.get_documents(db, skip=skip, limit=limit)
     documents = crud.get_document_records_client(user_uuid=user_uuid, user_contact_uuid=user_contact_uuid, db=db, skip=skip, limit=limit)
     return documents
+
+
+@app.get("/log_records/", response_model=list[schemas.LogRecordJoined])
+def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    log_records = crud.get_log_records(db, skip=skip, limit=limit)
+    return log_records
 
 
 @app.get("/contacts/", response_model=list[schemas.Contact])

@@ -50,8 +50,8 @@ const authHeader = () => {
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
-      <RouterLink to="">
-        <CatalogSection :label="'Логи'" :icon="'book'" :description="'Просмотр логов сервиса (в работе)'" />
+      <RouterLink to="/log_records">
+        <CatalogSection :label="'Журнал действий'" :icon="'book'" :description="'Журнал действий в сервисе'" />
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">

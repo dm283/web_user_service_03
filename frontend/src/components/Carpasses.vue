@@ -116,6 +116,7 @@ const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpass
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
+const query_log_records = `http://${backendIpAddress}:${backendPort}/log_records/`
 
 
 if (props.view_type == 'enter') {
@@ -187,6 +188,14 @@ else if (props.view_type == 'documents') {
   state.query = query_documents;
   state.listTableColumns = {
     'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','filename':'Файл','created_datetime':'Дата загрузки'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+else if (props.view_type == 'log_records') {
+  state.query = query_log_records;
+  state.listTableColumns = {
+    'obj_uuid':'Объект','obj_type':'Тип объекта', 'action':'Действие','user_login':'Пользователь','created_date':'Дата',
+    'created_time':'Время'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
