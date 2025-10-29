@@ -198,8 +198,7 @@ watch(form, (nV, oV) => {
     for (let field of itemFields) {
       if (props.itemData) {  // edit card
         if (form[field] == '' & props.itemData[field] == null) { isNV[field] = false; continue; }
-        if (form[field] != props.itemData[field]) { 
-          // console.log('new value!!!!!!!', form[field], props.itemData[field])
+        if (form[field] != props.itemData[field]) {
           isNV[field] = true;
         } else { isNV[field] = false; }
       }
