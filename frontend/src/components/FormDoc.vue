@@ -351,7 +351,7 @@ async function downloadFile(related_doc_uuid) {
         </div>
         <!-- Show when loading is done -->
         <div class="border-t border-slate-300 mx-6 pt-3" v-if="!state.isLoading && state.documents.length>0">
-          <label class=formLabelStyle>Документы</label>
+          <label class=formLabelStyle>Файл</label>
           <div class="flex space-x-3 mt-3">
           <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
             <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.related_doc_uuid)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
