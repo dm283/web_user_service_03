@@ -50,6 +50,11 @@ const authHeader = () => {
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/log_records">
+        <CatalogSection :label="'Журнал действий'" :icon="'book'" :description="'Журнал действий в сервисе'" />
+      </RouterLink>
+    </div>
+    <div class="inline-block mt-5 ml-5">
       <RouterLink to="/upload_lists_excel">
         <CatalogSection :label="'Загрузка списков Excel'" :icon="'file-excel'" :description="'Загрузка списков Excel'" />
       </RouterLink>

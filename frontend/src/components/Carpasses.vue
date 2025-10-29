@@ -116,6 +116,7 @@ const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpass
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
+const query_log_records = `http://${backendIpAddress}:${backendPort}/log_records/`
 
 
 if (props.view_type == 'enter') {
@@ -190,6 +191,14 @@ else if (props.view_type == 'documents') {
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
+else if (props.view_type == 'log_records') {
+  state.query = query_log_records;
+  state.listTableColumns = {
+    'obj_uuid':'Объект','obj_type':'Тип объекта', 'action':'Действие','user_login':'Пользователь','created_date':'Дата',
+    'created_time':'Время'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
 
 //
 if (props.view_type == 'add_batch') {
@@ -210,8 +219,8 @@ async function getData() {
 }
 
 //////////   WEB-SOCKET SECTION
-// const messages = ref([])
-// const ws = new WebSocket(`ws://localhost:8000/ws/${userInfo.uuid}`);
+const messages = ref([])
+const ws = new WebSocket(`ws://localhost:8000/ws/${userInfo.uuid}`);
 // function sendMessage() {
 //     //
 //     // if (!selectedUser.value) {
@@ -224,17 +233,18 @@ async function getData() {
 //     //messageText.value = null;
 // }
 
-// ws.onmessage = function(event) {
-//     const message = event.data  // JSON.parse(event.data);
-//     messages.value.push(message);
-//     toast.success(message, {timeout: null});
-//   };
+ws.onmessage = function(event) {
+    const message = event.data  // JSON.parse(event.data);
+    messages.value.push(message);
+    getData()
+    //toast.success(message, {timeout: null});
+  };
 
 const notification = (operation, entity, obj_id, partner_uuid) => {
   //
-  const messageData = { receiver: '05a6bd70-f38f-4912-a516-4578c87002ab', 
+  const messageData = { receiver: 'b8d5745b-7cdd-4460-ba1e-29e5ab952e41', 
     message: `Оповещение: ${operation} - ${entity} #${obj_id} - контрагент ${partner_uuid}` }
-  //ws.send(JSON.stringify(messageData))
+  ws.send(JSON.stringify(messageData))
 }
 /////////
 
@@ -446,7 +456,7 @@ const reopenCard = (type, item, name) => {
 
   <!-- **********************   MODAL ROLLBACK CARPASS   ************************** -->
   <div v-if="showRollbackItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormRollbackCarpass @close-modal="showRollbackItem=false" @doc-created="getData" :itemName="itemName" :itemData="selectedItem"/>
+    <FormRollbackCarpass @close-modal="showRollbackItem=false" @notification="notification" @doc-created="getData" :itemName="itemName" :itemData="selectedItem"/>
   </div>
 
   <!-- **********************   MODAL CAR EXIT PERMIT   ************************** -->

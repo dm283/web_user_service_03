@@ -198,8 +198,7 @@ watch(form, (nV, oV) => {
     for (let field of itemFields) {
       if (props.itemData) {  // edit card
         if (form[field] == '' & props.itemData[field] == null) { isNV[field] = false; continue; }
-        if (form[field] != props.itemData[field]) { 
-          // console.log('new value!!!!!!!', form[field], props.itemData[field])
+        if (form[field] != props.itemData[field]) {
           isNV[field] = true;
         } else { isNV[field] = false; }
       }
@@ -222,7 +221,7 @@ const postingItem = async () => {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/batch_posting/${props.itemData.id}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
-      //emit('notification', 'проводка', 'партия_товаров', response.data.id, response.data.contact_uuid)
+      emit('notification', 'проводка', 'партия_товаров', response.data.id, response.data.contact_uuid)
     } else {
       return;
     }

@@ -422,3 +422,19 @@ class BatchJoined(Batch):
     ncar: str           #new
     contact_name: str   #new
     broker_name: str | None   #new
+
+#########
+class LogRecordCreate(BaseModel):
+    obj_uuid: str
+    obj_type: str
+    action: str
+    obj_after_action_state: str
+    user_uuid: str
+
+class LogRecord(LogRecordCreate):
+    id: int
+    created_date: date
+    created_time: time
+
+class LogRecordJoined(LogRecord):
+    user_login: str

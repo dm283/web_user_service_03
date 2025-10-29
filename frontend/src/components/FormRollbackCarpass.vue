@@ -12,7 +12,7 @@ var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
 
 const toast = useToast();
-const emit = defineEmits(['docCreated', 'closeModal'])
+const emit = defineEmits(['docCreated', 'closeModal', 'notification'])
 
 const props = defineProps({
   itemName: String,
@@ -54,7 +54,8 @@ const handleSubmit = async () => {
   //
   try {
     const response = await axios.put(state.query, '', {headers: authHeader()});
-    toast.success('Проводка отменена');      
+    toast.success('Проводка отменена');
+    emit('notification', 'откат', props.itemName, response.data.id, response.data.contact_uuid)    
     emit('docCreated'); emit('closeModal');
   } catch (error) {
     console.error('Error deleting item', error);
