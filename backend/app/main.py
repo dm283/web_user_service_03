@@ -277,7 +277,7 @@ def document_download(current_user: Annotated[UserAuth, Depends(get_current_acti
 
 
 # upload file excel (new 26.08.25)
-def load_excel(entity, file_location, db):
+def load_excel(entity, file_location, user_uuid, db):
     #
     import pandas as pd
 
@@ -309,8 +309,8 @@ def load_excel(entity, file_location, db):
                 print('data_none_values_redefined =', data_none_values_redefined)
                 prevalidation = schemas.ContactValidation(**data_none_values_redefined.model_dump())
                 print('prevalidation =', prevalidation)
-                res = crud.create_contact(db=db, item=data_none_values_redefined)
-                res = crud.posting_contact(db=db, item_id=res.id)
+                res = crud.create_contact(db=db, item=data_none_values_redefined, user_uuid=user_uuid)
+                res = crud.posting_contact(db=db, item_id=res.id, user_uuid=user_uuid)
                 cnt += 1
     except Exception as e:
         msg = {'status': 'error', 'message': f'создано {cnt} объектов, на строке {cnt+1} ошибка контента', 'exception': str(e)}
@@ -337,7 +337,7 @@ async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_acti
         print(msg)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'ошибка загрузки или сохранения файла на сервере')
 
-    load_res = load_excel(entity, file_location, db=db)
+    load_res = load_excel(entity, file_location, user_uuid=current_user.uuid, db=db)
 
     return load_res
 
