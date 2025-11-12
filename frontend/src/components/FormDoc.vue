@@ -142,9 +142,9 @@ const setInitialForm = () => {
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
-      form['user_uuid_create'] = userInfo.uuid
       //form['linked_broker_name_input'] = null  // fake form field for dropdown list
     }
+    form['user_uuid_create'] = userInfo.uuid
     //form['type'] = 'V' // template for 'ncar'
   };
 
@@ -156,6 +156,13 @@ const setInitialForm = () => {
 };
 
 setInitialForm();
+
+// open instantly system window for file selecting
+onMounted(async () => {
+  if (!props.itemDataDoc) { 
+    document.getElementById('input_file').click();
+  }
+})
 
 const postingItem = async () => {
   //
@@ -363,11 +370,10 @@ async function downloadFile(related_doc_uuid) {
 
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
-      <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
-          <input ref="files" name="files" type="file" class="formInputFile" :required="!itemDataDoc" v-if="!props.itemDataDoc"/>
+          <input id="input_file" ref="files" name="files" type="file" class="formInputFile" :required="!itemDataDoc" v-if="!props.itemDataDoc"/>
           <!-- <input ref="files" name="files" type="file" multiple class="formInputFile" v-if="props.itemData"/> -->
         </div>
         <!-- <div class="float-right" v-if="props.itemData">
