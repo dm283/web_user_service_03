@@ -103,7 +103,7 @@ def get_document_records_client(user_uuid: str, user_contact_uuid: str, db: Sess
     return db.query(models.DocumentRecord).\
         filter( or_(models.DocumentRecord.user_uuid_create==user_uuid, models.DocumentRecord.uuid.in_(doc_uuid_list)) ).\
         filter(models.DocumentRecord.is_active==True).\
-        order_by(models.DocumentRecord.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.DocumentRecord.created_datetime.desc()).offset(skip).all()
 
 
 def get_log_records(db: Session, skip: int = 0, limit: int = 100):
@@ -122,43 +122,40 @@ def get_log_records(db: Session, skip: int = 0, limit: int = 100):
 
     return db_full_response
 
-    return db.query(models.LogRecord).\
-        order_by(models.LogRecord.created_datetime.desc()).offset(skip).limit(limit).all()
-
 
 def get_contacts(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='V', models.Contact.is_active==True).\
-        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).all()
 
 
 def get_contacts_posted(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='V', models.Contact.is_active==True, models.Contact.posted==True).\
-        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).all()
 
 
 def get_partners(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.is_active==True).\
-        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).all()
 
 
 def get_partners_posted(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.is_active==True, models.Contact.posted==True).\
-        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).all()
 
 
 def get_roles(partner_type: str, db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Role).filter(models.Role.role_type==partner_type).\
-        order_by(models.Role.role_id).offset(skip).limit(limit).all()
+        order_by(models.Role.role_id).all()
 
 
 def get_brokers(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True).\
-        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).all()
 
 
 def get_brokers_posted(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True, models.Contact.posted==True).\
-        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).all()
 
 
 def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
@@ -173,7 +170,7 @@ def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: 
 
     return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.is_active==True, models.Contact.posted==True,
                                            models.Contact.uuid.not_in(existing_brokers_uuid_list)).\
-        order_by(models.Contact.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.Contact.created_datetime.desc()).all()
 
 
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
@@ -328,15 +325,13 @@ def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 
 def get_carpasses_posted(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.posted==True, models.Carpass.is_active==True).\
-        order_by(models.Carpass.created_datetime.desc()).\
-        offset(skip).limit(limit).all()
+        order_by(models.Carpass.created_datetime.desc()).all()
 
 
 def get_carpasses_posted_not_archival(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.posted==True, models.Carpass.status!='archival', models.Carpass.is_active==True).\
-        order_by(models.Carpass.created_datetime.desc()).\
-        offset(skip).limit(limit).all()
+        order_by(models.Carpass.created_datetime.desc()).all()
 
 
 def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
@@ -364,28 +359,25 @@ def get_cars_at_terminal_for_exit(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Carpass).filter(models.Carpass.is_active==True, models.Carpass.posted==True, models.Carpass.dateex==None, \
                                            models.Carpass.exitcarpass_created==False).\
-        order_by(models.Carpass.created_datetime.desc()).offset(skip).limit(limit).all()
+        order_by(models.Carpass.created_datetime.desc()).all()
 
 
 def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.Exitcarpass).filter(models.Exitcarpass.is_active == True).\
-        order_by(models.Exitcarpass.created_datetime.desc()).\
-        offset(skip).limit(limit).all()
+        order_by(models.Exitcarpass.created_datetime.desc()).all()
 
 
 def get_entry_requests_posted(db: Session, skip: int = 0, limit: int = 100):
     #
     return db.query(models.EntryRequest).filter(models.EntryRequest.is_active==True, models.EntryRequest.posted==True, \
                                                 models.EntryRequest.carpass_created==False).\
-        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).\
-        offset(skip).limit(limit).all()
+        order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).all()
 
 
 def get_ncars_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
     # get ncar fields from exitcarpasses
-    return db.query(models.Exitcarpass.ncar).filter(models.Exitcarpass.is_active == True).order_by(models.Exitcarpass.created_datetime.desc()).\
-        offset(skip).limit(limit).all()
+    return db.query(models.Exitcarpass.ncar).filter(models.Exitcarpass.is_active == True).order_by(models.Exitcarpass.created_datetime.desc()).all()
 
 
 #########################################################    CREATE FUNCTIONS
