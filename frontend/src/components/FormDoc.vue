@@ -370,7 +370,6 @@ async function downloadFile(related_doc_uuid) {
 
 
       <div v-if="!isCard" class="my-3 py-3 px-5 text-center overflow-auto">
-      <!-- <div v-if="!isCard" class="my-3 flex justify-left space-x-5 py-3 px-5 text-center"> -->
         <div class="float-left space-x-5">
           <button class="formBtn" type="submit">СОХРАНИТЬ</button>
           <button class="formBtn" type="button" @click="setInitialForm()">СБРОСИТЬ</button>
