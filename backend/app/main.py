@@ -395,7 +395,8 @@ def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_activ
                      section: str, carpass_id: int,  db: Session = Depends(get_db)):
     # create and download carpass pdf file
     if section == 'Пропуска ТС на въезд':
-        carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+        carpass_from_db = crud.get_carpass_by_id(db=db, carpass_id=carpass_id)
+        # carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
         if carpass_from_db is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
         filepath = f'saved_files/пропуск_{carpass_from_db.id_enter}.pdf'

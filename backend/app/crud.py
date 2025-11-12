@@ -1235,6 +1235,22 @@ def exit_prohibited(db: Session, carpass_id: int):
     return carpass_from_db.id
 
 
+def get_carpass_by_id(db: Session, carpass_id: int):
+    #
+    main_table = aliased(models.Carpass)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        filter(main_table.id == carpass_id).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        first()
+
+    contact_name=response[1].__dict__['name'] if response[1] else None
+    db_full_response = schemas.CarpassJoined(**response[0].__dict__, contact_name=contact_name)
+    
+    return db_full_response
+
+
 def get_carpass(db: Session, carpass_id_enter: str):
     # get single carpass from db
     return db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_id_enter).first()

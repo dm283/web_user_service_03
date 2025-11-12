@@ -5,7 +5,7 @@ INITIAL DEPLOY
   (при установке отмечается флажок "Add Path")
 - NodeJS (https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi)
 - Visual Studio Code (https://code.visualstudio.com/docs/?dv=win64user)
-- postgresql (https://www.pgadmin.org/download/)
+- postgresql (https://www.postgresql.org/download/,  https://www.pgadmin.org/download/)
 
 для доступа к сервису из внешнего интернета нужно открыть порты 8000 и 5173
 
@@ -23,6 +23,13 @@ alembic upgrade head
 
 создать юзера админа через openAPI
 создать в базе роли
+INSERT INTO public.roles(role_id, role_name, role_type) VALUES 
+	(1, 'admin', 'O'),
+	(2, 'client', 'V'),
+	(3, 'broker', 'B'),
+	(4, 'store_operator', 'O'),
+	(5, 'store_transport', 'O'),
+	(6, 'store_svh', 'O')
 
 
 START APPLICATION
