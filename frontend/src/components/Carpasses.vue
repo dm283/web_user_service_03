@@ -219,8 +219,8 @@ async function getData() {
 }
 
 //////////   WEB-SOCKET SECTION
-const messages = ref([])
-const ws = new WebSocket(`ws://localhost:8000/ws/${userInfo.uuid}`);
+// const messages = ref([])
+// const ws = new WebSocket(`ws://localhost:8000/ws/${userInfo.uuid}`);
 // function sendMessage() {
 //     //
 //     // if (!selectedUser.value) {
@@ -233,18 +233,18 @@ const ws = new WebSocket(`ws://localhost:8000/ws/${userInfo.uuid}`);
 //     //messageText.value = null;
 // }
 
-ws.onmessage = function(event) {
-    const message = event.data  // JSON.parse(event.data);
-    messages.value.push(message);
-    getData()
-    //toast.success(message, {timeout: null});
-  };
+// ws.onmessage = function(event) {
+//     const message = event.data  // JSON.parse(event.data);
+//     messages.value.push(message);
+//     getData()
+//     //toast.success(message, {timeout: null});
+//   };
 
 const notification = (operation, entity, obj_id, partner_uuid) => {
   //
   const messageData = { receiver: 'b8d5745b-7cdd-4460-ba1e-29e5ab952e41', 
     message: `Оповещение: ${operation} - ${entity} #${obj_id} - контрагент ${partner_uuid}` }
-  ws.send(JSON.stringify(messageData))
+  //ws.send(JSON.stringify(messageData))
 }
 /////////
 

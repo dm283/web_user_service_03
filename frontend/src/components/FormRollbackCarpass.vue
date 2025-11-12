@@ -55,7 +55,7 @@ const handleSubmit = async () => {
   try {
     const response = await axios.put(state.query, '', {headers: authHeader()});
     toast.success('Проводка отменена');
-    emit('notification', 'откат', props.itemName, response.data.id, response.data.contact_uuid)    
+    //emit('notification', 'откат', props.itemName, response.data.id, response.data.contact_uuid)    
     emit('docCreated'); emit('closeModal');
   } catch (error) {
     console.error('Error deleting item', error);

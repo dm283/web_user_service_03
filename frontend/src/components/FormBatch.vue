@@ -221,7 +221,7 @@ const postingItem = async () => {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/batch_posting/${props.itemData.id}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
-      emit('notification', 'проводка', 'партия_товаров', response.data.id, response.data.contact_uuid)
+      //emit('notification', 'проводка', 'партия_товаров', response.data.id, response.data.contact_uuid)
     } else {
       return;
     }
