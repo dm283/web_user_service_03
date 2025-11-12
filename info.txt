@@ -5,7 +5,7 @@ INITIAL DEPLOY
   (при установке отмечается флажок "Add Path")
 - NodeJS (https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi)
 - Visual Studio Code (https://code.visualstudio.com/docs/?dv=win64user)
-- postgresql ()
+- postgresql (https://www.pgadmin.org/download/)
 
 для доступа к сервису из внешнего интернета нужно открыть порты 8000 и 5173
 
