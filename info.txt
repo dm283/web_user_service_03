@@ -5,13 +5,11 @@ INITIAL DEPLOY
   (при установке отмечается флажок "Add Path")
 - NodeJS (https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi)
 - Visual Studio Code (https://code.visualstudio.com/docs/?dv=win64user)
+- postgresql ()
 
 для доступа к сервису из внешнего интернета нужно открыть порты 8000 и 5173
 
-
-
-
-
+…
 
 alembic init alembic
 alembic/env.py:
@@ -21,6 +19,10 @@ alembic/env.py:
 	config.set_main_option('sqlalchemy.url', SQLALCHEMY_DATABASE_URL)
 alembic revision --autogenerate -m "init (or any next)"
 alembic upgrade head
+
+
+создать юзера админа через openAPI
+создать в базе роли
 
 
 START APPLICATION
