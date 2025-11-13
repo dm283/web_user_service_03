@@ -286,7 +286,7 @@ def load_excel(entity, file_location, user_uuid, db):
     
     try:
         df = pd.read_excel(file_location)
-        print(df)
+        #print(df)
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'неверный формат файла')
@@ -306,9 +306,9 @@ def load_excel(entity, file_location, user_uuid, db):
                 dict_row.update(inn=str(int(dict_row['inn'])))
                 data = schemas.ContactCreate(**dict_row)
                 data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
-                print('data_none_values_redefined =', data_none_values_redefined)
+                #print('data_none_values_redefined =', data_none_values_redefined)
                 prevalidation = schemas.ContactValidation(**data_none_values_redefined.model_dump())
-                print('prevalidation =', prevalidation)
+                #print('prevalidation =', prevalidation)
                 res = crud.create_contact(db=db, item=data_none_values_redefined, user_uuid=user_uuid)
                 res = crud.posting_contact(db=db, item_id=res.id, user_uuid=user_uuid)
                 cnt += 1

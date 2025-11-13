@@ -20,8 +20,8 @@ def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: S
     )
     created_date = datetime.date.today()
     created_time = datetime.datetime.now().strftime("%H:%M:%S")
-    print('datetime.datetime.now() =', datetime.datetime.now())
-    print('created_date, created_time =', created_date, created_time)
+    #print('datetime.datetime.now() =', datetime.datetime.now())
+    #print('created_date, created_time =', created_date, created_time)
     log_rec = models.LogRecord(**log_rec.model_dump(), created_date = created_date, created_time = created_time)
     try:
         db.add(log_rec); db.commit(); db.refresh(log_rec)
@@ -82,7 +82,7 @@ def get_document_records(db: Session, skip: int = 0, limit: int = 100):
 
     db_full_response = []
     for row in response:
-        filename=row[1].__dict__['filename'] if row[1] else None
+        filename=row[1].__dict__['filename'] if row[1] else ''
         db_full_response.append(schemas.DocumentRecordJoined2(**row[0].__dict__, filename=filename))
 
     return db_full_response
@@ -117,7 +117,7 @@ def get_log_records(db: Session, skip: int = 0, limit: int = 100):
 
     db_full_response = []
     for row in response:
-        user_login=row[1].__dict__['login'] if row[1] else None
+        user_login=row[1].__dict__['login'] if row[1] else row[0].__dict__['user_uuid']
         db_full_response.append(schemas.LogRecordJoined(**row[0].__dict__, user_login=user_login))
 
     return db_full_response

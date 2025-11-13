@@ -69,7 +69,7 @@ class Carpass(CarpassCreate):
         from_attributes = True
 
 class CarpassJoined(Carpass):
-    contact_name: str
+    contact_name: str | None
     
 
 ##############
@@ -172,7 +172,7 @@ class EntryRequest(EntryRequestCreate):
         from_attributes = True
 
 class EntryRequestJoined(EntryRequest):
-    contact_name: str
+    contact_name: str | None
 
 
 #####################
@@ -243,7 +243,7 @@ class DocumentRecordJoined(DocumentRecord):
     attachment_datetime: str
 
 class DocumentRecordJoined2(DocumentRecord):
-    filename: str
+    filename: str | None
 
 ################
 class Role(BaseModel):
@@ -419,8 +419,8 @@ class Batch(BatchCreate):
 
 
 class BatchJoined(Batch):
-    ncar: str           #new
-    contact_name: str   #new
+    ncar: str | None          #new
+    contact_name: str | None  #new
     broker_name: str | None   #new
 
 #########
