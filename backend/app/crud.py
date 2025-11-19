@@ -1326,6 +1326,11 @@ def get_contact_by_uuid(db: Session, uuid: str):
     return db.query(models.Contact).filter(models.Contact.uuid == uuid).first()
 
 
+def get_broker_by_inn(db: Session, inn: str):
+    return db.query(models.Contact).filter(models.Contact.type=='B', models.Contact.inn==inn, models.Contact.posted==True).first()
+
 #########################################################    ROLE FUNCTIONS
 def get_role(db: Session, role_id: int):
     return db.query(models.Role).filter(models.Role.role_id == role_id).first()
+
+

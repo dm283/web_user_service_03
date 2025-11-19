@@ -47,6 +47,23 @@ const previewFiles = async (entity) => {
 
     }; } }
 
+
+async function downloadFile(file_name) {
+  // downloads file
+  let query = `http://${backendIpAddress}:${backendPort}/download-file-by-filename/${file_name}`
+  const response = await axios.get(query, {responseType: "blob", headers: authHeader()});
+  const filename = decodeURI(response.headers["file-name"])
+
+  var url = window.URL.createObjectURL(new Blob([response.data]));
+  var link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}
+
 </script>
 
 
@@ -58,6 +75,7 @@ const previewFiles = async (entity) => {
   <div class="inline-block mr-5" :class="[res_message['status']=='ok' ? msgOkStyle : msgErrStyle]">
     {{ res_message['msg'] }}
   </div>
+  <div class="mt-3"><button class="formBtn bg-white" type="button" @click="downloadFile('contacts-upload.xlsx')">Скачать шаблон</button></div>
 </div>
 </template>
 
