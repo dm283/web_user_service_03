@@ -300,17 +300,33 @@ def load_excel(entity, file_location, user_uuid, db):
         if entity == 'clients':
             for index, row in df.iterrows():
                 dict_row = row.to_dict()
+                brokers_inn = dict_row['brokers_inn']
                 dict_row.update(type='V')
+                del dict_row["brokers_inn"]
                 for i in dict_row:
                     dict_row[i] = str(dict_row[i])
-                dict_row.update(inn=str(int(dict_row['inn'])))
+                # dict_row.update(inn=str(int(dict_row['inn'])))
                 data = schemas.ContactCreate(**dict_row)
                 data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
                 #print('data_none_values_redefined =', data_none_values_redefined)
                 prevalidation = schemas.ContactValidation(**data_none_values_redefined.model_dump())
                 #print('prevalidation =', prevalidation)
                 res = crud.create_contact(db=db, item=data_none_values_redefined, user_uuid=user_uuid)
-                res = crud.posting_contact(db=db, item_id=res.id, user_uuid=user_uuid)
+                res_posting = crud.posting_contact(db=db, item_id=res.id, user_uuid=user_uuid)
+
+                # add brokers if exists
+                if brokers_inn:
+                    for i in brokers_inn.split(';'):
+                        broker = crud.get_broker_by_inn(db=db, inn=i.strip())
+                        if not broker: continue
+                        broker_uuid = broker.uuid
+                        data_create_broker = schemas.RelatedContactBrokerCreate(
+                            contact_uuid = res_posting.uuid,
+                            broker_uuid = broker_uuid,
+                            user_uuid_create = user_uuid,
+                        )
+                        res = crud.create_related_contact_broker(db=db, data=data_create_broker)
+                    
                 cnt += 1
     except Exception as e:
         msg = {'status': 'error', 'message': f'создано {cnt} объектов, на строке {cnt+1} ошибка контента', 'exception': str(e)}
