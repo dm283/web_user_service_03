@@ -316,11 +316,20 @@ def is_emails_list(value: str) -> str:
             email = EmailCheck(email=i.strip())
     except Exception as e:
         raise ValueError(f'{value} is not an list of emails')
-    return value  
+    return value
+
+def is_contains_letters(value: str) -> str:
+    # check if string contains letters
+    try:
+        c = int(value)
+    except Exception as e:
+        raise ValueError(f'{value} contains unacceptable symbols')
+    return value
+    
 
 class ContactValidation(BaseModel):
     name: str
-    inn: Annotated[str, StringConstraints(min_length=10, max_length=12)]
+    inn: Annotated[str, StringConstraints(min_length=10, max_length=12), AfterValidator(is_contains_letters)]
     type: str
     email: Annotated[str, AfterValidator(is_emails_list)] | None = None
     #email: EmailStr | None = None

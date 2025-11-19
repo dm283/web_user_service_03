@@ -302,7 +302,7 @@ async function downloadFile(document_id) {
           :required="true" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>ИНН</label>
-          <input type="number" v-model="form.inn" :class="[errField['inn']==1 ? formInputStyleErr : formInputStyle]" 
+          <input type="text" v-model="form.inn" :class="[errField['inn']==1 ? formInputStyleErr : formInputStyle]" 
           :required="true" :disabled="isCard" />
         </div>    
         <div class=formInputDiv>   <label class=formLabelStyle>Номер договора</label>
