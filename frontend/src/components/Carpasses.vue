@@ -425,7 +425,8 @@ const reopenCard = (type, item, name) => {
 
   <!-- **********************   MODAL BATCH CARD   ************************** -->
   <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
-    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
+    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+      :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL BATCH ADD   ************************** -->
   <div v-if="showAddBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -433,8 +434,26 @@ const reopenCard = (type, item, name) => {
   </div>
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBatch @close-modal="showUpdateBatch=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+    <FormBatch @close-modal="showUpdateBatch=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
+
+  <!-- **********************   MODAL CONTACT CARD   ************************** -->
+  <div v-if="showCardContact" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+  <!-- <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"> -->
+    <FormContact @close-modal="showCardContact=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL CONTACT ADD   ************************** -->
+  <div v-if="showAddContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormContact @close-modal="showAddContact=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL CONTACT EDIT  ************************** -->
+  <div v-if="showUpdateContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormContact @close-modal="showUpdateContact=false" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
   
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->
   <div v-if="showCardEntryRequest" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
@@ -491,20 +510,6 @@ const reopenCard = (type, item, name) => {
   <div v-if="showAddExitcarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormInitAddExitcarpass @close-modal="showAddExitcarpass=false" @doc-created="createExitCarpass" />
   </div>
-
-  <!-- **********************   MODAL CONTACT CARD   ************************** -->
-  <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormContact @close-modal="showCardContact=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
-  </div>
-  <!-- **********************   MODAL CONTACT ADD   ************************** -->
-  <div v-if="showAddContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormContact @close-modal="showAddContact=false" @doc-created="getData" @btn-delete="deleteItem" />
-  </div>
-  <!-- **********************   MODAL CONTACT EDIT  ************************** -->
-  <div v-if="showUpdateContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormContact @close-modal="showUpdateContact=false" @doc-created="getData" @btn-delete="deleteItem" :itemData="selectedItem"/>
-  </div>
-
 
   <!-- **********************   MODAL BROKER CARD   ************************** -->
   <div v-if="showCardBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
