@@ -276,6 +276,28 @@ def document_download(current_user: Annotated[UserAuth, Depends(get_current_acti
     return response
 
 
+# download file from filesystem
+@app.get('/download-file-by-filename/{filename}')
+def file_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    filename: str,
+                    db: Session = Depends(get_db)):
+    filepath = f'../data/files/{filename}'
+    filename = filename
+    
+    response = FileResponse(path=filepath,
+                            # filename=filename, 
+                            headers={
+                                "Access-Control-Expose-Headers": "Content-Disposition, File-Name",
+                                "File-Name": quote(os.path.basename(filename), encoding='utf-8'),
+                                "Content-Disposition": f"attachment; filename*=utf-8''{quote(os.path.basename(filename))}"
+                                    }
+                            # media_type="text/plain",
+                            # content_disposition_type="attachment; filename*=utf-8''{}".format(quote(os.path.basename(filename)))
+    )
+
+    return response
+
+
 # upload file excel (new 26.08.25)
 def load_excel(entity, file_location, user_uuid, db):
     #
