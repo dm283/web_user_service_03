@@ -75,7 +75,7 @@ async function downloadFile(file_name) {
   <div class="inline-block mr-5" :class="[res_message['status']=='ok' ? msgOkStyle : msgErrStyle]">
     {{ res_message['msg'] }}
   </div>
-  <div class="mt-3"><button class="formBtn" type="button" @click="downloadFile('contacts-upload.xlsx')">Скачать шаблон</button></div>
+  <div class="mt-3"><button class="formBtn bg-white" type="button" @click="downloadFile('contacts-upload.xlsx')">Скачать шаблон</button></div>
 </div>
 </template>
 
