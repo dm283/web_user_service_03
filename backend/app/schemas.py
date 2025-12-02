@@ -454,3 +454,17 @@ class LogRecord(LogRecordCreate):
 
 class LogRecordJoined(LogRecord):
     user_login: str
+
+###############
+class UemailCreate(BaseModel):
+    id: str
+    adrto: str
+    subj: str
+    textemail: str
+    attachmentfiles: str
+    datep: datetime
+    user_id: str
+    client: str
+
+class Uemail(UemailCreate):
+    uniqueindexfield: int

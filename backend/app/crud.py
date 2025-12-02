@@ -9,6 +9,30 @@ from uuid import uuid4
 from app import models, schemas
 
 
+def create_uemail(textemail: str, contact_uuid: str, user_uuid: str, db: Session):
+    # create record in uemail table
+    adrto = 'adrto_test'
+    attachmentfiles = 'attach_test'
+
+    uemail_rec = schemas.UemailCreate(
+        id = str(uuid4()),
+        adrto = adrto,
+        subj = 'Сервис Управление терминалом - оповещение',
+        textemail = textemail,
+        attachmentfiles = attachmentfiles,
+        datep = datetime.datetime.now(),
+        user_id = user_uuid,
+        client = contact_uuid,
+    )
+    
+    uemail_rec = models.Uemail(**uemail_rec.model_dump())
+    try:
+        db.add(uemail_rec); db.commit(); db.refresh(uemail_rec)
+    except Exception as err:
+        print(err)
+        #raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+
 def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: Session):
     # logging
     entity_title_name_dict = {
@@ -558,6 +582,16 @@ def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     logging_action(obj_type='related_docs_record', schema=schemas.RelatedDocs, action='attach_doc', item_from_db=record, user_uuid=data.user_uuid, db=db)
+    
+    # create uemail
+    textemail = f"""
+        тестовое сообщение:  
+        к {data.obj_type} {data.obj_uuid} добавлен документ {data.doc_uuid}
+        дата добавления: {created_datetime} 
+        """
+    create_uemail(textemail=textemail, contact_uuid=data.contact_uuid, user_uuid=data.user_uuid, db=db)
+
+
     return record
 
 
