@@ -11,8 +11,24 @@ from app import models, schemas
 
 def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: Session):
     # logging
+    entity_title_name_dict = {
+        'Партия товаров': 'batch',
+        'Пропуск ТС на въезд': 'carpass',
+        'Пропуск ТС на выезд': 'carpass_exit',
+        'Заявка на въезд ТС': 'entry_request',
+        'Клиент': 'contact',
+        'Брокер': 'contact',
+        'Пользователь': 'user',
+    }
+
+    if obj_type == 'related_docs_record':
+        obj_uuid = item_from_db.obj_uuid
+        obj_type = entity_title_name_dict.get(item_from_db.obj_type)
+    else:
+        obj_uuid = item_from_db.uuid
+
     log_rec = schemas.LogRecordCreate(
-        obj_uuid = item_from_db.uuid,
+        obj_uuid = obj_uuid,
         obj_type = obj_type,
         action = action,
         obj_after_action_state = str(schema.model_validate(item_from_db).model_dump()),
@@ -541,6 +557,7 @@ def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
+    logging_action(obj_type='related_docs_record', schema=schemas.RelatedDocs, action='attach_doc', item_from_db=record, user_uuid=data.user_uuid, db=db)
     return record
 
 

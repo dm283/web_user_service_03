@@ -361,6 +361,13 @@ class RelatedDocsCreate(BaseModel):
     user_uuid: str
     doc_uuid: str
 
+class RelatedDocs(RelatedDocsCreate):
+    id: int
+    created_datetime: datetime
+
+    class Config:
+        from_attributes = True	
+
 ###########
 class RelatedContactBrokerCreate(BaseModel):
     contact_uuid: str
