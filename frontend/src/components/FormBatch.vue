@@ -209,7 +209,6 @@ watch(form, (nV, oV) => {
   }
   isNeedSave.value = false
   for (let field of itemFields) { if (isNV[field] == true) { 
-    // console.log('NEEDED TO SAVE FOR NV!'); 
     isNeedSave.value = true; break; 
   } }
 });
@@ -503,6 +502,7 @@ const refreshCard = async () => {
         </div>
       </div>
 
+      <!-- HANDLING BLOCK -->
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
           <button :class="[isNeedSave ? saveBtnStyle1 : saveBtnStyle0]" type="submit">СОХРАНИТЬ</button>
@@ -514,7 +514,7 @@ const refreshCard = async () => {
       </div>
       <div v-else class="mb-5"></div>
 
-
+      <!-- DOCUMENTS BLOCK -->
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
         <div class="space-x-5 overflow-auto">
           <label class="mx-1 text-sm font-semibold text-blue-500">ДОКУМЕНТЫ</label>
