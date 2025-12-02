@@ -481,7 +481,25 @@ const refreshCard = async () => {
       <div class="">
         <div class="formInputDiv"><label class=formLabelStyle>Брокер(ы)</label></div>
         <div class="formInputDiv" v-if="(!props.isCard)">
-          <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
+
+          <div :class=formInputStyle class="flex">
+            <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="Добавить брокера" v-model="form.linked_broker_name_input" 
+              @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1')"
+              @keyup="setFilter('linked_broker_name_input', 'brokers', 'name', 'inn')" :required="false"/>
+            <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <!-- <span @click="setFilter('null', 'brokers', 'broker_name'); setVars('linked_broker_name_input', 'reserve_1');">
+              <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span> -->
+          </div>
+          <div v-if="showDropDownSelect['linked_broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['linked_broker_name_input']=false; 
+                  if(!state.new_brokers.some(el=>el.uuid===item.uuid)){state.new_brokers.push({'name': item.name, 'inn': item.inn, 'uuid': item.uuid})};
+                  form['reserve_1']=item.name;form['linked_broker_name_input']='' " >
+                {{ item.name }} ({{ item.inn }})
+            </div>
+          </div>
+
+          <!-- <div :class=formInputStyle class="flex" @click="setFilter('null', 'brokers', 'name'); setVars('linked_broker_name_input', 'reserve_1');">
             <input class="w-64 focus:outline-none" type="text" v-model="form.linked_broker_name_input" 
               @keyup="setFilter('linked_broker_name_input', 'brokers', 'name')" :required="false" placeholder="Добавить брокера"/>
             <span><i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
@@ -493,9 +511,9 @@ const refreshCard = async () => {
                 form['reserve_1']=item.name;form['linked_broker_name_input']=''" >
               {{ item.name }}
             </div>
-          </div>
+          </div> -->
+
         </div>
-        <div></div>
       </div>
 
 
