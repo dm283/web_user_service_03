@@ -97,9 +97,9 @@ onMounted(async () => {
 if (props.itemData) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
-        {headers: authHeader()} );
-      state.documents = response.data;
+      // const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entity_documents/${props.itemData.uuid}`,
+      //   {headers: authHeader()} );
+      // state.documents = response.data;
 
       const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_contact_broker/${props.itemData.uuid}`,
         {headers: authHeader()} );
@@ -297,7 +297,7 @@ const handleSubmit = async () => {
         let formData2 = new FormData();
         formData2.append('obj_type_name', 'Клиенты');
         formData2.append('obj_type', 'Клиент');
-        formData2.append('contact_uuid', form.contact_uuid);
+        formData2.append('contact_uuid', state.obj_uuid);
         // formData2.append('broker_uuid', form.broker_uuid);
         formData2.append('obj_uuid', state.obj_uuid);
         formData2.append('user_uuid', userInfo.uuid);
@@ -411,7 +411,7 @@ const refreshCard = async () => {
     <div class=contStyle>
 
     <div class="ml-6 mt-3" v-if="props.itemData">
-      <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
+      <div class="ml-0 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
     </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
