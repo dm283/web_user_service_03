@@ -192,7 +192,45 @@ def create_document_carpass(carpass, filepath, filename):
 
 
 
-def create_document_batch(item, filepath, filename):
+def create_document_batch(item, carpass_from_db, filepath, filename):
     # creates batch pdf file for printing
-    print('create_document_batch', item, filepath, filename)
-    
+    # QR code creating
+    qrcode_data = f'UUID: {item.uuid}\n' \
+        f'Грузополучатель: {item.ncar}\n' \
+        f'Номер транспортной накладной: {item.tn_id}\n'
+    qr = qrcode.QRCode(box_size=4)
+    qr.add_data(qrcode_data)
+    qr.make()
+    qr_code_image = qr.make_image()
+
+    pdf = canvas.Canvas(filepath) 
+    pdf.setTitle(filename) 
+    pdfmetrics.registerFont(TTFont('Arial', 'verdana.ttf')) 
+
+    pdf.setFont("Arial", 14); pdf.drawString(190, 810, 'Склад временного хранения')
+    pdf.setFont("Arial", 14); pdf.drawString(120, 785, 'ООО "Мультимодальные Транспортные Системы"')
+    pdf.setFont("Arial", 14); pdf.drawString(70, 760, '№ лицензии: 10132/200315/10145/8 действует с 06.11.2025 г.')
+
+    pdf.setFont("Arial", 18); pdf.drawString(30, 700, f'Грузополучатель: {item.contact_name}')
+
+    pdf.drawInlineImage(qr_code_image, 15, 470) #x.y QR-code image
+
+    pdf.setFont("Arial", 18); pdf.drawString(240, 655, f'Номер ТС: {item.ncar}')
+    pdf.setFont("Arial", 18); pdf.drawString(240, 625, f'Дата въезда: {carpass_from_db.dateen}')
+    pdf.setFont("Arial", 18); pdf.drawString(240, 595, f'Время въезда: {carpass_from_db.timeen}')
+    pdf.setFont("Arial", 18); pdf.drawString(240, 565, f'Стояночное место: {carpass_from_db.place_n}')
+    pdf.setFont("Arial", 18); pdf.drawString(240, 535, f'Номер CMR: {item.tn_id}')
+
+    pdf.setFont("Arial", 18); pdf.drawString(30, 455, f'Время и дата закрытия доставки: ???')
+
+    pdf.setFont("Arial", 18); pdf.drawString(30, 365, f'Время и дата помещения на ВХ: ???')
+    pdf.setFont("Arial", 18); pdf.drawString(30, 335, f'Место хранения: ???')
+    pdf.setFont("Arial", 18); pdf.drawString(30, 305, f'Номер ДО1: ???')
+    pdf.setFont("Arial", 18); pdf.drawString(30, 275, f'Кол-во мест: {item.places_cnt}')
+    pdf.setFont("Arial", 18); pdf.drawString(30, 245, f'Вес брутто: {item.weight}')
+
+    pdf.setFont("Arial", 18.5); pdf.drawString(30, 70, f'ФИО кладовщика: ???')
+    pdf.drawString(210, 65, '______________________________')
+
+
+    pdf.save()
