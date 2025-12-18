@@ -66,10 +66,9 @@ class Role(Base):
 class User(Base):
     __tablename__ = "users"
     contact_id = Column(Integer)  # deprecated
-    # contact_uuid = Column(String, ForeignKey('contacts.uuid'))
     contact_uuid = Column(String)
     type = Column(String)
-    role_id = Column(Integer, ForeignKey('roles.role_id')) # new
+    role_id = Column(Integer, ForeignKey('roles.role_id'))
     login = Column(String, unique=True, index=True)
     email = Column(String)
     hashed_password = Column(String)
@@ -271,3 +270,26 @@ class LogRecord(Base):
     id = Column(Integer, primary_key=True)
     created_date = Column(Date)
     created_time = Column(Time)
+
+
+class Uemail(Base):
+    __tablename__ = 'uemail'
+
+    id = Column(String, unique=True)  # uuid
+    app = Column(String)
+    forms = Column(String)
+    ids = Column(String)
+    client = Column(String)
+    adrto = Column(String)
+    subj = Column(String)
+    textemail = Column(String)
+    attachmentfiles = Column(String)
+    guid_doc = Column(String)
+    datep = Column(DateTime)
+    dates = Column(DateTime)
+    datet = Column(DateTime)
+    datef = Column(DateTime)
+    fl = Column(Integer)
+    user_id = Column(String)
+    status = Column(Integer)
+    uniqueindexfield = Column(Integer, primary_key=True)
