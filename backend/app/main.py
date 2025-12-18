@@ -427,19 +427,30 @@ async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depe
     return crud.attach_doc_to_additional_entity(db=db, doc_id=doc_id, entity_uuid=entity_uuid)
     
 
-# download enter carpass for printing
-@app.get('/download_carpass/{section}/{carpass_id}')
+# download document for printing
+@app.get('/download_carpass/{section}/{item_sys_id}')
 def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                     section: str, carpass_id: int,  db: Session = Depends(get_db)):
+                     section: str, item_sys_id: int,  db: Session = Depends(get_db)):
     # create and download carpass pdf file
     if section == 'Пропуска ТС на въезд':
-        carpass_from_db = crud.get_carpass_by_id(db=db, carpass_id=carpass_id)
+        carpass_from_db = crud.get_carpass_by_id(db=db, carpass_id=item_sys_id)
         # carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
         if carpass_from_db is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
         filepath = f'saved_files/пропуск_{carpass_from_db.id_enter}.pdf'
         filename = f'пропуск_{carpass_from_db.id_enter}.pdf'
         create_document_carpass(carpass_from_db, filepath, filename)
+
+    # create and download batch pdf file
+    if section == 'Партии товаров':
+        item_from_db = crud.get_batch_by_sys_id(db=db, item_sys_id=item_sys_id)
+        # carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+        if item_from_db is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        filepath = f'saved_files/партия_{item_from_db.uuid}.pdf'
+        filename = f'партия_{item_from_db.uuid}.pdf'
+        create_document_batch(item_from_db, filepath, filename)
+        return
 
     # elif section == 'Пропуска ТС на выезд':
     #     carpass_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()

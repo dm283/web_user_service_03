@@ -595,7 +595,7 @@ const rowClick = (index, item) => {
     <!-- печать -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnPrint', selectedItem, props.name)" :disabled="!selectedItem | !selectedItem.posted" 
-      v-if="props.name=='Пропуска ТС на въезд'">
+      v-if="props.name=='Пропуска ТС на въезд' | (props.name=='Партии товаров' & userInfo.contact_id==0)">
       <i class="pi pi-print" style="font-size: 1rem"></i>
     </button>
 

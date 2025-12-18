@@ -189,3 +189,10 @@ def create_document_carpass(carpass, filepath, filename):
     
 
     pdf.save()
+
+
+
+def create_document_batch(item, filepath, filename):
+    # creates batch pdf file for printing
+    print('create_document_batch', item, filepath, filename)
+    
