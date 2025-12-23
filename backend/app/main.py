@@ -171,12 +171,12 @@ def redefine_schema_values_to_none(data, schema_obj):
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
-        self.active_connections_mapping: dict = {}  ########
+        self.active_connections_mapping: dict = {}
 
-    async def connect(self, websocket: WebSocket, client_id: str): ###########
+    async def connect(self, websocket: WebSocket, client_id: str):
         await websocket.accept()
         self.active_connections.append(websocket)
-        self.active_connections_mapping[client_id] = websocket  ##########
+        self.active_connections_mapping[client_id] = websocket
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
@@ -194,7 +194,7 @@ manager = ConnectionManager()
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str, db: Session = Depends(get_db)):
-    await manager.connect(websocket, client_id)  #######
+    await manager.connect(websocket, client_id)
     print('connection params = ', websocket, client_id)
     try:
         while True:
@@ -202,7 +202,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str, db: Session =
             print('data = ', data)
             data_dict = ast.literal_eval(data)
             print('data_dict =', data_dict)
-            receiver = data_dict['receiver']      ###########
+            receiver = data_dict['receiver']
             msg_text = data_dict['message']
             await manager.send_personal_message(msg_text, manager.active_connections_mapping[receiver])
             # await manager.send_personal_message(f"{msg_text}", websocket)
