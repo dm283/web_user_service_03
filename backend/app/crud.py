@@ -1302,6 +1302,29 @@ def get_carpass_by_id(db: Session, carpass_id: int):
     return db_full_response
 
 
+def get_batch_by_sys_id(db: Session, item_sys_id: int):
+    #
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+
+    response = db.query(main_table, contact_1, contact_2, carpass).\
+        filter(main_table.id == item_sys_id).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        first()
+
+    broker_name=response[1].__dict__['name'] if response[1] else None
+    contact_name=response[2].__dict__['name'] if response[2] else None
+    ncar=response[3].__dict__['ncar'] if response[3] else None
+    
+    db_full_response = schemas.BatchJoined(**response[0].__dict__, contact_name=contact_name, broker_name=broker_name, ncar=ncar)
+    
+    return db_full_response
+
+
 def get_carpass(db: Session, carpass_id_enter: str):
     # get single carpass from db
     return db.query(models.Carpass).filter(models.Carpass.id_enter == carpass_id_enter).first()
