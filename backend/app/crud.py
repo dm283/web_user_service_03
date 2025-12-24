@@ -90,7 +90,7 @@ def create_n_save_document(db: Session, file: UploadFile, document: schemas.Docu
     # add filecontent as blob 
     document.filecontent = file.file.read()
 
-    # save file on disk
+    # save file on disk  !!! create folders system !!!
     file_location = f"saved_files/{file.filename}"
     with open(file_location, "wb+") as file_object:
         file_object.write(document.filecontent)
