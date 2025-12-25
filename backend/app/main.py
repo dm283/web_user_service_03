@@ -228,12 +228,17 @@ async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_acti
                       db: Session = Depends(get_db)
                       ):
 
+    file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    fname_splited = file.filename.rpartition('.')
+    filename_with_postfix = f'{fname_splited[0]}_{file_name_postfix}.{fname_splited[2]}'
+    filepath = os.path.join('saved_files', filename_with_postfix)
+
     document = schemas.DocumentCreate(
         doc_name = doc_name,
         related_doc_uuid = related_doc_uuid,
         customer_name = customer_name,
         filename = file.filename,
-        filepath = f"saved_files/{file.filename}",
+        filepath = filepath,
         filecontent = None
     )
 
@@ -252,27 +257,18 @@ def document_get_filename(current_user: Annotated[UserAuth, Depends(get_current_
 
 # download file from object card
 @app.get('/download-file/{document_record_uuid}')
-# @app.get('/download-file/{document_id}')  #old
 def document_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                    #   document_id: int,  #old
-                    document_record_uuid: str,
-                      db: Session = Depends(get_db)):
-    # document = db.query(models.Document).filter(models.Document.id == document_id).first()  #old
+                    document_record_uuid: str, db: Session = Depends(get_db)):
     document = db.query(models.Document).filter(models.Document.related_doc_uuid == document_record_uuid).first()
     filepath = document.filepath
     filename = document.filename
-    
+
     response = FileResponse(path=filepath,
-                            # filename=filename, 
                             headers={
                                 "Access-Control-Expose-Headers": "Content-Disposition, File-Name",
                                 "File-Name": quote(os.path.basename(filename), encoding='utf-8'),
                                 "Content-Disposition": f"attachment; filename*=utf-8''{quote(os.path.basename(filename))}"
-                                    }
-                            # media_type="text/plain",
-                            # content_disposition_type="attachment; filename*=utf-8''{}".format(quote(os.path.basename(filename)))
-    )
-
+                                    })
     return response
 
 
@@ -283,18 +279,12 @@ def file_download(current_user: Annotated[UserAuth, Depends(get_current_active_u
                     db: Session = Depends(get_db)):
     filepath = f'../data/files/{filename}'
     filename = filename
-    
     response = FileResponse(path=filepath,
-                            # filename=filename, 
                             headers={
                                 "Access-Control-Expose-Headers": "Content-Disposition, File-Name",
                                 "File-Name": quote(os.path.basename(filename), encoding='utf-8'),
                                 "Content-Disposition": f"attachment; filename*=utf-8''{quote(os.path.basename(filename))}"
-                                    }
-                            # media_type="text/plain",
-                            # content_disposition_type="attachment; filename*=utf-8''{}".format(quote(os.path.basename(filename)))
-    )
-
+                                    })
     return response
 
 
@@ -385,17 +375,26 @@ async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_acti
 async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                                   related_doc_uuid: str, 
                                   customer_name: Annotated[str, Form()], #deprecated
-                                  contact_uuid: Annotated[str, Form()], post_user_id: Annotated[str, Form()],
+                                  contact_uuid: Annotated[str, Form()],  #deprecated
+                                  post_user_id: Annotated[str, Form()],
                                   file: UploadFile, db: Session = Depends(get_db)):
-    # file upload for carpass
+    
+    file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    if '.' in file.filename:
+        fname_splited = file.filename.rpartition('.')
+        filename_with_postfix = f'{fname_splited[0]}_{file_name_postfix}.{fname_splited[2]}'
+    else:
+        filename_with_postfix = f'{file.filename}_{file_name_postfix}'
+    filepath = os.path.join('saved_files', filename_with_postfix)
+
     document = schemas.DocumentCreate(
-        doc_name = 'наименование_дока',
+        doc_name = 'deprecated',
         related_doc_uuid = related_doc_uuid,
         customer_name = customer_name,
         contact_uuid = contact_uuid,
         post_user_id = post_user_id,
         filename = file.filename,
-        filepath = f"saved_files/{file.filename}",
+        filepath = filepath,
         filecontent = None
     )
     return crud.create_n_save_document(db=db, file=file, document=document)

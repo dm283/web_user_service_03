@@ -1,4 +1,4 @@
-import datetime
+import os, datetime
 from fastapi import UploadFile, HTTPException, Depends, status
 from pydantic import ValidationError
 from sqlalchemy import select, or_, join
@@ -91,8 +91,12 @@ def create_n_save_document(db: Session, file: UploadFile, document: schemas.Docu
     document.filecontent = file.file.read()
 
     # save file on disk  !!! create folders system !!!
-    file_location = f"saved_files/{file.filename}"
-    with open(file_location, "wb+") as file_object:
+    if not os.path.exists('saved_files'):
+        os.mkdir('saved_files')
+
+    #file_location = f"saved_files/{file.filename}"
+
+    with open(document.filepath, "wb+") as file_object:
         file_object.write(document.filecontent)
 
     # add record into database
