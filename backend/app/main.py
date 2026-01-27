@@ -328,7 +328,7 @@ def load_excel(entity, file_location, user_uuid, db):
 
                 # add brokers if exists
                 if brokers_inn:
-                    for i in brokers_inn.split(';'):
+                    for i in str(brokers_inn).split(';'):
                         broker = crud.get_broker_by_inn(db=db, inn=i.strip())
                         if not broker: continue
                         broker_uuid = broker.uuid
