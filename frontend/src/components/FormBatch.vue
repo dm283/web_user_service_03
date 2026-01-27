@@ -536,7 +536,7 @@ const refreshCard = async () => {
         </div> -->
 
         <div class="mb-5" v-if="!state.isLoading">
-          <div v-if="state.documents.length>0" class="border rounded-md mt-2 overflow-hidden">
+          <div v-if="state.documents.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-40">
           <table class="w-full">
             <thead>
               <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">

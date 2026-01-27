@@ -288,8 +288,8 @@ async function downloadFile(document_id) {
 
       <div v-if="itemData" class="mx-5 px-1 mb-5">
         <label class=formLabelStyle>Клиенты</label>
-        <div v-if="state.related_clients.length>0" class="border rounded-md mt-2 overflow-hidden">
-        <table class="w-full">
+        <div v-if="state.related_clients.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-20">
+          <table class="w-full">
           <thead>
             <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
               <td class="text-center">Наименование клиента</td>
