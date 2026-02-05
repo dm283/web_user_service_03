@@ -9,10 +9,18 @@ from uuid import uuid4
 from app import models, schemas
 
 
-def create_uemail(textemail: str, contact_uuid: str, user_uuid: str, db: Session):
+def create_uemail(textemail: str, doc_uuid: str, contact_uuid: str, user_uuid: str, db: Session):
     # create record in uemail table
-    adrto = 'adrto_test'
-    attachmentfiles = 'attach_test'
+    db_contact = get_contact_by_uuid(db=db, uuid=contact_uuid)
+    if not db_contact.email:
+        print(f'[ error ]   у контакта {db_contact.name} (ИНН {db_contact.inn}) отсутствует email, сообщение email не создано!')
+        return 
+    adrto = db_contact.email
+    # adoptation for current mSender version where email addresses via ,
+    adrto = adrto.replace(';', ',')
+    
+    db_doc = get_document_by_related_doc_uuid(db=db, related_doc_uuid=doc_uuid)
+    attachmentfiles = db_doc.filepath.rpartition('\\')[2]
 
     uemail_rec = schemas.UemailCreate(
         id = str(uuid4()),
@@ -111,6 +119,11 @@ def create_n_save_document(db: Session, file: UploadFile, document: schemas.Docu
 def get_document_by_uuid(db: Session, uuid: str):
     # returns list with 1 item (for frontend compatibility)
     return [db.query(models.Document).filter(models.Document.uuid == uuid, models.Document.is_active==True).first()]
+
+
+def get_document_by_related_doc_uuid(db: Session, related_doc_uuid: str):
+    #
+    return db.query(models.Document).filter(models.Document.related_doc_uuid == related_doc_uuid, models.Document.is_active==True).first()
 
 
 # def get_documents(db: Session, skip: int = 0, limit: int = 100):
@@ -593,7 +606,7 @@ def create_related_docs_record(db: Session, data: schemas.RelatedDocsCreate):
         к {data.obj_type} {data.obj_uuid} добавлен документ {data.doc_uuid}
         дата добавления: {created_datetime} 
         """
-    create_uemail(textemail=textemail, contact_uuid=data.contact_uuid, user_uuid=data.user_uuid, db=db)
+    create_uemail(textemail=textemail, doc_uuid=data.doc_uuid, contact_uuid=data.contact_uuid, user_uuid=data.user_uuid, db=db)
 
 
     return record
