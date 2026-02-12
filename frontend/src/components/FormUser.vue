@@ -352,7 +352,7 @@ const refreshCard = async () => {
     <div class=contStyle>
 
     <div class="ml-6 mt-3" v-if="props.itemData">
-      <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
+      <div class="ml-0 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
     </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
@@ -505,10 +505,10 @@ const refreshCard = async () => {
                 <td class="text-center"><div class="pl-0.5 text-blue-500 cursor-pointer" 
                     @click="downloadFile(document.uuid)">
                   <i class="pi pi-download" style="font-size: 0.8rem"></i></div></td>
-                <td class="text-center max-w-48">{{ document.doc_name }}</td>
+                <td class="text-center max-w-48 overflow-hidden">{{ document.doc_name }}</td>
                 <td class="text-center">{{ document.doc_id }}</td>
                 <td class="text-center">{{ document.doc_date }}</td>
-                <td class="text-center max-w-48">{{ document.file_name }}</td>
+                <td class="text-center max-w-48 overflow-hidden">{{ document.file_name }}</td>
                 <td class="text-center">{{ document.login }}</td>
                 <td class="text-center">{{ document.contact }}</td>
                 <td class="text-center">{{ document.attachment_datetime }}</td>
