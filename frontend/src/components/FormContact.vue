@@ -195,6 +195,11 @@ setInitialForm();
 var isNV = {};
 var isNeedSave = ref(false);
 
+const specificNeedSaveChecksForEntity = () => {
+  if (state.new_brokers.length>0) {return true}  // 12.2.26
+  return false
+}
+
 watch(form, (nV, oV) => {
   if (nV) {
     for (let field of itemFields) {
@@ -213,10 +218,14 @@ watch(form, (nV, oV) => {
   for (let field of itemFields) { if (isNV[field] == true) { 
     isNeedSave.value = true; break; 
   } }
+
+  if (specificNeedSaveChecksForEntity()) { isNeedSave.value = true }  // 12.2.26
 });
 
 const postingItem = async () => {
   //
+  if (isNeedSave.value) { toast.warning('Сохраните данные перед проводкой'); return  }  // 12.2.26
+
   try {
     if (props.itemData) {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/contacts_posting/${props.itemData.id}`,
@@ -493,7 +502,10 @@ const refreshCard = async () => {
           <div v-if="showDropDownSelect['linked_broker_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['linked_broker_name_input']=false; 
-                  if(!state.new_brokers.some(el=>el.uuid===item.uuid)){state.new_brokers.push({'name': item.name, 'inn': item.inn, 'uuid': item.uuid})};
+                  if(!state.new_brokers.some(el=>el.uuid===item.uuid)){
+                    state.new_brokers.push({'name': item.name, 'inn': item.inn, 'uuid': item.uuid})
+                    isNeedSave=true
+                  };
                   form['reserve_1']=item.name;form['linked_broker_name_input']='' " >
                 {{ item.name }} ({{ item.inn }})
             </div>

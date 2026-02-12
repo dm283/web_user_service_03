@@ -1149,6 +1149,15 @@ def read_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)
     return db_user
 
 
+@app.get('/user_by_uuid/{uuid}', response_model=schemas.User)
+def read_user_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    item = crud.get_user_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 @app.get("/users/by_name/{username}", response_model=schemas.User)
 def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
               username: str, db: Session = Depends(get_db)):

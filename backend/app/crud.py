@@ -1362,6 +1362,10 @@ def get_batch_by_uuid(db: Session, uuid: str):
     return db.query(models.Batch).filter(models.Batch.uuid == uuid).first()
 
 
+def get_batch_by_uuid(db: Session, uuid: str):
+    # get single entry_request from db
+    return db.query(models.User).filter(models.User.uuid == uuid).first()
+
 #########################################################    USER FUNCTIONS
 def get_user(db: Session, user_id: int):
     #

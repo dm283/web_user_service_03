@@ -215,6 +215,8 @@ watch(form, (nV, oV) => {
 
 const postingItem = async () => {
   //
+  if (isNeedSave.value) { toast.warning('Сохраните данные перед проводкой'); return  }  // 12.2.26
+
   try {
     if (props.itemData) {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/batch_posting/${props.itemData.id}`,
@@ -224,7 +226,7 @@ const postingItem = async () => {
     } else {
       return;
     }
-    emit('docCreated'); emit('closeModal'); 
+    emit('docCreated'); emit('closeModal');
   } catch (error) {
     let err = error.response.data.detail;
     let errFlag = 0;

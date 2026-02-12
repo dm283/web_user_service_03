@@ -205,6 +205,8 @@ watch(form, (nV, oV) => {
 
 const postingItem = async () => {
   //
+  if (isNeedSave.value) { toast.warning('Сохраните данные перед проводкой'); return  }  // 12.2.26
+  
   try {
     if (props.itemData) {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`,

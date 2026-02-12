@@ -454,7 +454,57 @@ const reopenCard = (type, item, name) => {
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
-  
+
+  <!-- **********************   MODAL BROKER CARD   ************************** -->
+  <div v-if="showCardBroker" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+  <!-- <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"> -->
+    <FormBroker @close-modal="showCardBroker=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL BROKER ADD   ************************** -->
+  <div v-if="showAddBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBroker @close-modal="showAddBroker=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL BROKER EDIT  ************************** -->
+  <div v-if="showUpdateBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormBroker @close-modal="showUpdateBroker=false" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
+
+  <!-- **********************   MODAL USER CARD   ************************** -->
+  <div v-if="showCardUser" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+  <!-- <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"> -->
+    <FormUser @close-modal="showCardUser=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL USER ADD   ************************** -->
+  <div v-if="showAddUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormUser @close-modal="showAddUser=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL USER EDIT  ************************** -->
+  <div v-if="showUpdateUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
+
+
+  <!-- **********************   MODAL USER CARD   ************************** -->
+  <!-- <div v-if="showCardUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormUser @close-modal="showCardUser=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div> -->
+  <!-- **********************   MODAL USER ADD   ************************** -->
+  <!-- <div v-if="showAddUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormUser @close-modal="showAddUser=false" @doc-created="getData" />
+  </div> -->
+  <!-- **********************   MODAL USER EDIT  ************************** -->
+  <!-- <div v-if="showUpdateUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" :itemData="selectedItem"/>
+  </div> -->
+
+
+
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->
   <div v-if="showCardEntryRequest" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
     <FormEntryRequest @close-modal="showCardEntryRequest=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
@@ -509,33 +559,6 @@ const reopenCard = (type, item, name) => {
   <!-- **********************   MODAL INIT ADDING EXITCARPASS  ************************** -->
   <div v-if="showAddExitcarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormInitAddExitcarpass @close-modal="showAddExitcarpass=false" @doc-created="createExitCarpass" />
-  </div>
-
-  <!-- **********************   MODAL BROKER CARD   ************************** -->
-  <div v-if="showCardBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBroker @close-modal="showCardBroker=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
-  </div>
-  <!-- **********************   MODAL BROKER ADD   ************************** -->
-  <div v-if="showAddBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBroker @close-modal="showAddBroker=false" @doc-created="getData" />
-  </div>
-  <!-- **********************   MODAL BROKER EDIT  ************************** -->
-  <div v-if="showUpdateBroker" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormBroker @close-modal="showUpdateBroker=false" @doc-created="getData" :itemData="selectedItem"/>
-  </div>
-
-
-  <!-- **********************   MODAL USER CARD   ************************** -->
-  <div v-if="showCardUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showCardUser=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
-  </div>
-  <!-- **********************   MODAL USER ADD   ************************** -->
-  <div v-if="showAddUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showAddUser=false" @doc-created="getData" />
-  </div>
-  <!-- **********************   MODAL USER EDIT  ************************** -->
-  <div v-if="showUpdateUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
 
