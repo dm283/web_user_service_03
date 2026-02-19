@@ -736,8 +736,7 @@ const rowClick = (index, item) => {
       <!-- <td :class="[item.posted ? 'text-green-600': 'text-blue-500']" @click="selectedItem=item; emit('btnItemcard', selectedItem)"> -->
       <!-- <td class="text-blue-500" @click="selectedItem=item; showItemCard=true"> -->
         <div class="inline-block text-blue-500 border-b-2 border-blue-400 hover:text-cyan-300 hover:border-cyan-300 max-w-min">
-          <i class="pi pi-arrow-circle-left" style="font-size: 0.8rem"></i></div>
-          <!-- external-link  arrow-circle-left  asterisk  box  tag  briefcase  eye  -->
+          <i class="pi pi-file" style="font-size: 0.8rem"></i></div>
       </td>
 
       <td class="" v-for="field in Object.keys(props.listTableColumns)">
@@ -757,10 +756,6 @@ const rowClick = (index, item) => {
         <div class="px-2 py-2 text-left max-w-48 truncate" v-else-if="typeof(item[field])=='string'">
           <!-- {{ item[field].slice(0,20) }} -->  <!-- min-w-max -->
           {{ item[field] }}
-        </div>
-        <!-- docs_exist column -->
-        <div class="text-center text-green-400" v-else-if="field=='docs_exist'">
-          <i :class="[item[field]==1 ? 'pi pi-file':'']" style="font-size: 1.0rem"></i>
         </div>
         <!-- other columns -->
         <div class="px-2 py-2 min-w-max" v-else>{{ item[field] }}</div>

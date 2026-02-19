@@ -438,6 +438,7 @@ class BatchJoined(Batch):
     ncar: str | None          #new
     contact_name: str | None  #new
     broker_name: str | None   #new
+    docs_exist: int | None          # 19.02.2026
 
 #########
 class LogRecordCreate(BaseModel):
