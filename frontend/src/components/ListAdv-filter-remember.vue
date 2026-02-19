@@ -412,7 +412,7 @@ const dataRender = () => {
     loadLocalData();
   }
 
-  //17.02.2026
+  //17.02.2026  this block raises exception of maximum recursive! must be something different
   if (!afterSorting.value) {
     console.log('filtering inside render')
     let fieldsfiltersStorageDict = JSON.parse(localStorage.getItem('fieldsfiltersStorage')); 
