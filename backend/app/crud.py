@@ -1338,19 +1338,23 @@ def get_batch_by_sys_id(db: Session, item_sys_id: int):
     contact_1 = aliased(models.Contact)
     contact_2 = aliased(models.Contact)
     carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)  # 19.02.2026
 
-    response = db.query(main_table, contact_1, contact_2, carpass).\
+    response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
         filter(main_table.id == item_sys_id).\
         join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
         join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
         join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
         first()
 
     broker_name=response[1].__dict__['name'] if response[1] else None
     contact_name=response[2].__dict__['name'] if response[2] else None
     ncar=response[3].__dict__['ncar'] if response[3] else None
+    docs_exist=1 if response[4] else 0
     
-    db_full_response = schemas.BatchJoined(**response[0].__dict__, contact_name=contact_name, broker_name=broker_name, ncar=ncar)
+    db_full_response = schemas.BatchJoined(**response[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
+                                           ncar=ncar, docs_exist=docs_exist)
     
     return db_full_response
 
