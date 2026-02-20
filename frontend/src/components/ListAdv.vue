@@ -760,7 +760,9 @@ const rowClick = (index, item) => {
         </div>
         <!-- docs_exist column -->
         <div class="text-center text-green-400" v-else-if="field=='docs_exist'">
-          <i :class="[item[field]==1 ? 'pi pi-file':'']" style="font-size: 1.0rem"></i>
+          <!-- <i :class="[item[field]==1 ? 'pi pi-file':'']" style="font-size: 1.0rem"></i> -->
+           <i class='pi pi-file' style="font-size: 1.0rem" v-if="item[field]==1"></i>
+           <div class='text-black' v-else>-</div>
         </div>
         <!-- other columns -->
         <div class="px-2 py-2 min-w-max" v-else>{{ item[field] }}</div>
