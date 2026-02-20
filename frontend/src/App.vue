@@ -9,6 +9,7 @@ import { useToast } from 'vue-toastification';
 
 import Navbar from './components/Navbar.vue';
 import Chat from './components/Chat.vue';
+import ChatNotification from './components/ChatNotification.vue';
 import MenuSection from './components/MenuSection.vue';
 
 
@@ -41,6 +42,10 @@ const showMenuBar = ref(true);
 const headerColor = ref('')
 const sidebarColor = ref('')
 
+// const chatNotificationData = ref('initial')
+const chatNotificationData = reactive({
+  pointState: 'initial',
+})
 
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
@@ -113,6 +118,10 @@ const signOut = async () => {
 };
 
 
+const chatNotificationDataChange = (pointState) => {
+  console.log('pointState =', pointState)
+  chatNotificationData['pointState'] = pointState
+}
 
 // const authSubmit = async () => {
 //   //
@@ -247,9 +256,13 @@ const signOut = async () => {
     <div class="inline-block px-4 text-base">{{ login }}</div>
     <div class="header-btn"><i class="pi pi-user" style="font-size: 1.3rem" @click="signOut()"></i></div>
     <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div>
-    <div class="header-btn"><i class="pi pi-bell" style="font-size: 1.3rem"></i></div>
-    <!-- <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
-      <i class="pi pi-comment" style="font-size: 1.3rem"></i></div> -->
+    <div class="header-btn"><i class="pi pi-bell" style="font-size: 1.3rem" @click="chatNotificationDataChange('close')"></i></div>
+
+    <div class="cursor-pointer"><ChatNotification :data="chatNotificationData" :username="'admin'" :users="state.users" 
+      @point-state="chatNotificationDataChange"/></div>
+
+    <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
+      <i class="pi pi-comment" style="font-size: 1.3rem"></i></div>
     <div class="header-btn"><div class="-mt-0.5">RU</div></div>
   </div>
 </nav>
