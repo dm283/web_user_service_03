@@ -13,6 +13,7 @@ import BrokersView from "@/views/BrokersView.vue";
 import AdministrationView from "@/views/AdministrationView.vue";
 import UsersView from "@/views/UsersView.vue";
 import LogRecordsView from "@/views/LogRecordsView.vue";
+import NotificationsView from "@/views/NotificationsView.vue";
 import SvhSectionView from "@/views/SvhSectionView.vue";
 import BatchesView from "@/views/BatchesView.vue";
 import AddBatchView from "@/views/AddBatchView.vue";
@@ -44,6 +45,7 @@ const router = createRouter({
     { path: '/administration', name: 'administration', component: AdministrationView, },
     { path: '/users', name: 'users', component: UsersView, },
     { path: '/log_records', name: 'log_records', component: LogRecordsView, },
+    { path: '/notifications', name: 'notifications', component: NotificationsView, },
     { path: '/upload_lists_excel', name: 'upload_lists_excel', component: UploadListsView, },
 
     { path: '/documents', name: 'documents', component: DocumentsView, },

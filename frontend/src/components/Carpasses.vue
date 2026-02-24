@@ -117,6 +117,7 @@ const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
 const query_log_records = `http://${backendIpAddress}:${backendPort}/log_records/`
+const query_notifications = `http://${backendIpAddress}:${backendPort}/notifications/`
 
 
 if (props.view_type == 'enter') {
@@ -196,6 +197,13 @@ else if (props.view_type == 'log_records') {
   state.listTableColumns = {
     'obj_uuid':'Объект','obj_type':'Тип объекта', 'action':'Действие','user_login':'Пользователь','created_date':'Дата',
     'created_time':'Время'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+else if (props.view_type == 'notifications') {
+  state.query = query_notifications;
+  state.listTableColumns = {
+    'notification':'Оповещение', 'status':'Статус','created_datetime':'Дата-время'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }

@@ -474,7 +474,7 @@ class Uemail(UemailCreate):
 class NotificationCreate(BaseModel):
     notification: str
     data: str
-    status: str = 'created'
+    status: str = 'новое'
 
 class Notification(NotificationCreate):
     id: int
