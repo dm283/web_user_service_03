@@ -180,6 +180,11 @@ def get_log_records(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
+def get_notifications(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Notification).\
+        order_by(models.Notification.created_datetime.desc()).all()
+
+
 def get_contacts(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Contact).filter(models.Contact.type=='V', models.Contact.is_active==True).\
         order_by(models.Contact.created_datetime.desc()).all()
@@ -493,6 +498,19 @@ def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
 
     return db_item
 
+
+def create_notification(db: Session, item: schemas.NotificationCreate):
+    #
+    created_datetime = datetime.datetime.now()
+
+    db_item = models.Notification(**item.model_dump(), created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    return db_item
 
 
 def create_entry_request(db: Session, item: schemas.EntryRequestCreate, user_uuid: str):

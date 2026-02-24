@@ -574,6 +574,13 @@ def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_activ
     return log_records
 
 
+@app.get("/notifications/", response_model=list[schemas.Notification])
+def read_notification(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    notifications = crud.get_notifications(db, skip=skip, limit=limit)
+    return notifications
+
+
 @app.get("/contacts/", response_model=list[schemas.Contact])
 def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -809,6 +816,15 @@ def get_related_broker_contact(current_user: Annotated[UserAuth, Depends(get_cur
 
 
 #########################################################    CREATE ITEM ENDPOINTS
+@app.post("/notifications/", response_model=schemas.Notification)
+def create_notification(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                data: Annotated[schemas.NotificationCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.NotificationCreate) 
+    return crud.create_notification(db=db, item=data_none_values_redefined)
+
+
+
 @app.post("/exitcarpasses/", response_model=schemas.Exitcarpass)
 def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                        data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):

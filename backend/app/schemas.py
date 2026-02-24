@@ -469,3 +469,13 @@ class UemailCreate(BaseModel):
 
 class Uemail(UemailCreate):
     uniqueindexfield: int
+
+#########
+class NotificationCreate(BaseModel):
+    notification: str
+    data: str
+    status: str = 'created'
+
+class Notification(NotificationCreate):
+    id: int
+    created_datetime: datetime

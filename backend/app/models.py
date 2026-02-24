@@ -293,3 +293,13 @@ class Uemail(Base):
     user_id = Column(String)
     status = Column(Integer)
     uniqueindexfield = Column(Integer, primary_key=True)
+
+
+class Notification(Base):
+    __tablename__ = 'notification'
+    notification = Column(String)
+    data = Column(String)   # json
+    status = Column(String)
+    
+    id = Column(Integer, primary_key=True)
+    created_datetime = Column(DateTime)
