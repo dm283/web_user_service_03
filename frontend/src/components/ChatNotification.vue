@@ -11,7 +11,7 @@
 
   const newMsg = ref(false)
 
-  const ws = new WebSocket(`ws://localhost:8000/ws/${props.username}`);
+  const ws = new WebSocket(`ws://localhost:8001/ws/${props.username}`);
   
   ws.onmessage = function(event) {
     console.log('new msg')

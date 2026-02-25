@@ -180,9 +180,9 @@ def get_log_records(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
-def get_notifications(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Notification).\
-        order_by(models.Notification.created_datetime.desc()).all()
+def get_messages(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Message).\
+        order_by(models.Message.created_datetime.desc()).all()
 
 
 def get_contacts(db: Session, skip: int = 0, limit: int = 100):
@@ -499,11 +499,11 @@ def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
     return db_item
 
 
-def create_notification(db: Session, item: schemas.NotificationCreate):
+def create_message(db: Session, item: schemas.MessageCreate):
     #
     created_datetime = datetime.datetime.now()
 
-    db_item = models.Notification(**item.model_dump(), created_datetime=created_datetime)
+    db_item = models.Message(**item.model_dump(), created_datetime=created_datetime)
     try:
         db.add(db_item); db.commit(); db.refresh(db_item)
     except Exception as err:

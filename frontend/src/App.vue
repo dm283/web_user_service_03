@@ -262,7 +262,7 @@ const chatNotificationDataChange = (pointState) => {
       </RouterLink>
     </div>
 
-    <div class="cursor-pointer"><ChatNotification :data="chatNotificationData" :username="'admin'" :users="state.users" 
+    <div class="cursor-pointer"><ChatNotification :data="chatNotificationData" :username="login" :users="state.users" 
       @point-state="chatNotificationDataChange"/></div>
 
     <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">

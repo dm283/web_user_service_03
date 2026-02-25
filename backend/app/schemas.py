@@ -471,11 +471,14 @@ class Uemail(UemailCreate):
     uniqueindexfield: int
 
 #########
-class NotificationCreate(BaseModel):
-    notification: str
+class MessageCreate(BaseModel):
+    sender: str
+    receiver: str
+    msg_text: str
     data: str
     status: str = 'новое'
+    is_notification: bool
 
-class Notification(NotificationCreate):
+class Message(MessageCreate):
     id: int
     created_datetime: datetime
