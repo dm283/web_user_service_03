@@ -180,8 +180,15 @@ def get_log_records(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
-def get_messages(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Message).\
+def get_messages(user_login:str, db: Session, notifications:bool=False, new_notifications:bool=False, skip: int = 0, limit: int = 100):
+    if new_notifications:
+        return db.query(models.Message).filter(models.Message.receiver==user_login, 
+                                               models.Message.is_notification==True, models.Message.status=='новое').\
+            order_by(models.Message.created_datetime.desc()).all()
+    if notifications:
+        return db.query(models.Message).filter(models.Message.receiver==user_login, models.Message.is_notification==True).\
+            order_by(models.Message.created_datetime.desc()).all()
+    return db.query(models.Message).filter(models.Message.receiver==user_login).\
         order_by(models.Message.created_datetime.desc()).all()
 
 

@@ -117,7 +117,7 @@ const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
 const query_log_records = `http://${backendIpAddress}:${backendPort}/log_records/`
-const query_notifications = `http://${backendIpAddress}:${backendPort}/messages/`
+const query_notifications = `http://${backendIpAddress}:${backendPort}/messages/notifications/${userInfo.login}`
 
 
 if (props.view_type == 'enter') {

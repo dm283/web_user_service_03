@@ -574,10 +574,22 @@ def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_activ
     return log_records
 
 
-@app.get("/messages/", response_model=list[schemas.Message])
+@app.get("/messages/{user_login}", response_model=list[schemas.Message])
 def read_messages(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    messages = crud.get_messages(db, skip=skip, limit=limit)
+                  user_login: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    messages = crud.get_messages(user_login=user_login, db=db, skip=skip, limit=limit)
+    return messages
+
+@app.get("/messages/notifications/{user_login}", response_model=list[schemas.Message])
+def read_messages(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  user_login: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    messages = crud.get_messages(user_login=user_login, notifications=True, db=db, skip=skip, limit=limit)
+    return messages
+
+@app.get("/messages/notifications/news/{user_login}", response_model=list[schemas.Message])
+def read_messages(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  user_login: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    messages = crud.get_messages(user_login=user_login, new_notifications=True, db=db, skip=skip, limit=limit)
     return messages
 
 
