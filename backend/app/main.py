@@ -961,6 +961,21 @@ def update_user(current_user: Annotated[UserAuth, Depends(get_current_active_use
     item = schemas.UserUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_user(db=db, item_id=item_id, item=item, new_pwd=data_none_values_redefined.password, user_uuid=current_user.uuid)
 
+
+@app.put('/messages/set_status_viewed/{item_id}')
+def update_message(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    #
+    item_from_db = db.query(models.Message).filter(models.Message.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    setattr(item_from_db, 'status', 'просмотрено')
+    db.commit()
+
+    new_notifications = crud.get_messages(user_login=item_from_db.receiver, new_notifications=True, db=db)
+    return len(new_notifications)
+
+
 #########################################################    DELETE ITEM ENDPOINTS
 @app.delete('/contacts/{item_id}')
 def delete_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],

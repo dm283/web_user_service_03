@@ -29,10 +29,12 @@ var backendPort = parser.get("main", "backend_port");
 
 const toast = useToast();
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
   if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
+}
+const userAccessToken = () => {
+  let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
 
 const props = defineProps({
@@ -158,7 +160,7 @@ else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   state.query = query_batches;
   state.listTableColumns = {
     'docs_exist':'Док-ты','tn_id':'№ ТН','ncar':'№ ТС','contact_name':'Клиент','broker_name':'Брокер','goods':'Описание товаров',
-    'places_cnt':'Кол-во мест','weight':'Вес','created_datetime':'Дата создания'
+    'places_cnt':'Кол-во мест','weight':'Вес','created_datetime':'Дата-время создания'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
   if (userInfo.type=='V') { delete state.listTableColumns.contact_name; }
@@ -188,7 +190,7 @@ else if (props.view_type == 'users') {
 else if (props.view_type == 'documents') {
   state.query = query_documents;
   state.listTableColumns = {
-    'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','filename':'Файл','created_datetime':'Дата загрузки'
+    'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','filename':'Файл','created_datetime':'Дата-время загрузки'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
@@ -203,7 +205,7 @@ else if (props.view_type == 'log_records') {
 else if (props.view_type == 'notifications') {
   state.query = query_notifications;
   state.listTableColumns = {
-    'msg_text':'Оповещение', 'status':'Статус','created_datetime':'Дата-время'
+    'msg_text':'Оповещение', 'created_datetime':'Дата-время'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
@@ -403,6 +405,20 @@ const reopenCard = (type, item, name) => {
   if (type=='card') { itemCard(item, name) }
 }
 
+const clickNotificationRow = async (item) => {
+  //
+  console.log('clickNotificationRow ', item.value)
+  try {
+    const res = await axios.put(`http://${backendIpAddress}:${backendPort}/messages/set_status_viewed/${item.value.id}`,
+     '', {headers: authHeader()})
+    console.log('res=', res.data)
+    if (res.data==0) { console.log('no new notifications')}
+  }
+  catch (error) { console.error('Error update notification status', error) };
+  
+  getData();
+}
+
 </script>
 
 <template>
@@ -590,6 +606,7 @@ const reopenCard = (type, item, name) => {
         <ListAdv @btn-add="addItem" @btn-edit="editItem" @btn-delete="deleteItem" @btn-createexitcarpass="createExitCarpass"
           @btn-refresh="getData" @btn-itemcard="openItem" @btn-rollback="rollbackItem" @btn-print="printItem" 
           @btn-setstatusexit="setStatusExit" @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
+          @click-notification-row="clickNotificationRow"
           :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
       </div>
     </div>

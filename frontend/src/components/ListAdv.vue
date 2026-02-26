@@ -9,7 +9,7 @@ import { utils, writeFileXLSX, writeFile } from 'xlsx';
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit',
-  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose'
+  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose', 'clickNotificationRow'
 ]) // emit
 
 const props = defineProps({
@@ -405,7 +405,7 @@ const dataRender = () => {
 
   for (let i = 0; i < renderedData.length; i++) {
     listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
-    if (['Электронный архив','Выбор документов','Журнал действий'].includes(props.name)) { listRowStyle[i] = '' }
+    if (['Электронный архив','Выбор документов','Журнал действий','Оповещения'].includes(props.name)) { listRowStyle[i] = '' }
     if (props.name=='ТС на терминале') {
       if (renderedData[i].status=='exit_permitted') { listRowStyle[i] = 'bg-green-50' }
       else if (renderedData[i].status=='exit_prohibited') { listRowStyle[i] = 'bg-red-50' }
@@ -416,6 +416,9 @@ const dataRender = () => {
     }
     if (props.name=='Пропуска ТС на въезд') {
       if (renderedData[i].status=='archival') { listRowStyle[i] = 'bg-blue-50' }
+    }
+    if (props.name=='Оповещения') {
+      if (renderedData[i].status=='новое') { listRowStyle[i] = 'bg-red-50' }
     }
     listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
@@ -476,6 +479,47 @@ const exportFile = (dataSet, fileName, fileType) => {
 
 const rowClick = (index, item) => {
   selectedItem.value = item;
+
+  //26.02.2026
+  if (props.name=='Оповещения' && item.status=='новое') { emit('clickNotificationRow', selectedItem) }
+}
+
+const sds = (e) => {
+  //
+  let estr = e.toString()
+  if (estr.length == 1) { return `0${estr}`}
+  return estr
+}
+
+const nmn = (m) => {
+  //
+  let mdict = {}
+  mdict = {...mdict,'1':'Янв','2':'Фев','3':'Мар','4':'Апр','5':'Май','6':'Июн','7':'Июл','8':'Авг','9':'Сен','10':'Окт','11':'Ноя','12':'Дек'}
+  return mdict[m.toString()]
+}
+
+const niceDateTime = (dt) => {
+  //
+  if (!dt) {return '-'}
+  let newdt = new Date(dt)
+  let ndt = `${sds(newdt.getDate())}-${nmn(newdt.getMonth()+1)}-${newdt.getFullYear()} \xa0 ${sds(newdt.getHours())}:${sds(newdt.getMinutes())}`
+  return ndt
+}
+
+const niceDate = (dt) => {
+  //
+  if (!dt) {return '-'}
+  let newdt = new Date(dt)
+  let ndt = `${sds(newdt.getDate())}-${nmn(newdt.getMonth()+1)}-${newdt.getFullYear()}`
+  return ndt
+}
+
+const niceTime = (tm) => {
+  //
+  if (!tm) {return '-'}
+  var newdt = new Date("1970-01-01T" + tm);
+  let ndt = `${sds(newdt.getHours())}:${sds(newdt.getMinutes())}`
+  return ndt
 }
 
 </script>
@@ -748,9 +792,23 @@ const rowClick = (index, item) => {
         <div class="" v-else-if="field=='established'">
           {{ item[field].slice(8, 10) }}/{{ item[field].slice(5, 7) }}/{{ item[field].slice(0, 4) }}
         </div> -->
+        <!-- datetime columns -->
+        <div class="px-2 py-2 min-w-max" v-else-if="['Дата-время'].some(el => props.listTableColumns[field].includes(el))">  
+          {{ niceDateTime(item[field]) }}
+        </div>
         <!-- date columns -->
-        <div class="px-2 py-2 min-w-max" v-else-if="['Дата', 'Время'].some(el => props.listTableColumns[field].includes(el))">  
+        <div class="px-2 py-2 min-w-max" v-else-if="['Дата'].some(el => props.listTableColumns[field].includes(el))">  
           <!-- {{ item[field].slice(0,20) }} -->  <!-- min-w-max -->
+          {{ niceDate(item[field]) }}
+        </div>
+        <!-- time columns -->
+        <div class="px-2 py-2 min-w-max" v-else-if="['Время'].some(el => props.listTableColumns[field].includes(el))">  
+          <!-- {{ item[field].slice(0,20) }} -->  <!-- min-w-max -->
+          {{ niceTime(item[field]) }}
+        </div>
+
+        <!-- notification columns -->
+        <div class="px-2 py-2 text-left" v-else-if="field=='msg_text'">
           {{ item[field] }}
         </div>
         <!-- string columns -->

@@ -187,7 +187,7 @@ def get_messages(user_login:str, db: Session, notifications:bool=False, new_noti
             order_by(models.Message.created_datetime.desc()).all()
     if notifications:
         return db.query(models.Message).filter(models.Message.receiver==user_login, models.Message.is_notification==True).\
-            order_by(models.Message.created_datetime.desc()).all()
+            order_by(models.Message.status, models.Message.created_datetime.desc()).all()
     return db.query(models.Message).filter(models.Message.receiver==user_login).\
         order_by(models.Message.created_datetime.desc()).all()
 
