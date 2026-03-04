@@ -393,6 +393,12 @@ class RelatedBrokerContactWithJoins(BaseModel):
 #############
 class BatchCreate(BaseModel):
     carpass_uuid: str
+    
+    delivery_close_date: date | str | None = None   # 04.03.26
+    delivery_close_time: time | str | None = None   # 04.03.26
+    dt_submission_date: date | str | None = None    # 04.03.26
+    dt_submission_time: time | str | None = None    # 04.03.26
+
     status: str = 'terminal'
     tn_id: str | None = None
     contact_uuid: str
@@ -400,9 +406,9 @@ class BatchCreate(BaseModel):
     goods: str | None = None
     places_cnt: int | str | None = None
     weight: float | str | None = None
-    tnved: str | None = None  #new
-    fito_control: bool  #new
-    vet_control: bool  #new
+    tnved: str | None = None
+    fito_control: bool
+    vet_control: bool
     comment: str | None = None
 
 
