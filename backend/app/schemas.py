@@ -36,13 +36,13 @@ class CarpassValidation(BaseModel):
     ncar: str
     dateen: date
     timeen: time
-    ntir: str
-    ntir_date: date
-    customs_doc: str
-    customs_doc_date: date
+    # ntir: str
+    # ntir_date: date
+    # customs_doc: str
+    # customs_doc_date: date
     nseal: str
-    nkont: str
-    driver: str
+    # nkont: str
+    # driver: str
     driver_fio: str
     driver_phone: str
     driver_licence: str
@@ -149,10 +149,10 @@ class EntryRequestValidation(BaseModel):
     entry_type: str
     # contact: int
     # contact_name: str
-    ntir: str
-    ntir_date: date
-    customs_doc: str
-    customs_doc_date: date
+    # ntir: str
+    # ntir_date: date
+    # customs_doc: str
+    # customs_doc_date: date
 
 class EntryRequestUpdate(EntryRequestCreate):
     updated_datetime: datetime
@@ -394,7 +394,7 @@ class RelatedBrokerContactWithJoins(BaseModel):
 class BatchCreate(BaseModel):
     carpass_uuid: str
     status: str = 'terminal'
-    tn_id: str
+    tn_id: str | None = None
     contact_uuid: str
     broker_uuid: str | None = None
     goods: str | None = None
@@ -409,7 +409,7 @@ class BatchCreate(BaseModel):
 class BatchValidation(BaseModel):
     carpass_uuid: str
     status: str
-    tn_id: str
+    # tn_id: str
     contact_uuid: str
     goods: str
     places_cnt: int

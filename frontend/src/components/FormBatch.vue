@@ -385,7 +385,7 @@ const refreshCard = async () => {
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Номер транспортной накладной</label>
           <input type="text" v-model="form.tn_id" :class="[errField['tn_id']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="true" :disabled="isCard" />
+          :required="false" :disabled="isCard" />
         </div>
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>

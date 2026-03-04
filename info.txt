@@ -17,7 +17,7 @@ alembic/env.py:
 	target_metadata = models.Base.metadata
 	SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:pwd@localhost/dbname'
 	config.set_main_option('sqlalchemy.url', SQLALCHEMY_DATABASE_URL)
-alembic revision --autogenerate -m "init (or any next)"
+alembic revision --autogenerate -m "x"
 alembic upgrade head
 
 
