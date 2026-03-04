@@ -256,13 +256,18 @@ const chatNotificationDataChange = (pointState) => {
     <div class="inline-block px-4 text-base">{{ login }}</div>
     <div class="header-btn"><i class="pi pi-user" style="font-size: 1.3rem" @click="signOut()"></i></div>
     <div class="header-btn"><i class="pi pi-ellipsis-v" style="font-size: 1.3rem"></i></div>
-    <div class="header-btn"><i class="pi pi-bell" style="font-size: 1.3rem" @click="chatNotificationDataChange('close')"></i></div>
-
-    <div class="cursor-pointer"><ChatNotification :data="chatNotificationData" :username="'admin'" :users="state.users" 
-      @point-state="chatNotificationDataChange"/></div>
-
-    <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
-      <i class="pi pi-comment" style="font-size: 1.3rem"></i></div>
+    <div class="header-btn">
+      <RouterLink to="/notifications">
+        <i class="pi pi-bell" style="font-size: 1.3rem" @click="chatNotificationDataChange('close')"></i>
+      </RouterLink>
+    </div>
+    <div class="cursor-pointer">
+      <RouterLink to="/notifications">
+        <ChatNotification :data="chatNotificationData" :username="login" :users="state.users" @point-state="chatNotificationDataChange"/>
+      </RouterLink>
+    </div>
+    <!-- <div class="header-btn" @click="showMessengerBar=(showMessengerBar) ? false:true">
+      <i class="pi pi-comment" style="font-size: 1.3rem"></i></div> -->
     <div class="header-btn"><div class="-mt-0.5">RU</div></div>
   </div>
 </nav>

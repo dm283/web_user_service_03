@@ -180,9 +180,16 @@ def get_log_records(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
-def get_notifications(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Notification).\
-        order_by(models.Notification.created_datetime.desc()).all()
+def get_messages(user_login:str, db: Session, notifications:bool=False, new_notifications:bool=False, skip: int = 0, limit: int = 100):
+    if new_notifications:
+        return db.query(models.Message).filter(models.Message.receiver==user_login, 
+                                               models.Message.is_notification==True, models.Message.status=='новое').\
+            order_by(models.Message.created_datetime.desc()).all()
+    if notifications:
+        return db.query(models.Message).filter(models.Message.receiver==user_login, models.Message.is_notification==True).\
+            order_by(models.Message.status, models.Message.created_datetime.desc()).all()
+    return db.query(models.Message).filter(models.Message.receiver==user_login).\
+        order_by(models.Message.created_datetime.desc()).all()
 
 
 def get_contacts(db: Session, skip: int = 0, limit: int = 100):
@@ -499,11 +506,11 @@ def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
     return db_item
 
 
-def create_notification(db: Session, item: schemas.NotificationCreate):
+def create_message(db: Session, item: schemas.MessageCreate):
     #
     created_datetime = datetime.datetime.now()
 
-    db_item = models.Notification(**item.model_dump(), created_datetime=created_datetime)
+    db_item = models.Message(**item.model_dump(), created_datetime=created_datetime)
     try:
         db.add(db_item); db.commit(); db.refresh(db_item)
     except Exception as err:

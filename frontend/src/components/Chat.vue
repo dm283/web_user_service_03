@@ -12,7 +12,7 @@
   const messages = ref([])
   const selectedUser = ref(null)
 
-  const ws = new WebSocket(`ws://localhost:8000/ws/${props.username}`);
+  const ws = new WebSocket(`ws://localhost:8001/ws/${props.username}`);
   // const ws = new WebSocket(`ws://localhost:8000/ws/${client_id.value}`);
   
   ws.onmessage = function(event) {

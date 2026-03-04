@@ -295,11 +295,14 @@ class Uemail(Base):
     uniqueindexfield = Column(Integer, primary_key=True)
 
 
-class Notification(Base):
-    __tablename__ = 'notification'
-    notification = Column(String)
+class Message(Base):
+    __tablename__ = 'messages'
+    sender = Column(String)  # username
+    receiver = Column(String)  # username
+    msg_text = Column(String)
     data = Column(String)   # json
     status = Column(String)
+    is_notification = Column(Boolean)
     
     id = Column(Integer, primary_key=True)
     created_datetime = Column(DateTime)

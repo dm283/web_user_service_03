@@ -168,49 +168,49 @@ def redefine_schema_values_to_none(data, schema_obj):
 
 
 ####################### chat
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: list[WebSocket] = []
-        self.active_connections_mapping: dict = {}
+# class ConnectionManager:
+#     def __init__(self):
+#         self.active_connections: list[WebSocket] = []
+#         self.active_connections_mapping: dict = {}
 
-    async def connect(self, websocket: WebSocket, client_id: str):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-        self.active_connections_mapping[client_id] = websocket
+#     async def connect(self, websocket: WebSocket, client_id: str):
+#         await websocket.accept()
+#         self.active_connections.append(websocket)
+#         self.active_connections_mapping[client_id] = websocket
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+#     def disconnect(self, websocket: WebSocket):
+#         self.active_connections.remove(websocket)
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+#     async def send_personal_message(self, message: str, websocket: WebSocket):
+#         await websocket.send_text(message)
 
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            print('connection =', connection)
-            await connection.send_text(message)
+#     async def broadcast(self, message: str):
+#         for connection in self.active_connections:
+#             print('connection =', connection)
+#             await connection.send_text(message)
 
 
-manager = ConnectionManager()
+# manager = ConnectionManager()
 
-@app.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: str, db: Session = Depends(get_db)):
-    await manager.connect(websocket, client_id)
-    print('connection params = ', websocket, client_id)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            print('data = ', data)
-            data_dict = ast.literal_eval(data)
-            print('data_dict =', data_dict)
-            receiver = data_dict['receiver']
-            msg_text = data_dict['message']
-            await manager.send_personal_message(msg_text, manager.active_connections_mapping[receiver])
-            # await manager.send_personal_message(f"{msg_text}", websocket)
-            # await manager.send_personal_message(f"[{client_id}] {msg_text}", manager.active_connections_mapping[receiver])   ################
-            # await manager.broadcast(f"Client #{client_id} says: {data}")
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        # await manager.broadcast(f"Client #{client_id} left the chat")
+# @app.websocket("/ws/{client_id}")
+# async def websocket_endpoint(websocket: WebSocket, client_id: str, db: Session = Depends(get_db)):
+#     await manager.connect(websocket, client_id)
+#     print('connection params = ', websocket, client_id)
+#     try:
+#         while True:
+#             data = await websocket.receive_text()
+#             print('data = ', data)
+#             data_dict = ast.literal_eval(data)
+#             print('data_dict =', data_dict)
+#             receiver = data_dict['receiver']
+#             msg_text = data_dict['message']
+#             await manager.send_personal_message(msg_text, manager.active_connections_mapping[receiver])
+#             # await manager.send_personal_message(f"{msg_text}", websocket)
+#             # await manager.send_personal_message(f"[{client_id}] {msg_text}", manager.active_connections_mapping[receiver])   ################
+#             # await manager.broadcast(f"Client #{client_id} says: {data}")
+#     except WebSocketDisconnect:
+#         manager.disconnect(websocket)
+#         # await manager.broadcast(f"Client #{client_id} left the chat")
         
 
 ##############################
@@ -574,11 +574,23 @@ def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_activ
     return log_records
 
 
-@app.get("/notifications/", response_model=list[schemas.Notification])
-def read_notification(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    notifications = crud.get_notifications(db, skip=skip, limit=limit)
-    return notifications
+@app.get("/messages/{user_login}", response_model=list[schemas.Message])
+def read_messages(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  user_login: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    messages = crud.get_messages(user_login=user_login, db=db, skip=skip, limit=limit)
+    return messages
+
+@app.get("/messages/notifications/{user_login}", response_model=list[schemas.Message])
+def read_messages(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  user_login: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    messages = crud.get_messages(user_login=user_login, notifications=True, db=db, skip=skip, limit=limit)
+    return messages
+
+@app.get("/messages/notifications/news/{user_login}", response_model=list[schemas.Message])
+def read_messages(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  user_login: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    messages = crud.get_messages(user_login=user_login, new_notifications=True, db=db, skip=skip, limit=limit)
+    return messages
 
 
 @app.get("/contacts/", response_model=list[schemas.Contact])
@@ -816,12 +828,12 @@ def get_related_broker_contact(current_user: Annotated[UserAuth, Depends(get_cur
 
 
 #########################################################    CREATE ITEM ENDPOINTS
-@app.post("/notifications/", response_model=schemas.Notification)
-def create_notification(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                data: Annotated[schemas.NotificationCreate, Form()], db: Session = Depends(get_db)):
+@app.post("/messages/", response_model=schemas.Message)
+def create_message(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                data: Annotated[schemas.MessageCreate, Form()], db: Session = Depends(get_db)):
     #
-    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.NotificationCreate) 
-    return crud.create_notification(db=db, item=data_none_values_redefined)
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.MessageCreate) 
+    return crud.create_message(db=db, item=data_none_values_redefined)
 
 
 
@@ -948,6 +960,21 @@ def update_user(current_user: Annotated[UserAuth, Depends(get_current_active_use
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
     item = schemas.UserUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_user(db=db, item_id=item_id, item=item, new_pwd=data_none_values_redefined.password, user_uuid=current_user.uuid)
+
+
+@app.put('/messages/set_status_viewed/{item_id}')
+def update_message(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    #
+    item_from_db = db.query(models.Message).filter(models.Message.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    setattr(item_from_db, 'status', 'просмотрено')
+    db.commit()
+
+    new_notifications = crud.get_messages(user_login=item_from_db.receiver, new_notifications=True, db=db)
+    return len(new_notifications)
+
 
 #########################################################    DELETE ITEM ENDPOINTS
 @app.delete('/contacts/{item_id}')
