@@ -9,6 +9,15 @@ class Batch(Base):
     entry_request_uuid = Column(String, nullable=True, default=None)
     carpass_uuid = Column(String)
     exitcarpass_uuid = Column(String, nullable=True, default=None)
+
+    # delivery_close_date = Column(Date)  # 04.03.26
+    # delivery_close_time = Column(Time)  # 04.03.26
+    # dt_submission_date = Column(Date)   # 04.03.26
+    # dt_submission_time = Column(Time)   # 04.03.26
+
+    delivery_close_datetime = Column(DateTime, nullable=True)  # 05.03.26
+    dt_submission_datetime = Column(DateTime, nullable=True)   # 05.03.26
+
     status = Column(String)
     tn_id = Column(String)
     contact_uuid = Column(String, ForeignKey('contacts.uuid'))
@@ -16,9 +25,9 @@ class Batch(Base):
     goods = Column(String)
     places_cnt = Column(Integer)
     weight = Column(Float)
-    tnved = Column(String)  #new
-    fito_control = Column(Boolean, default=False)  #new
-    vet_control = Column(Boolean, default=False)   #new
+    tnved = Column(String)
+    fito_control = Column(Boolean, default=False)
+    vet_control = Column(Boolean, default=False)
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
