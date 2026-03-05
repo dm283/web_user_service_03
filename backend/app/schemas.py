@@ -444,10 +444,11 @@ class Batch(BatchCreate):
 
 
 class BatchJoined(Batch):
-    ncar: str | None          #new
-    contact_name: str | None  #new
-    broker_name: str | None   #new
-    docs_exist: int | None          # 19.02.2026
+    ncar: str | None
+    dateen: date | None     
+    contact_name: str | None  
+    broker_name: str | None   
+    docs_exist: int | None
 
 #########
 class LogRecordCreate(BaseModel):

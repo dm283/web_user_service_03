@@ -802,7 +802,8 @@ const niceTime = (tm) => {
           {{ niceDateTime(item[field]) }}
         </div>
         <!-- date columns -->
-        <div class="px-2 py-2 min-w-max" v-else-if="['Дата'].some(el => props.listTableColumns[field].includes(el))">  
+        <div class="px-2 py-2 min-w-max" v-else-if="['Дата'].some(el => props.listTableColumns[field].includes(el)) |
+          ['date'].some(el => field.includes(el))">  
           <!-- {{ item[field].slice(0,20) }} -->  <!-- min-w-max -->
           {{ niceDate(item[field]) }}
         </div>

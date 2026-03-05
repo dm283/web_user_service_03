@@ -263,9 +263,10 @@ def get_batches(db: Session, skip: int = 0, limit: int = 100):
         broker_name=row[1].__dict__['name'] if row[1] else None
         contact_name=row[2].__dict__['name'] if row[2] else None
         ncar=row[3].__dict__['ncar'] if row[3] else None
+        dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
 
     return db_full_response
 

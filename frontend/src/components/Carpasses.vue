@@ -159,7 +159,7 @@ else if (props.view_type == 'entryRequest') {
 else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   state.query = query_batches;
   state.listTableColumns = {
-    'docs_exist':'Док-ты','ncar':'№ ТС','delivery_close_datetime':'Закрытие доставки',
+    'docs_exist':'Док-ты','ncar':'№ ТС','dateen':'Въезд ТС','delivery_close_datetime':'Закрытие доставки',
     'dt_submission_datetime':'Подача ДТ',
     'contact_name':'Клиент','broker_name':'Брокер','goods':'Описание товаров',
     'places_cnt':'Кол-во мест','weight':'Вес','status':'Статус'
