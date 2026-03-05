@@ -753,7 +753,10 @@ const niceTime = (tm) => {
           <div class="flex px-2 py-2 min-w-max">
             <div :class=sortArrowsStyle[field] @click="clickSortField2(field)"><i :class=sortIcon[field] style="font-size: 0.7rem"></i></div>
             <div :class=filterIconStyle[field] @click="clickFilter(field)"><i :class=filterIcon[field] style="font-size: 0.7rem"></i></div>
-            <div class="flex-1">{{ props.listTableColumns[field] }}</div>
+            <div class="flex-1">
+              <div v-if="props.listTableColumns[field]=='Док-ты'"><i class="pi pi-file" style="font-size: 0.8rem"></i></div>
+              <div v-else>{{ props.listTableColumns[field] }}</div>
+            </div>
           </div>
 
           <div v-show="isListFilterShow[field]" class="absolute text-black text-sm font-semibold mt-1 ml-1
@@ -793,7 +796,9 @@ const niceTime = (tm) => {
           {{ item[field].slice(8, 10) }}/{{ item[field].slice(5, 7) }}/{{ item[field].slice(0, 4) }}
         </div> -->
         <!-- datetime columns -->
-        <div class="px-2 py-2 min-w-max" v-else-if="['Дата-время'].some(el => props.listTableColumns[field].includes(el))">  
+        <div class="px-2 py-2 min-w-max" 
+          v-else-if="['Дата-время'].some(el => props.listTableColumns[field].includes(el)) | 
+            ['datetime'].some(el => field.includes(el))">  
           {{ niceDateTime(item[field]) }}
         </div>
         <!-- date columns -->

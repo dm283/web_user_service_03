@@ -27,10 +27,12 @@ const userAccessToken = () => {
 const itemFields = [
     'carpass_uuid',
 
-    'delivery_close_date',
-    'delivery_close_time',
-    'dt_submission_date',
-    'dt_submission_time',
+    //'delivery_close_date',
+    //'delivery_close_time',
+    //'dt_submission_date',
+    //'dt_submission_time',
+    'delivery_close_datetime',
+    'dt_submission_datetime',
 
     'tn_id',
     'contact_uuid',
@@ -417,31 +419,7 @@ const refreshCard = async () => {
           <input type="text"
             :required="false" :disabled="true" />
         </div>
-      </div>
 
-      <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата закрытия доставки</label>
-          <input type="date" v-model="form.delivery_close_date" :class="[errField['delivery_close_date']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Время закрытия доставки</label>
-          <input type="time" v-model="form.delivery_close_time" :class="[errField['delivery_close_time']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-      </div>
-
-      <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата подачи ДТ</label>
-          <input type="date" v-model="form.dt_submission_date" :class="[errField['dt_submission_date']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Время зподачи ДТ</label>
-          <input type="time" v-model="form.dt_submission_time" :class="[errField['dt_submission_time']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-      </div>
-
-      <div class="flex">
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
             <div :class=formInputStyle class="flex">
               <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
@@ -468,7 +446,17 @@ const refreshCard = async () => {
           <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
+      </div>
 
+      <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата-время закрытия доставки</label>
+          <input type="datetime-local" v-model="form.delivery_close_datetime" :class="[errField['delivery_close_datetime']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата-время подачи ДТ</label>
+          <input type="datetime-local" v-model="form.dt_submission_datetime" :class="[errField['dt_submission_datetime']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
             <div :class=formInputStyle class="flex">
               <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.broker_name_input" 
@@ -493,8 +481,28 @@ const refreshCard = async () => {
           <input type="text" v-model="form.broker_name_input" :class="[errField['broker_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Дата закрытия доставки</label>
+          <input type="date" v-model="form.delivery_close_date" :class="[errField['delivery_close_date']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Время закрытия доставки</label>
+          <input type="time" v-model="form.delivery_close_time" :class="[errField['delivery_close_time']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div> -->
+
 
       </div>
+
+      <!--<div class="flex">
+         <div class=formInputDiv>   <label class=formLabelStyle>Дата подачи ДТ</label>
+          <input type="date" v-model="form.dt_submission_date" :class="[errField['dt_submission_date']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Время зподачи ДТ</label>
+          <input type="time" v-model="form.dt_submission_time" :class="[errField['dt_submission_time']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div> 
+      </div>-->
 
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Количество мест</label>

@@ -159,10 +159,10 @@ else if (props.view_type == 'entryRequest') {
 else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   state.query = query_batches;
   state.listTableColumns = {
-    'docs_exist':'Док-ты','ncar':'№ ТС','delivery_close_date':'Дата закрытия доставки','delivery_close_time':'Время закрытия доставки',
-    'dt_submission_date':'Дата время подачи ДТ','dt_submission_time':'Время подачи ДТ',
+    'docs_exist':'Док-ты','ncar':'№ ТС','delivery_close_datetime':'Закрытие доставки',
+    'dt_submission_datetime':'Подача ДТ',
     'contact_name':'Клиент','broker_name':'Брокер','goods':'Описание товаров',
-    'places_cnt':'Кол-во мест','weight':'Вес','created_datetime':'Дата-время создания'
+    'places_cnt':'Кол-во мест','weight':'Вес','created_datetime':'Создано'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
   if (userInfo.type=='V') { delete state.listTableColumns.contact_name; }

@@ -394,10 +394,13 @@ class RelatedBrokerContactWithJoins(BaseModel):
 class BatchCreate(BaseModel):
     carpass_uuid: str
     
-    delivery_close_date: date | str | None = None   # 04.03.26
-    delivery_close_time: time | str | None = None   # 04.03.26
-    dt_submission_date: date | str | None = None    # 04.03.26
-    dt_submission_time: time | str | None = None    # 04.03.26
+    # delivery_close_date: date | str | None = None   # 04.03.26
+    # delivery_close_time: time | str | None = None   # 04.03.26
+    # dt_submission_date: date | str | None = None    # 04.03.26
+    # dt_submission_time: time | str | None = None    # 04.03.26
+
+    delivery_close_datetime: datetime | str | None = None   # 04.03.26
+    dt_submission_datetime: datetime | str | None = None   # 04.03.26
 
     status: str = 'terminal'
     tn_id: str | None = None
