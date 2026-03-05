@@ -18,6 +18,7 @@ import FormBroker from './FormBroker.vue';
 import FormUser from './FormUser.vue';
 import FormDoc from './FormDoc.vue';
 import FormBatch from './FormBatch.vue';
+import FormSetBatchStatus from './FormSetBatchStatus.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -56,6 +57,8 @@ const showRollbackItem = ref(false)
 const showCarExitPermit = ref(false)
 const showSetDefaultStatus = ref(false)
 const showExitProhibited = ref(false)
+
+const showSetBatchStatus = ref(false)
 
 const showItemCard = ref(false)
 const showAddItem = ref(false)
@@ -96,6 +99,7 @@ const itemName = ref('')
 const deletedItem = ref('')
 const deletedItemName = ref('')
 const file = ref(null)
+const batchStatus = ref('')
 
 const modalStyle = "absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
 const modalStyleSecond = "absolute z-20 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
@@ -343,61 +347,27 @@ const editItem = (item, name) => {
   else if (name == 'Электронный архив') { selectedDocItem.value = item; showUpdateDoc.value = true }
 };
 
-// const deleteItem = (item, name) => {
-//   //
-//   console.log('deleting!!!!', item, name)
-//   selectedItem.value = item;
-//   itemName.value = name;
-//   showDeleteItem.value = true;
-// };
-
 const deleteItem = (item, name) => {
-  //
-  deletedItem.value = item;
-  deletedItemName.value = name;
-  showDeleteItem.value = true;
+  deletedItem.value = item; deletedItemName.value = name; showDeleteItem.value = true;
 };
 
 const rollbackItem = (item, section) => {
-  //
-  selectedItem.value = item;
-  itemName.value = section;
-  showRollbackItem.value = true;
+  selectedItem.value = item; itemName.value = section; showRollbackItem.value = true;
 };
 
-const printItem = (item, section) => {
-  //
-  downloadFile(item.id, section);
-};
+const printItem = (item, section) => { downloadFile(item.id, section); };
 
-const setStatusExit = (item) => {
-  //
-  showCarExitPermit.value = true;
-  selectedItem.value = item;
-};
+const setStatusExit = (item) => { showCarExitPermit.value = true; selectedItem.value = item; };
 
-const setDefaultStatus = (item) => {
-  //
-  showSetDefaultStatus.value = true;
-  selectedItem.value = item;
-};
+const setDefaultStatus = (item) => { showSetDefaultStatus.value = true; selectedItem.value = item; };
 
-const statusExitProhibited = (item) => {
-  //
-  showExitProhibited.value = true;
-  selectedItem.value = item;
-};
+const statusExitProhibited = (item) => { showExitProhibited.value = true; selectedItem.value = item; };
 
-const createExitCarpass = (item) => {
-  //
-  showCreateExitCarpass.value = true;
-  selectedItem.value = item;
-};
+const setBatchStatus = (status, item) => { showSetBatchStatus.value = true; selectedItem.value = item; batchStatus.value = status; }
 
-const openEditAfterCreate = (item, name) => {
-  //
-  getData(); editItem(item, name)
-}
+const createExitCarpass = (item) => { showCreateExitCarpass.value = true; selectedItem.value = item; };
+
+const openEditAfterCreate = (item, name) => { getData(); editItem(item, name) }
 
 const reopenCard = (type, item, name) => {
   //
@@ -569,6 +539,10 @@ const clickNotificationRow = async (item) => {
     <FormExitProhibited @close-modal="showExitProhibited=false" @doc-created="getData" :itemData="selectedItem"/>
   </div>
 
+  <!-- **********************   MODAL SET BATCH STATUS   ************************** -->
+  <div v-if="showSetBatchStatus" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormSetBatchStatus @close-modal="showSetBatchStatus=false" @doc-created="getData" :status="batchStatus" :itemData="selectedItem"/>
+  </div>
 
   <!-- **********************   MODAL EXITCARPASS CARD   ************************** -->
   <div v-if="showCardExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -608,6 +582,7 @@ const clickNotificationRow = async (item) => {
         <ListAdv @btn-add="addItem" @btn-edit="editItem" @btn-delete="deleteItem" @btn-createexitcarpass="createExitCarpass"
           @btn-refresh="getData" @btn-itemcard="openItem" @btn-rollback="rollbackItem" @btn-print="printItem" 
           @btn-setstatusexit="setStatusExit" @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
+          @btn-set-batch-status="setBatchStatus"
           @click-notification-row="clickNotificationRow"
           :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
       </div>

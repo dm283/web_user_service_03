@@ -1146,6 +1146,7 @@ def rollback_user(current_user: Annotated[UserAuth, Depends(get_current_active_u
 
 
 #########################################################    STATUS MANAGING ENDPOINTS
+### CARPASSES
 @app.put('/car_exit_permit/{carpass_id}')
 def car_exit_permit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     carpass_id: int, db: Session = Depends(get_db)):
@@ -1166,6 +1167,13 @@ def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active
     #
     return crud.exit_prohibited(db=db, carpass_id=carpass_id)
 
+
+### BATCHES
+@app.put('/set_batch_status/{batch_uuid}/{status}')
+def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    batch_uuid: str, status: str, db: Session = Depends(get_db)):
+    #
+    return crud.set_batch_status(db=db, batch_uuid=batch_uuid, status=status, user_uuid=current_user.uuid)
 
 #########################################################    USERS ENDPOINTS
 @app.get("/users/", response_model=list[schemas.UserJoined])

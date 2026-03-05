@@ -9,7 +9,7 @@ import { utils, writeFileXLSX, writeFile } from 'xlsx';
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit',
-  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose', 'clickNotificationRow'
+  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose', 'clickNotificationRow', 'btnSetBatchStatus'
 ]) // emit
 
 const props = defineProps({
@@ -685,29 +685,49 @@ const niceTime = (tm) => {
     <!-- ********    блок кнопок изменения статусов партий товаров    ********** -->
     <div v-if="selectedItem.posted & props.name=='Партии товаров' & userInfo.contact_id==0" class="inline-block space-x-2">
     <!-- партии - change status to exit_permitted -->
-    <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+    <button class="w-12 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatus', 'СТ', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
+      >
+      <div class="text-xs font-semibold">СТ</div>
+    </button>
+      <!-- партии - change status to exit_permitted -->
+    <button class="w-12 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatus', 'СТ-ДО', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
+      >
+      <div class="text-xs font-semibold">СТ-ДО</div>
+    </button>
+      <!-- партии - change status to exit_permitted -->
+    <button class="w-12 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatus', 'СКЛ', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
+      >
+      <div class="text-xs font-semibold">СКЛ</div>
+    </button>
+
+
+    <!-- партии - change status to exit_permitted -->
+    <!-- <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
       @click="emit('btnSetBatchStatusExit', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
       >
       <i class="pi pi-unlock" style="font-size: 1rem"></i>
-    </button>
+    </button> -->
     <!-- партии - change status to exit_prohibited -->
-    <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+    <!-- <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
       @click="emit('btnSetBatchStatusProhibit', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_prohibited'"
       >
       <i class="pi pi-ban" style="font-size: 1rem"></i>
-    </button>
+    </button> -->
     <!-- партии - change status to released -->
-    <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+    <!-- <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
       @click="emit('btnSetBatchStatusReleased', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_prohibited' | selectedItem.status=='terminal'"
       >
       <i class="pi pi-truck" style="font-size: 1rem"></i>
-    </button>
+    </button> -->
     <!-- партии - change status to default (terminal) -->
-    <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+    <!-- <button class="w-8 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
       @click="emit('btnSetBatchStatusDefault', selectedItem)" :disabled="!selectedItem | selectedItem.status=='terminal'"
       >
       <i class="pi pi-arrow-circle-left" style="font-size: 1rem"></i>
-    </button>
+    </button> -->
     </div>
     
 

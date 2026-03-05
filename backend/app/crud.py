@@ -1341,6 +1341,22 @@ def exit_prohibited(db: Session, carpass_id: int):
     return carpass_from_db.id
 
 
+def set_batch_status(db: Session, batch_uuid: str, status: str, user_uuid: str):
+    #
+    item_from_db = db.query(models.Batch).filter(models.Batch.uuid == batch_uuid).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    setattr(item_from_db, 'status', status)
+    db.commit()
+
+    logging_action(obj_type='batch', schema=schemas.Batch, action='set_status', item_from_db=item_from_db, 
+                   user_uuid=user_uuid, db=db)
+
+    return item_from_db
+
+
 def get_carpass_by_id(db: Session, carpass_id: int):
     #
     main_table = aliased(models.Carpass)

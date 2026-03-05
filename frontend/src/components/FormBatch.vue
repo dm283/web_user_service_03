@@ -390,6 +390,10 @@ const refreshCard = async () => {
         ВЫЕХАЛА</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-500" v-else-if="props.itemData.status=='СТ'">
         СТ</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-amber-500" v-else-if="props.itemData.status=='СТ-ДО'">
+        СТ-ДО</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else-if="props.itemData.status=='СКЛ'">
+        СКЛ</div>
 
       <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
     </div>
