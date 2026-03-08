@@ -228,6 +228,9 @@ async function getData() {
       const response = await axios.get(state.query, {headers: authHeader()});
       state.records = response.data;
     } catch (error) {
+      // unauthorized response
+      if (error.status == 401) { console.error('unauthorized'); toast.warning('Авторизуйтесь заново, токен устарел!') }
+
       console.error('Error fetching', error);
     } finally {
       state.isLoading = false;
