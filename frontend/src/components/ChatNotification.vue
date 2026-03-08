@@ -1,5 +1,11 @@
 <script setup>
   import { ref } from 'vue';
+  import data from "../../../backend/config.ini?raw";
+  import { ConfigIniParser } from "config-ini-parser";
+  let parser = new ConfigIniParser(); //Use default delimiter
+  parser.parse(data);
+  var backendIpAddress = parser.get("main", "backend_ip_address");
+  var websocketPort = parser.get("main", "websocket_port");
 
   const emit = defineEmits(['pointState', ])
 
@@ -11,7 +17,7 @@
 
   const newMsg = ref(false)
 
-  const ws = new WebSocket(`ws://localhost:8001/ws/${props.username}`);
+  const ws = new WebSocket(`ws://${backendIpAddress}:${websocketPort}/ws/${props.username}`);
   
   ws.onmessage = function(event) {
     console.log('new msg')

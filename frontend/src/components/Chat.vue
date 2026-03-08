@@ -1,5 +1,11 @@
 <script setup>
   import { ref} from 'vue';
+  import data from "../../../backend/config.ini?raw";
+  import { ConfigIniParser } from "config-ini-parser";
+  let parser = new ConfigIniParser(); //Use default delimiter
+  parser.parse(data);
+  var backendIpAddress = parser.get("main", "backend_ip_address");
+  var websocketPort = parser.get("main", "websocket_port");
 
   const props = defineProps({
     username: String,
@@ -12,7 +18,7 @@
   const messages = ref([])
   const selectedUser = ref(null)
 
-  const ws = new WebSocket(`ws://localhost:8001/ws/${props.username}`);
+  const ws = new WebSocket(`ws://${backendIpAddress}:${websocketPort}/ws/${props.username}`);
   // const ws = new WebSocket(`ws://localhost:8000/ws/${client_id.value}`);
   
   ws.onmessage = function(event) {
