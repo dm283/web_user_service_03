@@ -303,9 +303,10 @@ def get_batches_client(type: str, contact_uuid: str, db: Session, skip: int = 0,
         broker_name=row[1].__dict__['name'] if row[1] else None
         contact_name=row[2].__dict__['name'] if row[2] else None
         ncar=row[3].__dict__['ncar'] if row[3] else None
+        dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
 
     return db_full_response
 
@@ -1392,10 +1393,11 @@ def get_batch_by_sys_id(db: Session, item_sys_id: int):
     broker_name=response[1].__dict__['name'] if response[1] else None
     contact_name=response[2].__dict__['name'] if response[2] else None
     ncar=response[3].__dict__['ncar'] if response[3] else None
+    dateen=response[3].__dict__['dateen'] if response[3] else None
     docs_exist=1 if response[4] else 0
     
     db_full_response = schemas.BatchJoined(**response[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                           ncar=ncar, docs_exist=docs_exist)
+                                           ncar=ncar, dateen=dateen, docs_exist=docs_exist)
     
     return db_full_response
 

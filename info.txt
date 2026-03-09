@@ -36,6 +36,8 @@ START APPLICATION
 === backend ===
 uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8000
 uvicorn app.main:app --workers 1 --host 0.0.0.0 --port 8000 --reload
+uvicorn websocket_node_service:app --workers 1 --host 0.0.0.0 --port 8001
+
 
 === frontend ===
 npm run dev -- --host
