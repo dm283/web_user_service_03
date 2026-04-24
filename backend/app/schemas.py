@@ -492,3 +492,34 @@ class MessageCreate(BaseModel):
 class Message(MessageCreate):
     id: int
     created_datetime: datetime
+
+#########
+class TzoneCreate(BaseModel):
+    zone_id: str
+    ftk: str
+    name_zone: str
+
+class TzoneUpdate(TzoneCreate):
+    updated_datetime: datetime
+
+class Tzone(TzoneCreate):
+    id: int
+    created_datetime: datetime
+    updated_datetime: datetime | None
+
+    class Config:
+        from_attributes = True
+
+#########
+class TcellCreate(BaseModel):
+    zone_id: str
+    cell_id: str
+    note: str | None = None
+
+class Tcell(TcellCreate):
+    id: int
+    created_datetime: datetime
+    updated_datetime: datetime | None
+
+    class Config:
+        from_attributes = True

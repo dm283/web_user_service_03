@@ -370,6 +370,152 @@ async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_acti
     return load_res
 
 
+def load_excel_list(entity, file_location, cols, cols_not_empty_val, model, schema, func, user_uuid, db):
+    #
+    import pandas as pd
+
+    # check 1 - common
+    if not os.path.exists(file_location):
+        print(f"Ошибка! Файл для загрузки не существует - {file_location}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Ошибка! Файл для загрузки не существует.")
+    # check 2 - common
+    try:
+        df = pd.read_excel(file_location)
+        print(df)
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка! Неверный формат файла.')
+    # check 3 - common
+    df = df.fillna('')
+    if len(df) == 0:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка! 0 записей в файле для загрузки.')
+    # check 4 - diverse for entity
+    try:
+        if not all(df.keys()==cols):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка! Неверная структура столбцов в файле.')
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка! Неверная структура столбцов в файле.')
+    # check 5 - columns with some empty values
+    for col in cols_not_empty_val:
+        print(f'empty check {col} = ', len(df[df[col] == ""]))
+        if len(df[df[col] == ""]) > 0:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка! Пустые значение в файле в столбце {col}.')
+    
+    if entity in ['tcell',]:
+        try:
+            # delete whole current table
+            from sqlalchemy import delete
+            db.execute(delete(model))
+            db.commit()
+            # post new records into table
+            for index, row in df.iterrows():
+                dict_row = row.to_dict()
+                for i in dict_row: dict_row[i] = str(dict_row[i])
+                data = schema(**dict_row)
+                data_none_values_redefined = redefine_schema_values_to_none(data, schema)          
+                res = func(db=db, item=data_none_values_redefined, user_uuid=user_uuid)
+        except Exception as e:
+            if e.detail['type'] == 'ForeignKeyViolation':
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.detail['content'])
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка записи в базу данных.')
+        
+    if entity == 'tzone':
+        # read current tzone table and # handling zone_id
+        print('read tzones zone_id')
+        tzones = crud.get_tzone_zone_id(db); old_zoneids = set([e[0] for e in tzones])
+        new_zoneids = set(df['zone_id'].tolist())
+        print('old_zoneids =', old_zoneids)
+        print('new_zoneids =', new_zoneids)
+
+        zoneids_common = old_zoneids.intersection(new_zoneids)  #  for update (put)
+        zoneids_old_only = old_zoneids.difference(new_zoneids)  #  for delete (check foreig key!)
+        zoneids_new_only = new_zoneids.difference(old_zoneids)  #  for post
+        print('zoneids_common = ', zoneids_common)
+        print('zoneids_old_only = ', zoneids_old_only)
+        print('zoneids_new_only = ', zoneids_new_only)
+
+        ############ updating
+        df_update = df[df['zone_id'].isin(zoneids_common)]
+        print('df_update =', df_update)
+        try:
+            # update records in table
+            for index, row in df_update.iterrows():
+                dict_row = row.to_dict()
+                for i in dict_row: dict_row[i] = str(dict_row[i])
+                data = schema(**dict_row)
+                updated_datetime = datetime.now()
+                data_none_values_redefined = redefine_schema_values_to_none(data, schema)
+                item = schemas.TzoneUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)   
+                res = crud.update_tzone(db=db, zone_id=dict_row['zone_id'], item=item, user_uuid=user_uuid)
+        except Exception as e:
+            print('ошибка =', e)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка записи в базу данных.')        
+
+
+        ############ deleting
+        for z in zoneids_old_only:
+            res = crud.delete_tzone(db=db, zone_id=z, user_uuid=user_uuid)
+            print(res)
+
+
+        ############ posting
+        df_post = df[df['zone_id'].isin(zoneids_new_only)]
+        print('df_post =', df_post)
+        try:
+            # post new records into table
+            for index, row in df_post.iterrows():
+                dict_row = row.to_dict()
+                for i in dict_row: dict_row[i] = str(dict_row[i])
+                data = schema(**dict_row)
+                data_none_values_redefined = redefine_schema_values_to_none(data, schema)          
+                res = func(db=db, item=data_none_values_redefined, user_uuid=user_uuid)
+        except Exception as e:
+            if e.detail['type'] == 'ForeignKeyViolation':
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.detail['content'])
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка записи в базу данных.')
+    
+
+
+
+
+# 24.04.2026
+@app.put("/upload_excel_list/")
+async def upload_excel_list(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    entity: Annotated[str, Form()], db: Session = Depends(get_db)):
+    entity_trans = {'Территории терминала': 'tzone', 'Места территорий': 'tcell'}
+    file_location = {
+        'Территории терминала': 'c:/Users/dm283/Documents/TECH/ALTA/new_project/wm_files/tzone-upload.xlsx',
+        'Места территорий': 'c:/Users/dm283/Documents/TECH/ALTA/new_project/wm_files/tcell-upload.xlsx',
+    }
+    cols = {
+        'Территории терминала': ['zone_id', 'ftk', 'name_zone'],
+        'Места территорий': ['zone_id', 'cell_id', 'note'],
+    }
+    cols_not_empty_val = {
+        'Территории терминала': ['zone_id', 'ftk', 'name_zone'],
+        'Места территорий': ['zone_id', 'cell_id'],
+    }
+    model = {
+        'Территории терминала': models.Tzone,
+        'Места территорий': models.Tcell,
+    }
+    schema = {
+        'Территории терминала': schemas.TzoneCreate,
+        'Места территорий': schemas.TcellCreate,
+    }
+    func = {
+        'Территории терминала': crud.create_tzone,
+        'Места территорий': crud.create_tcell,
+    }
+
+    load_res = load_excel_list(entity=entity_trans[entity], file_location=file_location[entity], 
+                               cols=cols[entity], cols_not_empty_val=cols_not_empty_val[entity],
+                               model=model[entity], schema=schema[entity], func=func[entity],
+                               user_uuid=current_user.uuid, db=db)
+
+    return load_res
+
+
 # upload file (document)
 @app.put("/upload_file_for_carpass/{related_doc_uuid}")
 async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -572,6 +718,20 @@ def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_activ
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     log_records = crud.get_log_records(db, skip=skip, limit=limit)
     return log_records
+
+
+@app.get("/tzone/", response_model=list[schemas.Tzone])
+def read_tzone(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    tzones = crud.get_tzone(db, skip=skip, limit=limit)
+    return tzones
+
+
+@app.get("/tcell/", response_model=list[schemas.Tcell])
+def read_tcell(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    tcells = crud.get_tcell(db, skip=skip, limit=limit)
+    return tcells
 
 
 @app.get("/messages/{user_login}", response_model=list[schemas.Message])
