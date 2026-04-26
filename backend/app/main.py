@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from app import crud, models, schemas, views
 from app.database import SessionLocal, engine
 from service_functions import *
+from app.database import PATH_TZONE, PATH_TCELL
 
 
 app = FastAPI()
@@ -421,22 +422,22 @@ def load_excel_list(entity, file_location, cols, cols_not_empty_val, model, sche
         
     if entity == 'tzone':
         # read current tzone table and # handling zone_id
-        print('read tzones zone_id')
+        # print('read tzones zone_id')
         tzones = crud.get_tzone_zone_id(db); old_zoneids = set([e[0] for e in tzones])
         new_zoneids = set(df['zone_id'].tolist())
-        print('old_zoneids =', old_zoneids)
-        print('new_zoneids =', new_zoneids)
+        # print('old_zoneids =', old_zoneids)
+        # print('new_zoneids =', new_zoneids)
 
         zoneids_common = old_zoneids.intersection(new_zoneids)  #  for update (put)
         zoneids_old_only = old_zoneids.difference(new_zoneids)  #  for delete (check foreig key!)
         zoneids_new_only = new_zoneids.difference(old_zoneids)  #  for post
-        print('zoneids_common = ', zoneids_common)
-        print('zoneids_old_only = ', zoneids_old_only)
-        print('zoneids_new_only = ', zoneids_new_only)
+        # print('zoneids_common = ', zoneids_common)
+        # print('zoneids_old_only = ', zoneids_old_only)
+        # print('zoneids_new_only = ', zoneids_new_only)
 
         ############ updating
         df_update = df[df['zone_id'].isin(zoneids_common)]
-        print('df_update =', df_update)
+        # print('df_update =', df_update)
         try:
             # update records in table
             for index, row in df_update.iterrows():
@@ -460,7 +461,7 @@ def load_excel_list(entity, file_location, cols, cols_not_empty_val, model, sche
 
         ############ posting
         df_post = df[df['zone_id'].isin(zoneids_new_only)]
-        print('df_post =', df_post)
+        # print('df_post =', df_post)
         try:
             # post new records into table
             for index, row in df_post.iterrows():
@@ -475,17 +476,14 @@ def load_excel_list(entity, file_location, cols, cols_not_empty_val, model, sche
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f'Ошибка записи в базу данных.')
     
 
-
-
-
 # 24.04.2026
 @app.put("/upload_excel_list/")
 async def upload_excel_list(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     entity: Annotated[str, Form()], db: Session = Depends(get_db)):
     entity_trans = {'Территории терминала': 'tzone', 'Места территорий': 'tcell'}
     file_location = {
-        'Территории терминала': 'c:/Users/dm283/Documents/TECH/ALTA/new_project/wm_files/tzone-upload.xlsx',
-        'Места территорий': 'c:/Users/dm283/Documents/TECH/ALTA/new_project/wm_files/tcell-upload.xlsx',
+        'Территории терминала': PATH_TZONE,
+        'Места территорий': PATH_TCELL,
     }
     cols = {
         'Территории терминала': ['zone_id', 'ftk', 'name_zone'],

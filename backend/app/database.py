@@ -24,6 +24,9 @@ DB2_PWD = quote_plus(config['db2']['pwd'])
 DB2_SERVER = config['db2']['server']
 DB2_NAME = config['db2']['db_name']
 
+PATH_TZONE = config['paths']['tzone_file']
+PATH_TCELL = config['paths']['tcell_file']
+
 #SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:%s@localhost/mts_pro' % quote_plus('s2d3f4!@')
 SQLALCHEMY_DATABASE_URL = f'postgresql://{DB2_USER}:{DB2_PWD}@{DB2_SERVER}/{DB2_NAME}'
 # SQLALCHEMY_DATABASE_URL = 'mssql+pyodbc://' + 'LAPTOP-MR8NJ1DK\SQLEXPRESS' + '/' + 'dev_db_1' + '?trusted_connection=yes&encrypt=no&driver=ODBC+Driver+18+for+SQL+Server'
