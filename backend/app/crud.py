@@ -194,6 +194,10 @@ def get_tcell(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Tcell).order_by(models.Tcell.zone_id, models.Tcell.cell_id).all()
 
 
+def get_tcell_by_zone_id(zone_id: str, db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Tcell).filter(models.Tcell.zone_id==zone_id).order_by(models.Tcell.cell_id).all()
+
+
 def get_messages(user_login:str, db: Session, notifications:bool=False, new_notifications:bool=False, skip: int = 0, limit: int = 100):
     if new_notifications:
         return db.query(models.Message).filter(models.Message.receiver==user_login, 

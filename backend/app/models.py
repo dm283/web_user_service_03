@@ -116,7 +116,11 @@ class Carpass(Base):
     driver_licence = Column(String)
     car_model = Column(String)
     entry_type = Column(String)
-    place_n = Column(String)
+    place_n = Column(String, nullable=True, default=None)  # deprecated
+
+    place_tzone = Column(String)
+    place_tcell = Column(String)
+
     nav_seal = Column(Boolean, default=False)
     radiation = Column(Boolean, default=False)
     brokenAwning = Column(Boolean, default=False)

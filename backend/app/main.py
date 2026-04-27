@@ -732,6 +732,14 @@ def read_tcell(current_user: Annotated[UserAuth, Depends(get_current_active_user
     return tcells
 
 
+@app.get("/tcell_by_zone_id/{zone_id}", response_model=list[schemas.Tcell])
+def read_tcell_by_zone_id(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  zone_id: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    print('zone_id = ', zone_id)
+    tcells = crud.get_tcell_by_zone_id(zone_id=zone_id, db=db, skip=skip, limit=limit)
+    return tcells
+
+
 @app.get("/messages/{user_login}", response_model=list[schemas.Message])
 def read_messages(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   user_login: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

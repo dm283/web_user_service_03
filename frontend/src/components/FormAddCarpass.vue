@@ -41,7 +41,10 @@ const itemFields = [
     'car_model',
     'entry_type',
     'contact_uuid',
-    'place_n',
+    // 'place_n',
+    'place_tzone',
+    'place_tcell',
+
     'nav_seal',
     'radiation',
     'brokenAwning',
@@ -63,6 +66,8 @@ const state = reactive({
   isLoading: true,
   filteredList: [],
   contacts: [],
+  tzones: [],
+  tcells: [],
   entiryRequests: [],
   choosenDocs: [],
 })
@@ -75,6 +80,14 @@ const errField = reactive({});
 const form = reactive({});
 const showAskCloseWithoutSave = ref(false)
 
+const getTcells = async (zone_id) => {
+  if (!zone_id) { state.tcells = []; return }
+  let response = await axios.get(`http://${backendIpAddress}:${backendPort}/tcell_by_zone_id/${zone_id}`,
+        {headers: authHeader()} );
+  state.tcells = response.data;
+  console.log('tcells =', state.tcells)
+} 
+
 // for dropdowns
 if (!props.isCard) {
 onMounted(async () => {
@@ -83,6 +96,9 @@ onMounted(async () => {
       state.entiryRequests = response.data;
       const response_2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
       state.contacts = response_2.data;
+
+      const response_3 = await axios.get(`http://${backendIpAddress}:${backendPort}/tzone/`, {headers: authHeader()});
+      state.tzones = response_3.data;
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -101,7 +117,10 @@ const setContactNameInput = async (uuid) => {
 // for dropdowns
 if (props.itemData) {
 onMounted(async () => {
-    try { if (props.itemData.contact_uuid) { setContactNameInput(props.itemData.contact_uuid) } } 
+    try {
+      if (props.itemData.contact_uuid) { setContactNameInput(props.itemData.contact_uuid) } 
+      getTcells(props.itemData.place_tzone)
+    } 
     catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };
 
@@ -567,10 +586,63 @@ const refreshCard = async () => {
 
       <div class="flex">
 
-        <div class=formInputDiv>   <label class=formLabelStyle>Номер стоянки</label>
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Номер стоянки</label>
           <input type="text" v-model="form.place_n" :class="[errField['place_n']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
+        </div> -->
+
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Территория терминала</label>
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tzone" 
+                @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');"
+                @keyup="setFilter('place_tzone', 'tzones', 'zone_id')" :required="false"/>
+              <span @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['place_tzone']=false; 
+                  form['reserve_3']=null;form['place_tzone']=null;
+                  getTcells(null);form['reserve_4']=null;form['place_tcell']=null;">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['place_tzone']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['place_tzone']=false; 
+                  form['reserve_3']=item.zone_id;form['place_tzone']=item.zone_id;
+                  getTcells(item.zone_id);form['place_tcell']=null;" >
+                {{ item.zone_id }}
+            </div>
+          </div>
         </div>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Территория терминала</label>
+          <input type="text" v-model="form.place_tzone" :class="[errField['place_tzone']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Место территории</label>
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tcell" 
+                @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4')"
+                @keyup="setFilter('place_tcell', 'tcells', 'cell_id')" :required="false"/>
+              <span @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['place_tcell']=false; 
+                  form['reserve_4']=null;form['place_tcell']=null">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['place_tcell']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['place_tcell']=false; 
+                  form['reserve_4']=item.place_tcell;form['place_tcell']=item.cell_id;
+                  " >
+                {{ item.cell_id }}
+            </div>
+          </div>
+        </div>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Место территори</label>
+          <input type="text" v-model="form.place_tcell" :class="[errField['place_tcell']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
+
         <div class=formInputDiv>   <label class=formLabelStyle>Примечание</label>
           <input type="text" v-model="form.comment" :class=formInputStyle :disabled="isCard" />
         </div>
