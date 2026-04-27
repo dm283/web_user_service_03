@@ -19,6 +19,7 @@ import FormUser from './FormUser.vue';
 import FormDoc from './FormDoc.vue';
 import FormBatch from './FormBatch.vue';
 import FormSetBatchStatus from './FormSetBatchStatus.vue';
+import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -59,6 +60,7 @@ const showSetDefaultStatus = ref(false)
 const showExitProhibited = ref(false)
 
 const showSetBatchStatus = ref(false)
+const showConfirmUploadExcel = ref(false)
 
 const showItemCard = ref(false)
 const showAddItem = ref(false)
@@ -100,6 +102,7 @@ const deletedItem = ref('')
 const deletedItemName = ref('')
 const file = ref(null)
 const batchStatus = ref('')
+const entityUploadExcel = ref('')
 
 const modalStyle = "absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
 const modalStyleSecond = "absolute z-20 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
@@ -384,6 +387,8 @@ const statusExitProhibited = (item) => { showExitProhibited.value = true; select
 
 const setBatchStatus = (status, item) => { showSetBatchStatus.value = true; selectedItem.value = item; batchStatus.value = status; }
 
+const confirmUploadExcel = (entity) => { showConfirmUploadExcel.value = true; entityUploadExcel.value = entity; }
+
 const createExitCarpass = (item) => { showCreateExitCarpass.value = true; selectedItem.value = item; };
 
 const openEditAfterCreate = (item, name) => { getData(); editItem(item, name) }
@@ -410,19 +415,19 @@ const clickNotificationRow = async (item) => {
   getData();
 }
 
-const uploadExcelList = async(entity) => {
-  //
-  let formData = new FormData();
-  formData.append('entity', entity)
-  try {
-    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_excel_list/`, 
-        formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-    toast.success('Файл успешно загружен.')
-  } catch (error) {
-    console.error('Ошибка загрузки файла', error.response.data);
-    toast.error(error.response.data.detail)
-  };
-  getData(); }
+// const uploadExcelList = async(entity) => {
+//   //
+//   let formData = new FormData();
+//   formData.append('entity', entity)
+//   try {
+//     const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_excel_list/`, 
+//         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+//     toast.success('Файл успешно загружен.')
+//   } catch (error) {
+//     console.error('Ошибка загрузки файла', error.response.data);
+//     toast.error(error.response.data.detail)
+//   };
+//   getData(); }
 
 </script>
 
@@ -577,6 +582,11 @@ const uploadExcelList = async(entity) => {
     <FormSetBatchStatus @close-modal="showSetBatchStatus=false" @doc-created="getData" :status="batchStatus" :itemData="selectedItem"/>
   </div>
 
+   <!-- **********************   MODAL CONFIRM UPLOAD EXCEL   ************************** -->
+  <div v-if="showConfirmUploadExcel" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormConfirmUploadExcel @close-modal="showConfirmUploadExcel=false" @doc-created="getData" :entity="entityUploadExcel" />
+  </div>
+
   <!-- **********************   MODAL EXITCARPASS CARD   ************************** -->
   <div v-if="showCardExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormAddExitCarpass @close-modal="showCardExitCarpass=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
@@ -617,7 +627,7 @@ const uploadExcelList = async(entity) => {
           @btn-setstatusexit="setStatusExit" @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
           @btn-set-batch-status="setBatchStatus"
           @click-notification-row="clickNotificationRow"
-          @btn-upload-excel="uploadExcelList"
+          @btn-upload-excel="confirmUploadExcel"
           :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
       </div>
     </div>
