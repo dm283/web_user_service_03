@@ -19,6 +19,7 @@ import FormUser from './FormUser.vue';
 import FormDoc from './FormDoc.vue';
 import FormBatch from './FormBatch.vue';
 import FormSetBatchStatus from './FormSetBatchStatus.vue';
+import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -59,6 +60,7 @@ const showSetDefaultStatus = ref(false)
 const showExitProhibited = ref(false)
 
 const showSetBatchStatus = ref(false)
+const showConfirmUploadExcel = ref(false)
 
 const showItemCard = ref(false)
 const showAddItem = ref(false)
@@ -100,6 +102,7 @@ const deletedItem = ref('')
 const deletedItemName = ref('')
 const file = ref(null)
 const batchStatus = ref('')
+const entityUploadExcel = ref('')
 
 const modalStyle = "absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
 const modalStyleSecond = "absolute z-20 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
@@ -125,6 +128,8 @@ const query_users = `http://${backendIpAddress}:${backendPort}/users/`
 const query_log_records = `http://${backendIpAddress}:${backendPort}/log_records/`
 const query_notifications = `http://${backendIpAddress}:${backendPort}/messages/notifications/${userInfo.login}`
 
+const query_tcell = `http://${backendIpAddress}:${backendPort}/tcell/`
+const query_tzone = `http://${backendIpAddress}:${backendPort}/tzone/`
 
 if (props.view_type == 'enter') {
   state.query = query_carpass;
@@ -212,6 +217,20 @@ else if (props.view_type == 'notifications') {
   state.query = query_notifications;
   state.listTableColumns = {
     'msg_text':'Оповещение', 'created_datetime':'Дата-время'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+else if (props.view_type == 'tzones') {
+  state.query = query_tzone;
+  state.listTableColumns = {
+    'zone_id':'Код зоны','ftk':'Зона СВХ', 'name_zone':'Наименование'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+else if (props.view_type == 'tcells') {
+  state.query = query_tcell;
+  state.listTableColumns = {
+    'zone_id':'Код зоны','cell_id':'Код ячейки', 'note':'Примечание'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
@@ -368,6 +387,8 @@ const statusExitProhibited = (item) => { showExitProhibited.value = true; select
 
 const setBatchStatus = (status, item) => { showSetBatchStatus.value = true; selectedItem.value = item; batchStatus.value = status; }
 
+const confirmUploadExcel = (entity) => { showConfirmUploadExcel.value = true; entityUploadExcel.value = entity; }
+
 const createExitCarpass = (item) => { showCreateExitCarpass.value = true; selectedItem.value = item; };
 
 const openEditAfterCreate = (item, name) => { getData(); editItem(item, name) }
@@ -393,6 +414,20 @@ const clickNotificationRow = async (item) => {
   
   getData();
 }
+
+// const uploadExcelList = async(entity) => {
+//   //
+//   let formData = new FormData();
+//   formData.append('entity', entity)
+//   try {
+//     const response = await axios.put(`http://${backendIpAddress}:${backendPort}/upload_excel_list/`, 
+//         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+//     toast.success('Файл успешно загружен.')
+//   } catch (error) {
+//     console.error('Ошибка загрузки файла', error.response.data);
+//     toast.error(error.response.data.detail)
+//   };
+//   getData(); }
 
 </script>
 
@@ -547,6 +582,11 @@ const clickNotificationRow = async (item) => {
     <FormSetBatchStatus @close-modal="showSetBatchStatus=false" @doc-created="getData" :status="batchStatus" :itemData="selectedItem"/>
   </div>
 
+   <!-- **********************   MODAL CONFIRM UPLOAD EXCEL   ************************** -->
+  <div v-if="showConfirmUploadExcel" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormConfirmUploadExcel @close-modal="showConfirmUploadExcel=false" @doc-created="getData" :entity="entityUploadExcel" />
+  </div>
+
   <!-- **********************   MODAL EXITCARPASS CARD   ************************** -->
   <div v-if="showCardExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormAddExitCarpass @close-modal="showCardExitCarpass=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
@@ -587,6 +627,7 @@ const clickNotificationRow = async (item) => {
           @btn-setstatusexit="setStatusExit" @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
           @btn-set-batch-status="setBatchStatus"
           @click-notification-row="clickNotificationRow"
+          @btn-upload-excel="confirmUploadExcel"
           :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
       </div>
     </div>

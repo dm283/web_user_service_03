@@ -315,3 +315,27 @@ class Message(Base):
     
     id = Column(Integer, primary_key=True)
     created_datetime = Column(DateTime)
+
+
+class Tzone(Base):
+    __tablename__ = 'tzone'
+    # zone_id = Column(String)
+    zone_id = Column(String, unique=True, nullable=False)
+    ftk = Column(String)
+    name_zone = Column(String)
+    
+    id = Column(Integer, primary_key=True)
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+
+
+class Tcell(Base):
+    __tablename__ = 'tcell'
+    # zone_id = Column(String)
+    zone_id = Column(String, ForeignKey('tzone.zone_id'))
+    cell_id = Column(String)
+    note = Column(String)
+    
+    id = Column(Integer, primary_key=True)
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)

@@ -10,6 +10,8 @@ import ParkingMapView from "@/views/ParkingMapView.vue";
 import CatalogsView from "@/views/CatalogsView.vue";
 import ContactsView from "@/views/ContactsView.vue";
 import BrokersView from "@/views/BrokersView.vue";
+import TzoneView from "@/views/TzoneView.vue";
+import TcellView from "@/views/TcellView.vue";
 import AdministrationView from "@/views/AdministrationView.vue";
 import UsersView from "@/views/UsersView.vue";
 import LogRecordsView from "@/views/LogRecordsView.vue";
@@ -37,6 +39,8 @@ const router = createRouter({
     { path: '/catalogs', name: 'catalogs', component: CatalogsView, },
     { path: '/contacts', name: 'contacts', component: ContactsView, },
     { path: '/brokers', name: 'brokers', component: BrokersView, },
+    { path: '/tzones', name: 'tzones', component: TzoneView, },
+    { path: '/tcells', name: 'tcells', component: TcellView, },
 
     { path: '/svh_section', name: 'svh_section', component: SvhSectionView, },
     { path: '/batches', name: 'batches', component: BatchesView, },

@@ -52,6 +52,16 @@ const authHeader = () => {
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/tzones">
+        <CatalogSection :label="'Территории терминала'" :icon="'expand'" :description="'Информация о территориях'" />
+      </RouterLink>
+    </div>
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/tcells">
+        <CatalogSection :label="'Места территорий'" :icon="'th-large'" :description="'Информация о местах'" />
+      </RouterLink>
+    </div>
+    <div class="inline-block mt-5 ml-5">
       <RouterLink to="/carriers">
         <CatalogSection :label="'Перевозчики'" :icon="'truck'" :description="'в работе'" />
       </RouterLink>

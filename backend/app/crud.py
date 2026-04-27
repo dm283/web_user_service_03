@@ -56,6 +56,8 @@ def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: S
     if obj_type == 'related_docs_record':
         obj_uuid = item_from_db.obj_uuid
         obj_type = entity_title_name_dict.get(item_from_db.obj_type)
+    elif obj_type in ['tzone', 'tcell']:
+        obj_uuid = '-'
     else:
         obj_uuid = item_from_db.uuid
 
@@ -178,6 +180,18 @@ def get_log_records(db: Session, skip: int = 0, limit: int = 100):
         db_full_response.append(schemas.LogRecordJoined(**row[0].__dict__, user_login=user_login))
 
     return db_full_response
+
+
+def get_tzone(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Tzone).order_by(models.Tzone.zone_id).all()
+
+
+def get_tzone_zone_id(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Tzone.zone_id).order_by(models.Tzone.zone_id).all()
+
+
+def get_tcell(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Tcell).order_by(models.Tcell.zone_id, models.Tcell.cell_id).all()
 
 
 def get_messages(user_login:str, db: Session, notifications:bool=False, new_notifications:bool=False, skip: int = 0, limit: int = 100):
@@ -584,6 +598,42 @@ def create_contact(db: Session, item: schemas.ContactCreate, user_uuid: str):
     return db_item
 
 
+def create_tzone(db: Session, item: schemas.TzoneCreate, user_uuid: str):
+    # creates a tzone in database
+    created_datetime = datetime.datetime.now()
+
+    db_item = models.Tzone(**item.model_dump(), created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    logging_action(obj_type='tzone', schema=schemas.Tzone, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+    return db_item
+
+
+def create_tcell(db: Session, item: schemas.TcellCreate, user_uuid: str):
+    # creates a tcell in database
+    created_datetime = datetime.datetime.now()
+
+    db_item = models.Tcell(**item.model_dump(), created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print('ошибка =', err)
+        print('детали =', str(err.orig))
+        if "нарушает ограничение внешнего ключа" in str(err.orig):
+            print(str(err.orig).partition('DETAIL:')[2].strip())
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
+                                detail={ 'type': 'ForeignKeyViolation', 'content': str(err.orig).partition('DETAIL:')[2].strip()}
+                                        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    logging_action(obj_type='tcell', schema=schemas.Tcell, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+    return db_item
+
+
 def create_user(db: Session, user: schemas.UserCreate, user_uuid: str):
     # creates a user in database
     password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -738,6 +788,20 @@ def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate, user_
     return item_from_db
 
 
+def update_tzone(db: Session, zone_id: int, item: schemas.TzoneUpdate, user_uuid: str):
+    #
+    item_from_db =  db.query(models.Tzone).filter(models.Tzone.zone_id == zone_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    logging_action(obj_type='tzone', schema=schemas.Tzone, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db
+
+
 def update_document_record(db: Session, item_id: int, item: schemas.DocumentRecordUpdate, user_uuid: str):
     #
     item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
@@ -793,6 +857,28 @@ def delete_contact(db: Session, item_id: int, user_uuid: str):
     logging_action(obj_type='contact', schema=schemas.Contact, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
     return {"message": f"Contact id {item_id} deleted successfully"}
+
+
+def delete_tzone(db: Session, zone_id: str, user_uuid: str):
+    #
+    item_from_db =  db.query(models.Tzone).filter(models.Tzone.zone_id == zone_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+    db.commit()
+
+    logging_action(obj_type='tzone', schema=schemas.Tzone, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+    return {"message": f"Zone id {zone_id} deleted successfully"}
+
 
 
 def delete_document_records(db: Session, item_id: int, user_uuid: str):

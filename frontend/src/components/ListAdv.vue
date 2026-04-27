@@ -9,7 +9,8 @@ import { utils, writeFileXLSX, writeFile } from 'xlsx';
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit',
-  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose', 'clickNotificationRow', 'btnSetBatchStatus'
+  'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose', 'clickNotificationRow', 'btnSetBatchStatus',
+  'btnUploadExcel'
 ]) // emit
 
 const props = defineProps({
@@ -405,7 +406,8 @@ const dataRender = () => {
 
   for (let i = 0; i < renderedData.length; i++) {
     listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
-    if (['Электронный архив','Выбор документов','Журнал действий','Оповещения'].includes(props.name)) { listRowStyle[i] = '' }
+    if (['Электронный архив','Выбор документов','Журнал действий','Оповещения',
+        'Территории терминала','Места территорий'].includes(props.name)) { listRowStyle[i] = '' }
     if (props.name=='ТС на терминале') {
       if (renderedData[i].status=='exit_permitted') { listRowStyle[i] = 'bg-green-50' }
       else if (renderedData[i].status=='exit_prohibited') { listRowStyle[i] = 'bg-red-50' }
@@ -660,6 +662,12 @@ const niceTime = (tm) => {
       >
       ВЫБРАТЬ
     </button> -->
+
+    <!-- загрузка из excel -->
+    <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
+      @click="emit('btnUploadExcel', props.name)" v-if="['Территории терминала','Места территорий'].includes(props.name) & userInfo.contact_id==0">
+      <i class="pi pi-file-excel" style="font-size: 1rem"></i>
+    </button>
 
     <!-- обновить -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
