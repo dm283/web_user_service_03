@@ -77,6 +77,7 @@ class Carpass(CarpassCreate):
 
 class CarpassJoined(Carpass):
     contact_name: str | None
+    place: str | None
     
 
 ##############

@@ -135,7 +135,7 @@ if (props.view_type == 'enter') {
   state.query = query_carpass;
   state.listTableColumns = {
     'id_enter':'№','ncar':'№ ТС','contact_name':'Клиент','nseal':'Номер пломбы',
-    'place_n':'№ стоянки', 'dateen':'Дата въезда', 'timeen':'Время въезда','dateex':'Дата выезда', 'timeex':'Время выезда'
+    'place':'Размещение', 'dateen':'Дата въезда', 'timeen':'Время въезда','dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
   if (userInfo.type=='V') { delete state.listTableColumns.contact_name; }
@@ -144,7 +144,7 @@ else if (props.view_type == 'terminal') {
   state.query = query_car_terminal;
   state.listTableColumns = {
     'id_enter':'№','ncar':'№ ТС','dateen':'Дата въезда', 'timeen':'Время въезда', 'contact_name':'Клиент', 
-    'place_n':'№ стоянки', 'dateex':'Дата выезда', 'timeex':'Время выезда'
+    'place':'Размещение', 'dateex':'Дата выезда', 'timeex':'Время выезда'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 } 

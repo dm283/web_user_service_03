@@ -382,7 +382,10 @@ def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     db_full_response = []
     for row in response:
         contact_name=row[1].__dict__['name'] if row[1] else None
-        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
 
     return db_full_response
 
@@ -418,7 +421,10 @@ def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 
     db_full_response = []
     for row in response:
         contact_name=row[1].__dict__['name'] if row[1] else None
-        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
 
     return db_full_response
 
@@ -448,7 +454,10 @@ def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
     db_full_response = []
     for row in response:
         contact_name=row[1].__dict__['name'] if row[1] else None
-        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
 
     return db_full_response
 
