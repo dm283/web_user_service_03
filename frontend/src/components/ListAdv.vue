@@ -665,7 +665,8 @@ const niceTime = (tm) => {
 
     <!-- загрузка из excel -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
-      @click="emit('btnUploadExcel', props.name)" v-if="['Территории терминала','Места территорий'].includes(props.name) & userInfo.contact_id==0">
+      @click="emit('btnUploadExcel', props.name)" 
+      v-if="['Территории терминала','Места территорий'].includes(props.name) & userInfo.contact_id==0 & userInfo.role_id==1">
       <i class="pi pi-file-excel" style="font-size: 1rem"></i>
     </button>
 
