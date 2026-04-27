@@ -413,6 +413,13 @@ const dataRender = () => {
       else if (renderedData[i].status=='exit_prohibited') { listRowStyle[i] = 'bg-red-50' }
       else { listRowStyle[i] = '' }
     };
+    if (props.name=='Партии товаров') {
+      if (renderedData[i].status=='на СВХ') { listRowStyle[i] = 'bg-blue-100' }
+      else if (renderedData[i].status=='Там.офор.') { listRowStyle[i] = 'bg-amber-100' }
+      else if (renderedData[i].status=='Ч.офор.') { listRowStyle[i] = 'bg-amber-50' }
+      else if (renderedData[i].status=='Выпуск') { listRowStyle[i] = 'bg-green-100' }
+      else { listRowStyle[i] = '' }
+    };
     if (props.name=='Заявки на въезд ТС') {
       if (renderedData[i].status=='entered') { listRowStyle[i] = 'bg-blue-50' }
     }
@@ -694,22 +701,22 @@ const niceTime = (tm) => {
     <!-- ********    блок кнопок изменения статусов партий товаров    ********** -->
     <div v-if="selectedItem.posted & props.name=='Партии товаров' & userInfo.contact_id==0" class="inline-block space-x-2">
     <!-- партии - change status to exit_permitted -->
-    <button class="w-12 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
-      @click="emit('btnSetBatchStatus', 'СТ', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
+    <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatus', 'Там.офор.', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
       >
-      <div class="text-xs font-semibold">СТ</div>
+      <div class="text-xs font-semibold">Там.офор.</div>
     </button>
       <!-- партии - change status to exit_permitted -->
-    <button class="w-12 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
-      @click="emit('btnSetBatchStatus', 'СТ-ДО', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
+    <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatus', 'Ч.офор.', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
       >
-      <div class="text-xs font-semibold">СТ-ДО</div>
+      <div class="text-xs font-semibold">Ч.офор.</div>
     </button>
       <!-- партии - change status to exit_permitted -->
-    <button class="w-12 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
-      @click="emit('btnSetBatchStatus', 'СКЛ', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
+    <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      @click="emit('btnSetBatchStatus', 'Выпуск', selectedItem)" :disabled="!selectedItem | selectedItem.status=='exit_permitted' | selectedItem.status=='exit_prohibited'"
       >
-      <div class="text-xs font-semibold">СКЛ</div>
+      <div class="text-xs font-semibold">Выпуск</div>
     </button>
 
 

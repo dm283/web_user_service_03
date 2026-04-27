@@ -402,7 +402,7 @@ class BatchCreate(BaseModel):
     delivery_close_datetime: datetime | str | None = None   # 04.03.26
     dt_submission_datetime: datetime | str | None = None   # 04.03.26
 
-    status: str = 'СТ'
+    status: str = 'на СВХ'
     tn_id: str | None = None
     contact_uuid: str
     broker_uuid: str | None = None
