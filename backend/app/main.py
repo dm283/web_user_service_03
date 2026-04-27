@@ -837,6 +837,12 @@ def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return items
 
 
+@app.get('/batches_by_carpass_uuid/{carpass_uuid}', response_model=list[schemas.BatchJoined])
+def read_batches_by_carpass_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   carpass_uuid: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_batches_by_carpass_uuid(carpass_uuid=carpass_uuid, db=db, skip=skip, limit=limit)
+    return items
+
 @app.get('/batches_client/{type}/{contact_uuid}', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 type: str, contact_uuid: str,

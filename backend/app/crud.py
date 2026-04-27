@@ -266,9 +266,39 @@ def get_batches(db: Session, skip: int = 0, limit: int = 100):
     contact_1 = aliased(models.Contact)
     contact_2 = aliased(models.Contact)
     carpass = aliased(models.Carpass)
-    related_docs = aliased(models.RelatedDocs)  # 19.02.2026
+    related_docs = aliased(models.RelatedDocs)
 
     response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        broker_name=row[1].__dict__['name'] if row[1] else None
+        contact_name=row[2].__dict__['name'] if row[2] else None
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        dateen=row[3].__dict__['dateen'] if row[3] else None
+        docs_exist=1 if row[4] else 0
+        db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+
+    return db_full_response
+
+
+def get_batches_by_carpass_uuid(carpass_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        filter(main_table.carpass_uuid==carpass_uuid).\
         join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
         join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
         join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\

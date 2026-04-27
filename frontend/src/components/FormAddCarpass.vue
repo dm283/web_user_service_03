@@ -69,6 +69,7 @@ const state = reactive({
   tzones: [],
   tcells: [],
   entiryRequests: [],
+  related_batches: [],
   choosenDocs: [],
 })
 
@@ -122,6 +123,13 @@ onMounted(async () => {
       getTcells(props.itemData.place_tzone)
     } 
     catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
+    
+    try {
+      const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/batches_by_carpass_uuid/${props.itemData.uuid}`,
+        {headers: authHeader()} );
+      state.related_batches = response1.data;
+    } 
+    catch (error) { console.error('Error fetching items', error); } finally { state.isLoading = false; }
 }); };
 
 // get documents
@@ -669,6 +677,31 @@ const refreshCard = async () => {
           <label class=formLabelCheckboxStyle for="nav_seal">Навигационная пломба</label>
         </div>
       </div>
+
+
+      <div v-if="itemData" class="mx-5 px-1 mb-5">
+        <label class=formLabelStyle>Партии товаров</label>
+        <div v-if="state.related_batches.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-20">
+          <table class="w-full">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
+              <td class="text-center">Наименование клиента</td>
+              <td class="text-center">Описание</td>
+              <td class="text-center">Таможенный статус</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t text-slate-500 text-xs" v-for="rec in state.related_batches">
+              <td class="text-center">{{ rec.contact_name }}</td>
+              <td class="text-center">{{ rec.goods }}</td>
+              <td class="text-center">{{ rec.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет размещенных партий товаров</div>
+      </div>
+
 
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
