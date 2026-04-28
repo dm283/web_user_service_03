@@ -405,9 +405,11 @@ const dataRender = () => {
   let renderedData = state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
 
   for (let i = 0; i < renderedData.length; i++) {
-    listRowStyle[i] = renderedData[i].posted ? '' : 'bg-orange-50';
     if (['Электронный архив','Выбор документов','Журнал действий','Оповещения',
         'Территории терминала','Места территорий'].includes(props.name)) { listRowStyle[i] = '' }
+    else {
+      listRowStyle[i] = renderedData[i].posted ? '' : 'bg-gray-50';
+    }
     if (props.name=='ТС на терминале') {
       if (renderedData[i].status=='exit_permitted') { listRowStyle[i] = 'bg-green-50' }
       else if (renderedData[i].status=='exit_prohibited') { listRowStyle[i] = 'bg-red-50' }
@@ -418,7 +420,7 @@ const dataRender = () => {
       else if (renderedData[i].status=='Там.офор.') { listRowStyle[i] = 'bg-amber-100' }
       else if (renderedData[i].status=='Ч.офор.') { listRowStyle[i] = 'bg-amber-50' }
       else if (renderedData[i].status=='Выпуск') { listRowStyle[i] = 'bg-green-100' }
-      else { listRowStyle[i] = '' }
+      else { listRowStyle[i] = renderedData[i].posted ? '' : 'bg-slate-100'; }
     };
     if (props.name=='Заявки на въезд ТС') {
       if (renderedData[i].status=='entered') { listRowStyle[i] = 'bg-blue-50' }
@@ -429,7 +431,7 @@ const dataRender = () => {
     if (props.name=='Оповещения') {
       if (renderedData[i].status=='новое') { listRowStyle[i] = 'bg-red-50' }
     }
-    listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'bg-slate-200 hover:bg-slate-300': listRowStyle[i];
+    listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'border border-blue-400 bg-slate-200 hover:bg-slate-300': listRowStyle[i];
   };
 
   return renderedData
