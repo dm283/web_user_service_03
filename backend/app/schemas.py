@@ -21,7 +21,11 @@ class CarpassCreate(BaseModel):
     driver_licence: str | None = None
     car_model: str | None = None
     entry_type: str | None = None
-    place_n: str | None = None
+    # place_n: str | None = None  # deprecated
+
+    place_tzone: str | None = None
+    place_tcell: str | None = None
+
     nav_seal: bool
     radiation: bool
     brokenAwning: bool
@@ -49,7 +53,10 @@ class CarpassValidation(BaseModel):
     car_model: str
     entry_type: str
     contact_uuid: str
-    place_n: str
+    # place_n: str
+
+    place_tzone: str
+    # place_tcell: str
 
 class CarpassUpdate(CarpassCreate):
     updated_datetime: datetime
@@ -70,6 +77,7 @@ class Carpass(CarpassCreate):
 
 class CarpassJoined(Carpass):
     contact_name: str | None
+    place: str | None
     
 
 ##############

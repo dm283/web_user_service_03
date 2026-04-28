@@ -194,6 +194,10 @@ def get_tcell(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Tcell).order_by(models.Tcell.zone_id, models.Tcell.cell_id).all()
 
 
+def get_tcell_by_zone_id(zone_id: str, db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Tcell).filter(models.Tcell.zone_id==zone_id).order_by(models.Tcell.cell_id).all()
+
+
 def get_messages(user_login:str, db: Session, notifications:bool=False, new_notifications:bool=False, skip: int = 0, limit: int = 100):
     if new_notifications:
         return db.query(models.Message).filter(models.Message.receiver==user_login, 
@@ -262,9 +266,39 @@ def get_batches(db: Session, skip: int = 0, limit: int = 100):
     contact_1 = aliased(models.Contact)
     contact_2 = aliased(models.Contact)
     carpass = aliased(models.Carpass)
-    related_docs = aliased(models.RelatedDocs)  # 19.02.2026
+    related_docs = aliased(models.RelatedDocs)
 
     response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        broker_name=row[1].__dict__['name'] if row[1] else None
+        contact_name=row[2].__dict__['name'] if row[2] else None
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        dateen=row[3].__dict__['dateen'] if row[3] else None
+        docs_exist=1 if row[4] else 0
+        db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+
+    return db_full_response
+
+
+def get_batches_by_carpass_uuid(carpass_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        filter(main_table.carpass_uuid==carpass_uuid).\
         join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
         join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
         join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
@@ -378,7 +412,10 @@ def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     db_full_response = []
     for row in response:
         contact_name=row[1].__dict__['name'] if row[1] else None
-        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
 
     return db_full_response
 
@@ -414,7 +451,10 @@ def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 
     db_full_response = []
     for row in response:
         contact_name=row[1].__dict__['name'] if row[1] else None
-        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
 
     return db_full_response
 
@@ -444,7 +484,10 @@ def get_cars_at_terminal(db: Session, skip: int = 0, limit: int = 100):
     db_full_response = []
     for row in response:
         contact_name=row[1].__dict__['name'] if row[1] else None
-        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name))
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
 
     return db_full_response
 
