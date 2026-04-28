@@ -416,11 +416,10 @@ const dataRender = () => {
       else { listRowStyle[i] = '' }
     };
     if (props.name=='Партии товаров') {
-      if (renderedData[i].status=='на СВХ') { listRowStyle[i] = 'bg-blue-100' }
+      if (renderedData[i].status=='на СВХ') { listRowStyle[i] = renderedData[i].posted ? '' : 'bg-gray-50'; }
       else if (renderedData[i].status=='Там.офор.') { listRowStyle[i] = 'bg-amber-100' }
       else if (renderedData[i].status=='Ч.офор.') { listRowStyle[i] = 'bg-amber-50' }
       else if (renderedData[i].status=='Выпуск') { listRowStyle[i] = 'bg-green-100' }
-      else { listRowStyle[i] = renderedData[i].posted ? '' : 'bg-slate-100'; }
     };
     if (props.name=='Заявки на въезд ТС') {
       if (renderedData[i].status=='entered') { listRowStyle[i] = 'bg-blue-50' }
@@ -431,7 +430,7 @@ const dataRender = () => {
     if (props.name=='Оповещения') {
       if (renderedData[i].status=='новое') { listRowStyle[i] = 'bg-red-50' }
     }
-    listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'border border-blue-400 bg-slate-200 hover:bg-slate-300': listRowStyle[i];
+    listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'border border-blue-400 bg-lime-100 hover:bg-lime-200': listRowStyle[i];
   };
 
   return renderedData
@@ -810,7 +809,7 @@ const niceTime = (tm) => {
 
   <tbody>
     <tr v-if="dataLengthRender()==0"><td><div class="h-11"></div></td></tr>
-    <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100"
+    <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-lime-50"
       :class=listRowStyle[index]
       @dblclick="emit('btnChoose', selectedItem)"
       @click="rowClick(index, item)" v-for="(item, index) in dataRender()">

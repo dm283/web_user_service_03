@@ -362,7 +362,10 @@ const refreshCard = async () => {
 
 
 <template>
-  <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
+  <!-- <div class="w-3/5 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden"> -->
+  <div class="w-3/5 max-h-4/5 drop-shadow-md rounded-lg overflow-hidden" 
+    :class="[props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white']">
+    
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Партия товаров <span v-if="props.itemData">#{{ props.itemData.id }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
@@ -377,8 +380,11 @@ const refreshCard = async () => {
     <div class=contStyle>
 
     <div class="ml-6 mt-3" v-if="props.itemData">
+      <!-- <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div> -->
+       <div class="inline-block mr-3 text-sm font-semibold text-white rounded-md px-1 bg-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
+    
       <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-400" v-if="props.itemData.status=='terminal'">
+      <!-- <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-400" v-if="props.itemData.status=='terminal'">
         НА ТЕРМИНАЛЕ</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-500" v-else-if="props.itemData.status=='customed'">
         РАСТАМОЖЕНА</div>
@@ -387,8 +393,8 @@ const refreshCard = async () => {
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-red-500" v-else-if="props.itemData.status=='exit_prohibited'">
         ЗАПРЕЩЕНА К ВЫПУСКУ</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-slate-500" v-else-if="props.itemData.status=='released'">
-        ВЫЕХАЛА</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else-if="props.itemData.status=='на СВХ'">
+        ВЫЕХАЛА</div> -->
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-if="props.itemData.status=='на СВХ'">
         на СВХ</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-amber-500" v-else-if="props.itemData.status=='Там.офор.'">
         Там.офор.</div>
@@ -397,8 +403,7 @@ const refreshCard = async () => {
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-500" v-else-if="props.itemData.status=='Выпуск'">
         Выпуск</div>
 
-      <div class="ml-3 inline-block text-sm font-semibold text-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
-    </div>
+      </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
 
@@ -587,7 +592,7 @@ const refreshCard = async () => {
               </tr>
             </thead>
             <tbody>
-              <tr class="border-t text-slate-500 text-xs" v-for="document in state.documents">
+              <tr class="bg-white border-t text-slate-500 text-xs" v-for="document in state.documents">
                 <td class="text-center"><div class="pl-0.5 text-blue-500 cursor-pointer" 
                     @click="downloadFile(document.uuid)">
                   <i class="pi pi-download" style="font-size: 0.8rem"></i></div></td>
