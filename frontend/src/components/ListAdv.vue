@@ -408,7 +408,7 @@ const dataRender = () => {
     if (['Электронный архив','Выбор документов','Журнал действий','Оповещения',
         'Территории терминала','Места территорий'].includes(props.name)) { listRowStyle[i] = '' }
     else {
-      listRowStyle[i] = renderedData[i].posted ? '' : 'bg-gray-50';
+      listRowStyle[i] = renderedData[i].posted ? '' : 'bg-slate-200';
     }
     if (props.name=='ТС на терминале') {
       if (renderedData[i].status=='exit_permitted') { listRowStyle[i] = 'bg-green-50' }
@@ -416,7 +416,7 @@ const dataRender = () => {
       else { listRowStyle[i] = '' }
     };
     if (props.name=='Партии товаров') {
-      if (renderedData[i].status=='на СВХ') { listRowStyle[i] = renderedData[i].posted ? '' : 'bg-gray-50'; }
+      if (renderedData[i].status=='на СВХ') { listRowStyle[i] = renderedData[i].posted ? '' : 'bg-slate-200'; }
       else if (renderedData[i].status=='Там.офор.') { listRowStyle[i] = 'bg-amber-100' }
       else if (renderedData[i].status=='Ч.офор.') { listRowStyle[i] = 'bg-amber-50' }
       else if (renderedData[i].status=='Выпуск') { listRowStyle[i] = 'bg-green-100' }
@@ -854,16 +854,21 @@ const niceTime = (tm) => {
         <div class="px-2 py-2 text-left" v-else-if="field=='msg_text'">
           {{ item[field] }}
         </div>
-        <!-- string columns -->
-        <div class="px-2 py-2 text-left max-w-48 truncate" v-else-if="typeof(item[field])=='string'">
-          <!-- {{ item[field].slice(0,20) }} -->  <!-- min-w-max -->
-          {{ item[field] }}
-        </div>
         <!-- docs_exist column -->
         <div class="text-center text-green-400" v-else-if="field=='docs_exist'">
           <!-- <i :class="[item[field]==1 ? 'pi pi-file':'']" style="font-size: 1.0rem"></i> -->
            <i class='pi pi-file' style="font-size: 1.0rem" v-if="item[field]==1"></i>
            <div class='text-black' v-else>-</div>
+        </div>
+        <!-- tzone ftk column -->
+        <div class="text-center" v-else-if="field=='ftk'">
+           <i class='pi pi-check-square' style="font-size: 0.8rem" v-if="item[field]=='1'"></i>
+           <i class='pi pi-stop' style="font-size: 0.8rem" v-else></i>
+        </div>
+        <!-- string columns -->
+        <div class="px-2 py-2 text-left max-w-48 truncate" v-else-if="typeof(item[field])=='string'">
+          <!-- {{ item[field].slice(0,20) }} -->  <!-- min-w-max -->
+          {{ item[field] }}
         </div>
         <!-- other columns -->
         <div class="px-2 py-2 min-w-max" v-else>{{ item[field] }}</div>
