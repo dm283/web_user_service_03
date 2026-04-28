@@ -136,8 +136,9 @@ onMounted(async () => {
 };
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
-const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const postedColor = props.itemData.posted ? 'bg-white' : 'bg-yellow-50'
+const formInputStyleAct = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer' + ' ' + postedColor
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
 const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
@@ -410,7 +411,7 @@ const refreshCard = async () => {
       <div class="flex">
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Номер машины</label>
             <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.carpass_ncar_input" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.carpass_ncar_input" 
                 @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_3')"
                 @keyup="setFilter('carpass_ncar_input', 'carpasses', 'ncar')" :required="true"/>
               <span @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_3');">
@@ -440,7 +441,7 @@ const refreshCard = async () => {
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
             <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
                 @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');"
                 @keyup="setFilter('contact_name_input', 'contacts', 'name', 'inn')" :required="true"/>
               <span @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
@@ -477,7 +478,7 @@ const refreshCard = async () => {
         </div>
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
             <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.broker_name_input" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.broker_name_input" 
                 @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2')"
                 @keyup="setFilter('broker_name_input', 'brokers', 'broker_name', 'broker_inn')" :required="false"/>
               <span @click="setFilter('null', 'brokers', 'broker_name'); setVars('broker_name_input', 'reserve_2');">
