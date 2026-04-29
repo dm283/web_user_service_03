@@ -1498,7 +1498,8 @@ def get_carpass_by_id(db: Session, carpass_id: int):
         first()
 
     contact_name=response[1].__dict__['name'] if response[1] else None
-    db_full_response = schemas.CarpassJoined(**response[0].__dict__, contact_name=contact_name)
+
+    db_full_response = schemas.CarpassJoined(**response[0].__dict__, contact_name=contact_name, place='-')
     
     return db_full_response
 

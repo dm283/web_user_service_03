@@ -48,7 +48,7 @@ def create_document_carpass(carpass, filepath, filename):
         f'Номер автомашины:  {carpass.ncar}', 
         f'Дата въезда:  {carpass.dateen}', 
         f'Время въезда:  {carpass.timeen}', 
-        f'Номер стоянки:  {carpass.place_n}', 
+        f'Номер стоянки:  {carpass.place}', 
         f'Ф.И.О. водителя:  {carpass.driver_fio}', 
         f'Телефон водителя:  {carpass.driver_phone}', 
         f'№ пломбы/№ конт.:  {carpass.nseal} / {carpass.nkont}',
@@ -127,7 +127,7 @@ def create_document_carpass(carpass, filepath, filename):
 
 
     pdf.setFont("Arial", 25); pdf.drawString(25, 300, 'НОМЕР СТОЯНКИ')
-    pdf.setFont("Arial", 120); pdf.drawString(25, 150, F'{carpass.place_n}')
+    pdf.setFont("Arial", 120); pdf.drawString(25, 150, F'{carpass.place}')
     pdf.drawInlineImage(qr_code_image, 265, 50) #x.y QR-code image
 
     pdf.showPage()
