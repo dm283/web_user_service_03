@@ -531,3 +531,30 @@ class Tcell(TcellCreate):
 
     class Config:
         from_attributes = True
+
+##########
+class DtregCreate(BaseModel):
+    batch_uuid: str
+    declar_id: str | None = None
+    is_partial: bool
+    comment: str | None = None
+
+class DtregValidation(BaseModel):
+    batch_uuid: str
+    declar_id: str
+
+class DtregUpdate(DtregCreate):
+    updated_datetime: datetime
+
+class Dtreg(DtregCreate):
+    id: int
+    uuid: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True

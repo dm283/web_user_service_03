@@ -830,6 +830,13 @@ def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_ac
     return items
 
 
+@app.get('/dtreg/', response_model=list[schemas.Dtreg])
+def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_dtregs(db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/batches/', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -1025,6 +1032,14 @@ def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     return crud.create_entry_request(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
+@app.post("/dtreg/", response_model=schemas.Dtreg)
+def create_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                data: Annotated[schemas.DtregCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DtregCreate) 
+    return crud.create_dtreg(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
+
+
 @app.post("/batches/", response_model=schemas.Batch)
 def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
@@ -1103,6 +1118,16 @@ def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
     item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_batch(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+
+
+@app.put('/dtreg/{item_id}', response_model=schemas.Dtreg)
+def update_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.DtregCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DtregCreate)
+    item = schemas.DtregUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_dtreg(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/contacts/{item_id}', response_model=schemas.Contact)
@@ -1190,6 +1215,12 @@ def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return crud.delete_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
+@app.delete('/dtreg/{item_id}')
+def delete_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    return crud.delete_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+
+
 @app.delete('/related_contact_broker/{item_id}')
 def delete_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
@@ -1251,6 +1282,13 @@ def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_u
     return crud.posting_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
+@app.put('/dtreg_posting/{item_id}', response_model=schemas.Dtreg)
+def posting_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+
+
 @app.put('/contacts_posting/{item_id}')
 def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
@@ -1297,6 +1335,12 @@ def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_curren
 def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
     return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
+
+
+@app.put('/dtreg_rollback/{item_id}')
+def rollback_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_id: int, db: Session = Depends(get_db)):
+    return crud.rollback_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/contacts_rollback/{item_id}')

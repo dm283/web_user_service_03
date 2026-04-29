@@ -260,6 +260,11 @@ def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: 
         order_by(models.Contact.created_datetime.desc()).all()
 
 
+def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Dtreg).filter(models.Dtreg.is_active==True).\
+        order_by(models.Dtreg.created_datetime.desc()).all()
+
+
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
     #
     main_table = aliased(models.Batch)
@@ -564,6 +569,23 @@ def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
     return db_item
 
 
+def create_dtreg(db: Session, item: schemas.DtregCreate, user_uuid: str):
+    #
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.Dtreg(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
+    return db_item
+
+
 def create_message(db: Session, item: schemas.MessageCreate):
     #
     created_datetime = datetime.datetime.now()
@@ -817,6 +839,20 @@ def update_batch(db: Session, item_id: int, item: schemas.BatchUpdate, user_uuid
     return item_from_db
 
 
+def update_dtreg(db: Session, item_id: int, item: schemas.DtregUpdate, user_uuid: str):
+    #
+    item_from_db = db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db
+
+
 def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate, user_uuid: str):
     #
     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
@@ -1015,6 +1051,20 @@ def delete_batch(db: Session, item_id: int, user_uuid: str):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
     db.commit()
     logging_action(obj_type='batch', schema=schemas.Batch, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return {"message": f"Item ID {item_id} deleted successfully"}
+
+
+def delete_dtreg(db: Session, item_id: int, user_uuid: str):
+    #
+    item_from_db =  db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
@@ -1275,6 +1325,29 @@ def posting_batch(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
+def posting_dtreg(db: Session, item_id: int, user_uuid: str):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        ###
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.Dtreg, 
+                               schema_obj=schemas.DtregValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+    return item_from_db
+
+
 def posting_exitcarpass(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
@@ -1375,6 +1448,21 @@ def rollback_batches(db: Session, item_id: int, user_uuid: str):
     db.commit()
 
     logging_action(obj_type='batch', schema=schemas.Batch, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db.id
+
+
+def rollback_dtreg(db: Session, item_id: int, user_uuid: str):
+    #
+    item_from_db =  db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db.id
 
 
