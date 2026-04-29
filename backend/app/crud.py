@@ -12,8 +12,11 @@ from app import models, schemas
 def create_uemail(textemail: str, doc_uuid: str, contact_uuid: str, user_uuid: str, db: Session):
     # create record in uemail table
     db_contact = get_contact_by_uuid(db=db, uuid=contact_uuid)
+    if not db_contact:
+        print(f'[ error ]  ошибка отправки email - в БД отсутствует контакт с uuid {contact_uuid}')
+        return
     if not db_contact.email:
-        print(f'[ error ]   у контакта {db_contact.name} (ИНН {db_contact.inn}) отсутствует email, сообщение email не создано!')
+        print(f'[ error ]  ошибка отправки email - у контакта {db_contact.name} (ИНН {db_contact.inn}) отсутствует email')
         return 
     adrto = db_contact.email
     # adoptation for current mSender version where email addresses via ,
@@ -51,6 +54,7 @@ def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: S
         'Клиент': 'contact',
         'Брокер': 'contact',
         'Пользователь': 'user',
+        'Таможенное оформление': 'dtreg',
     }
 
     if obj_type == 'related_docs_record':
@@ -304,6 +308,36 @@ def get_batches_by_carpass_uuid(carpass_uuid: str, db: Session, skip: int = 0, l
 
     response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
         filter(main_table.carpass_uuid==carpass_uuid).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        broker_name=row[1].__dict__['name'] if row[1] else None
+        contact_name=row[2].__dict__['name'] if row[2] else None
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        dateen=row[3].__dict__['dateen'] if row[3] else None
+        docs_exist=1 if row[4] else 0
+        db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+
+    return db_full_response
+
+
+def get_batches_posted(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        filter(main_table.posted==True).\
         join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
         join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
         join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
@@ -1638,6 +1672,11 @@ def get_carpass_by_uuid(db: Session, uuid: str):
 def get_batch_by_uuid(db: Session, uuid: str):
     # get single entry_request from db
     return db.query(models.Batch).filter(models.Batch.uuid == uuid).first()
+
+
+def get_dtreg_by_uuid(db: Session, uuid: str):
+    # get single dtreg from db
+    return db.query(models.Dtreg).filter(models.Dtreg.uuid == uuid).first()
 
 
 def get_user_by_uuid(db: Session, uuid: str):

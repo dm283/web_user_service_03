@@ -659,6 +659,15 @@ def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_act
     return item
 
 
+@app.get('/dtreg_by_uuid/{uuid}', response_model=schemas.Dtreg)
+def read_dtreg_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    item = crud.get_dtreg_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 @app.get("/role/{role_id}", response_model=schemas.Role)
 def read_role(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 role_id: int, db: Session = Depends(get_db)):
@@ -841,6 +850,13 @@ def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_batches(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/batches_posted/', response_model=list[schemas.BatchJoined])
+def read_batches_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_batches_posted(db, skip=skip, limit=limit)
     return items
 
 

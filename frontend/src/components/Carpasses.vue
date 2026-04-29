@@ -18,6 +18,7 @@ import FormBroker from './FormBroker.vue';
 import FormUser from './FormUser.vue';
 import FormDoc from './FormDoc.vue';
 import FormBatch from './FormBatch.vue';
+import FormDtreg from './FormDtreg.vue';
 import FormSetBatchStatus from './FormSetBatchStatus.vue';
 import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
 
@@ -75,6 +76,10 @@ const showCardEntryRequest = ref(false)
 const showAddEntryRequest = ref(false)
 const showUpdateEntryRequest = ref(false)
 
+const showCardDtreg = ref(false)
+const showAddDtreg = ref(false)
+const showUpdateDtreg = ref(false)
+
 const showCardBatch = ref(false)
 const showAddBatch = ref(false)
 const showUpdateBatch = ref(false)
@@ -120,6 +125,7 @@ const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${b
 const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/batches/`:
   `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.type}/${userInfo.contact_uuid}`
 
+const query_dtreg = `http://${backendIpAddress}:${backendPort}/dtreg/`
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
@@ -176,6 +182,13 @@ else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
   if (userInfo.type=='V') { delete state.listTableColumns.contact_name; }
   if (userInfo.type=='B') { delete state.listTableColumns.broker_name; }
+}
+else if (props.view_type == 'dtreg') {
+  state.query = query_dtreg;
+  state.listTableColumns = {
+    'batch_uuid':'Партия товаров','declar_id':'Декларация', 'is_partial':'Частичная выгрузка','comment':'Комментарий','post_date':'Создан'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 else if (props.view_type == 'contacts') {
   state.query = query_contacts;
@@ -338,6 +351,7 @@ const itemCard = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
   else if (name == 'Партии товаров') { showCardBatch.value = true }
+  else if (name == 'Таможенное оформление') { showCardDtreg.value = true }
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
   else if (name == 'Пользователи') { showCardUser.value = true }
@@ -350,6 +364,7 @@ const addItem = (section) => {
   else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
   else if (section == 'Партии товаров') { showAddBatch.value = true; }
+  else if (section == 'Таможенное оформление') { showAddDtreg.value = true; }
   else if (section == 'Клиенты') { showAddContact.value = true; }
   else if (section == 'Брокеры') { showAddBroker.value = true; }
   else if (section == 'Пользователи') { showAddUser.value = true; }
@@ -363,6 +378,7 @@ const editItem = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showUpdateExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
   else if (name == 'Партии товаров') { showUpdateBatch.value = true }
+  else if (name == 'Таможенное оформление') { showUpdateDtreg.value = true }
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
   else if (name == 'Пользователи') { showUpdateUser.value = true }
@@ -469,6 +485,21 @@ const clickNotificationRow = async (item) => {
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormBatch @close-modal="showUpdateBatch=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
+    <!-- **********************   MODAL DTREG CARD   ************************** -->
+  <div v-if="showCardDtreg" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormDtreg @close-modal="showCardDtreg=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL DTREG ADD   ************************** -->
+  <div v-if="showAddDtreg" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormDtreg @close-modal="showAddDtreg=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL DTREG EDIT  ************************** -->
+  <div v-if="showUpdateDtreg" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormDtreg @close-modal="showUpdateDtreg=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
