@@ -401,11 +401,7 @@ const refreshCard = async () => {
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Дата-время проводки документа</label>
-          <input type="datetime-local" v-model="form.post_date" :class="[errField['post_date']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="true" />
-        </div> -->
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата-время проводки документа</label>
+        <div class=formInputDiv v-if="props.itemData">   <label class=formLabelStyle>Дата-время проводки документа</label>
           <input type="datetime-local" v-model="form.post_date" :class="[errField['post_date']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="true" />
         </div>

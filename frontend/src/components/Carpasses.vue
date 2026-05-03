@@ -186,7 +186,7 @@ else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
 else if (props.view_type == 'dtreg') {
   state.query = query_dtreg;
   state.listTableColumns = {
-    'batch_uuid':'Партия товаров','declar_id':'Декларация', 'is_partial':'Частичная выгрузка','comment':'Комментарий','post_date':'Создан'
+    'batch_uuid':'Партия товаров','declar_id':'№ декларации', 'is_partial':'Частичная выгрузка','comment':'Комментарий','post_date':'Создан'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }

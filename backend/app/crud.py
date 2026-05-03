@@ -1379,6 +1379,13 @@ def posting_dtreg(db: Session, item_id: int, user_uuid: str):
 
     logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
+    new_batch_status = 'Ч.офор.' if item_from_db.is_partial else 'Там.офор.'
+    set_batch_status(db=db, batch_uuid=item_from_db.batch_uuid, status=new_batch_status, user_uuid=user_uuid)
+
+    # batch_from_db =  db.query(models.Batch).filter(models.Batch.uuid == item_from_db.batch_uuid).first()
+    # setattr(batch_from_db, 'status', new_batch_status)
+    # logging_action(obj_type='batch', schema=schemas.Batch, action='set_status', item_from_db=batch_from_db, user_uuid=user_uuid, db=db)
+
     return item_from_db
 
 
