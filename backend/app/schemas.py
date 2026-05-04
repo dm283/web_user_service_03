@@ -563,3 +563,7 @@ class Dtreg(DtregCreate):
 
     class Config:
         from_attributes = True
+
+class DtregJoined(Dtreg):
+    batch_id: int | None
+    batch_identity: str | None     

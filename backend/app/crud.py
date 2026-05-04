@@ -264,9 +264,34 @@ def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: 
         order_by(models.Contact.created_datetime.desc()).all()
 
 
+# def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.Dtreg).filter(models.Dtreg.is_active==True).\
+#         order_by(models.Dtreg.created_datetime.desc()).all()
+
+
 def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Dtreg).filter(models.Dtreg.is_active==True).\
-        order_by(models.Dtreg.created_datetime.desc()).all()
+    #
+    main_table = aliased(models.Dtreg)
+    batch = aliased(models.Batch)
+    contact = aliased(models.Contact)
+
+    response = db.query(main_table, batch, contact).\
+        join(batch, batch.uuid == main_table.batch_uuid, isouter=True).\
+        join(contact, contact.uuid == batch.contact_uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        batch_id=row[1].__dict__['id'] if row[1] else ''
+        batch_tn_id=row[1].__dict__['tn_id'] if row[1] else ''
+        # batch_client=row[1].__dict__['contact_uuid'] if row[1] else ''
+        batch_client=row[2].__dict__['name'] if row[2] else ''
+        batch_identity = f"{batch_tn_id} ({batch_client})"
+        db_full_response.append(schemas.DtregJoined(**row[0].__dict__, batch_id=batch_id, batch_identity=batch_identity, 
+                                                    ))
+
+    return db_full_response
 
 
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
@@ -1668,7 +1693,7 @@ def get_batch_by_sys_id(db: Session, item_sys_id: int):
     docs_exist=1 if response[4] else 0
     
     db_full_response = schemas.BatchJoined(**response[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                           ncar=ncar, dateen=dateen, docs_exist=docs_exist)
+                                           ncar=ncar, dateen=dateen, docs_exist=docs_exist, place='-')
     
     return db_full_response
 
@@ -1691,6 +1716,37 @@ def get_carpass_by_uuid(db: Session, uuid: str):
 def get_batch_by_uuid(db: Session, uuid: str):
     # get single entry_request from db
     return db.query(models.Batch).filter(models.Batch.uuid == uuid).first()
+
+
+def get_batch_by_uuid_joined(uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        filter(main_table.uuid==uuid).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).first()
+
+    broker_name=response[1].__dict__['name'] if response[1] else None
+    contact_name=response[2].__dict__['name'] if response[2] else None
+    ncar=response[3].__dict__['ncar'] if response[3] else None
+    dateen=response[3].__dict__['dateen'] if response[3] else None
+    docs_exist=1 if response[4] else 0
+    tzone = response[0].__dict__['place_tzone'] if response[0].__dict__['place_tzone'] else ''
+    tcell = '/ ' + response[0].__dict__['place_tcell'] if response[0].__dict__['place_tcell'] else ''
+    place = f"{tzone} {tcell}"        
+    db_full_response = schemas.BatchJoined(**response[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place)
+
+    return db_full_response
 
 
 def get_dtreg_by_uuid(db: Session, uuid: str):

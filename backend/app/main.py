@@ -659,6 +659,15 @@ def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_act
     return item
 
 
+@app.get('/batch_by_uuid_joined/{uuid}', response_model=schemas.BatchJoined)
+def read_batch_by_uuid_joined(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    item = crud.get_batch_by_uuid_joined(uuid=uuid, db=db)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 @app.get('/dtreg_by_uuid/{uuid}', response_model=schemas.Dtreg)
 def read_dtreg_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
@@ -839,7 +848,7 @@ def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_ac
     return items
 
 
-@app.get('/dtreg/', response_model=list[schemas.Dtreg])
+@app.get('/dtreg/', response_model=list[schemas.DtregJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_dtregs(db, skip=skip, limit=limit)

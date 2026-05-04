@@ -67,32 +67,19 @@ onMounted(async () => {
 });
 
 // for dropdowns
-// if (props.itemData) {
-// onMounted(async () => {
-//     try {
-//       if (props.itemData.contact_uuid) {
-//       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
-//         {headers: authHeader()} );
-//       form['contact_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
-//       state.initial_contact_name = response2.data.name + ' (' + response2.data.inn + ')'
-//       }
-//       if (props.itemData.broker_uuid) {
-//       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.broker_uuid}`,
-//         {headers: authHeader()} );
-//       form['broker_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
-//       state.initial_broker_name = response2.data.name + ' (' + response2.data.inn + ')'
-//       }
-//       if (props.itemData.carpass_uuid) {
-//       const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
-//         {headers: authHeader()} );
-//       form['carpass_ncar_input'] = response3.data.ncar
-//       form['carpass_ncar_dateen'] = response3.data.dateen // today
-//       state.initial_ncar = response3.data.ncar
-//       state.initial_ncar_dateen = response3.data.dateen // today
-//       }
-//       getBrokers(props.itemData.contact_uuid)
-//     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
-// }); };
+if (props.itemData) {
+onMounted(async () => {
+    try {
+      if (props.itemData.batch_uuid) {
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/batch_by_uuid_joined/${props.itemData.batch_uuid}`,
+        {headers: authHeader()} );
+      form['batch_input'] = response2.data.tn_id + ' (' + response2.data.contact_name + ')'
+      state.initial_batch_input = response2.data.tn_id + ' (' + response2.data.contact_name + ')'
+      form['batch_id'] = response2.data.id
+      state.initial_batch_id = response2.data.id
+      }
+    } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
+}); };
 
 
 // get documents
@@ -146,16 +133,16 @@ const setInitialForm = () => {
     for (let field of itemFields) {
       form[field] = props.itemData[field]
       console.log('field', field, form[field], props.itemData[field])
-      // form['contact_name_input'] = state.initial_contact_name  // for dropdowns
-      // form['broker_name_input'] = state.initial_broker_name    // for dropdowns
+      form['batch_input'] = state.initial_batch_input  // for dropdowns
+      form['batch_id'] = state.initial_batch_id    // for dropdowns
       // form['carpass_ncar_input'] = state.initial_ncar          // for dropdowns
       // form['carpass_ncar_dateen'] = state.initial_ncar_dateen          // for dropdowns
     }
   } else {  // create
     for (let field of itemFields) {
       form[field] = null
-      // form['contact_name_input'] = null  // for dropdowns
-      // form['broker_name_input'] = null    // for dropdowns
+      form['batch_input'] = null  // for dropdowns
+      form['batch_id'] = null    // for dropdowns
       // form['carpass_ncar_input'] = null          // for dropdowns
       // form['carpass_ncar_dateen'] = null          // for dropdowns
     }
@@ -361,7 +348,42 @@ const refreshCard = async () => {
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
 
       <div class="flex">
-        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Партия товаров</label>
+
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Партия товаров (№ ТН, клиент)</label>
+            <div :class=formInputStyle class="flex">
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" 
+                    v-model="form.batch_input" 
+                @click="setFilter('null', 'batches', 'tn_id'); setVars('batch_input', 'reserve_1');"
+                @keyup="setFilter('batch_input', 'batches', 'tn_id', 'contact_name')" :required="true"/>
+              <span @click="setFilter('null', 'batches', 'tn_id'); setVars('batch_input', 'reserve_1');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['batch_input']=false; 
+                  form['reserve_1']=null;form['batch_input']=null;form['batch_uuid']=null;form['batch_id']=null;">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['batch_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['batch_input']=false; 
+                  form['reserve_1']=item.tn_id;form['batch_input']=(item.tn_id+' ('+item.contact_name+')');
+                  form['batch_uuid']=item.uuid;form['batch_id']=item.id" >
+                {{ item.tn_id }} ({{ item.contact_name }})
+            </div>
+          </div>
+        </div>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Партия товаров (№ ТН, клиент)</label>
+          <input type="text" v-model="form.batch_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="true" />
+        </div>
+
+        <div class=formInputDiv>   <label class=formLabelStyle>id партии товаров</label>
+          <input type="text" v-model="form.batch_id" :class="[errField['batch_id']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div>
+
+      </div>
+
+      <div class="flex">
+        <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Партия товаров</label>
             <div :class=formInputStyle class="flex">
               <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" 
                     placeholder="выберите из списка" v-model="form.batch_uuid" 
@@ -384,7 +406,7 @@ const refreshCard = async () => {
         <div class=formInputDiv v-else>   <label class=formLabelStyle>Партия товаров</label>
           <input type="text" v-model="form.batch_uuid" :class="[errField['batch_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="true" />
-        </div>
+        </div> -->
 
         <div class=formInputDiv>   <label class=formLabelStyle>№ декларации</label>
           <input type="text" v-model="form.declar_id" :class="[errField['declar_id']==1 ? formInputStyleErr : formInputStyle]"
