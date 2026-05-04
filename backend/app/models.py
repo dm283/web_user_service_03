@@ -26,6 +26,11 @@ class Batch(Base):
     places_cnt = Column(Integer)
     weight = Column(Float)
     tnved = Column(String)
+    
+    place_tzone = Column(String)
+    place_tcell = Column(String)
+    fwms = Column(Boolean, default=False)
+
     fito_control = Column(Boolean, default=False)
     vet_control = Column(Boolean, default=False)
 

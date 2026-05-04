@@ -40,8 +40,8 @@ class CarpassValidation(BaseModel):
     ncar: str
     dateen: date
     timeen: time
-    # ntir: str
-    # ntir_date: date
+    ntir: str
+    ntir_date: date
     # customs_doc: str
     # customs_doc_date: date
     nseal: str
@@ -56,7 +56,7 @@ class CarpassValidation(BaseModel):
     # place_n: str
 
     place_tzone: str
-    # place_tcell: str
+    place_tcell: str
 
 class CarpassUpdate(CarpassCreate):
     updated_datetime: datetime
@@ -411,13 +411,15 @@ class BatchCreate(BaseModel):
     dt_submission_datetime: datetime | str | None = None   # 04.03.26
 
     status: str = 'на СВХ'
-    tn_id: str | None = None
+    tn_id: str
     contact_uuid: str
     broker_uuid: str | None = None
     goods: str | None = None
     places_cnt: int | str | None = None
     weight: float | str | None = None
     tnved: str | None = None
+    place_tzone: str | None = None
+    place_tcell: str | None = None    
     fito_control: bool
     vet_control: bool
     comment: str | None = None
@@ -426,11 +428,13 @@ class BatchCreate(BaseModel):
 class BatchValidation(BaseModel):
     carpass_uuid: str
     status: str
-    # tn_id: str
+    tn_id: str
     contact_uuid: str
     goods: str
     places_cnt: int
     weight: float
+    place_tzone: str
+    place_tcell: str
 
 
 class BatchUpdate(BatchCreate):
@@ -457,6 +461,7 @@ class BatchJoined(Batch):
     contact_name: str | None  
     broker_name: str | None   
     docs_exist: int | None
+    place: str | None
 
 #########
 class LogRecordCreate(BaseModel):

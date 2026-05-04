@@ -26,14 +26,12 @@ const userAccessToken = () => {
 ///////////
 const itemFields = [
     'carpass_uuid',
-
     //'delivery_close_date',
     //'delivery_close_time',
     //'dt_submission_date',
     //'dt_submission_time',
     'delivery_close_datetime',
     'dt_submission_datetime',
-
     'tn_id',
     'contact_uuid',
     'broker_uuid',
@@ -41,6 +39,8 @@ const itemFields = [
     'places_cnt',
     'weight',
     'tnved',
+    'place_tzone',
+    'place_tcell',
     'fito_control',
     'vet_control',
     'comment',
@@ -420,14 +420,16 @@ const refreshCard = async () => {
               <span @click="setFilter('null', 'carpasses', 'ncar'); setVars('carpass_ncar_input', 'reserve_3');">
                 <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
               <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['carpass_ncar_input']=false; 
-                  form['reserve_3']=null;form['carpass_ncar_input']=null;form['carpass_uuid']=null;form['carpass_ncar_dateen']=null">
+                  form['reserve_3']=null;form['carpass_ncar_input']=null;form['carpass_uuid']=null;form['carpass_ncar_dateen']=null;
+                  form['tn_id']=null;form['place_tzone']=null;form['place_tcell']=null;">
                 <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
             </div>
           <div v-if="showDropDownSelect['carpass_ncar_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
             <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
                 @click="showDropDownSelect['carpass_ncar_input']=false; 
                   form['reserve_3']=item.ncar;form['carpass_ncar_input']=item.ncar;form['carpass_uuid']=item.uuid;
-                  form['carpass_ncar_dateen']=item.dateen" >
+                  form['carpass_ncar_dateen']=item.dateen;form['tn_id']=item.ntir;
+                  form['place_tzone']=item.place_tzone;form['place_tcell']=item.place_tcell;" >
                 {{ item.ncar }}
             </div>
           </div>
@@ -436,12 +438,10 @@ const refreshCard = async () => {
           <input type="text" v-model="form.carpass_ncar_input" :class="[errField['carpass_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="true" />
         </div>
-
-        <div class=formInputDiv >   <label class=formLabelStyle>Дата въезда ТС</label>
-          <input type="date"  v-model="form.carpass_ncar_dateen" :class="[errField['carpass_uuid']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="true" />
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер транспортной накладной</label>
+          <input type="text" v-model="form.tn_id" :class="[errField['tn_id']==1 ? formInputStyleErr : formInputStyle]" 
+          :required="false" :disabled="isCard" />
         </div>
-
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
             <div :class=formInputStyle class="flex">
               <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
@@ -471,12 +471,12 @@ const refreshCard = async () => {
       </div>
 
       <div class="flex">
+        <div class=formInputDiv >   <label class=formLabelStyle>Дата въезда ТС</label>
+          <input type="date"  v-model="form.carpass_ncar_dateen" :class="[errField['carpass_uuid']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Дата-время закрытия доставки</label>
           <input type="datetime-local" v-model="form.delivery_close_datetime" :class="[errField['delivery_close_datetime']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата-время подачи ДТ</label>
-          <input type="datetime-local" v-model="form.dt_submission_datetime" :class="[errField['dt_submission_datetime']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Брокер</label>
@@ -504,8 +504,11 @@ const refreshCard = async () => {
             :required="true" :disabled="true" />
         </div>
       </div>
-
       <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата-время подачи ДТ</label>
+          <input type="datetime-local" v-model="form.dt_submission_datetime" :class="[errField['dt_submission_datetime']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Количество мест</label>
           <input type="number" v-model="form.places_cnt" :class="[errField['places_cnt']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
@@ -514,16 +517,31 @@ const refreshCard = async () => {
           <input type="number" v-model="form.weight" :class="[errField['weight']==1 ? formInputStyleErr : formInputStyle]"
           :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Описание товаров</label>
-          <input type="text" v-model="form.goods" :class="[errField['goods']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
       </div>
 
       <div class="flex">
-        <div class=formInputDiv>   <label class=formLabelStyle>Номер транспортной накладной</label>
-          <input type="text" v-model="form.tn_id" :class="[errField['tn_id']==1 ? formInputStyleErr : formInputStyle]" 
-          :required="false" :disabled="isCard" />
+        <div class=formInputDiv>   <label class=formLabelStyle>Территория терминала</label>
+          <input type="text" v-model="form.place_tzone" :class="[errField['place_tzone']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div>
+        <div class=formInputDiv>   <label class=formLabelStyle>Место территории</label>
+          <input type="text" v-model="form.place_tcell" :class="[errField['place_tcell']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div> 
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Размещение</label>
+          <input type="text" v-model="form.place" :class="[errField['place']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div> -->
+        <div class=formInputDiv>
+          <input type="checkbox" v-model='form.fwms' id="fwms" name="fwms" class=formInputCheckboxStyle :disabled="true"/>
+          <label class=formLabelCheckboxStyle for="fwms">На складе</label>
+        </div>       
+      </div>
+
+      <div class="flex">
+        <div class=formInputDiv>   <label class=formLabelStyle>Описание товаров</label>
+          <input type="text" v-model="form.goods" :class="[errField['goods']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv>   <label class=formLabelStyle>Код ТНВЭД</label>
           <input type="text" v-model="form.tnved" :class="[errField['tnved']==1 ? formInputStyleErr : formInputStyle]"

@@ -292,8 +292,11 @@ def get_batches(db: Session, skip: int = 0, limit: int = 100):
         ncar=row[3].__dict__['ncar'] if row[3] else None
         dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
 
     return db_full_response
 
@@ -322,8 +325,11 @@ def get_batches_by_carpass_uuid(carpass_uuid: str, db: Session, skip: int = 0, l
         ncar=row[3].__dict__['ncar'] if row[3] else None
         dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"        
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
 
     return db_full_response
 
@@ -352,8 +358,11 @@ def get_batches_posted(db: Session, skip: int = 0, limit: int = 100):
         ncar=row[3].__dict__['ncar'] if row[3] else None
         dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"  
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
 
     return db_full_response
 
@@ -392,8 +401,11 @@ def get_batches_client(type: str, contact_uuid: str, db: Session, skip: int = 0,
         ncar=row[3].__dict__['ncar'] if row[3] else None
         dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"  
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
 
     return db_full_response
 

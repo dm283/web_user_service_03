@@ -784,7 +784,7 @@ const niceTime = (tm) => {
 
   <thead>
     <tr class="h-8 bg-blue-400 text-sm font-semibold text-white text-center">
-      <td class="border w-8"><div class="">#</div></td>
+      <td class="border min-w-6"><div class="">#</div></td>
 
       <td class="border" v-for="(field, index) in Object.keys(props.listTableColumns)">
       

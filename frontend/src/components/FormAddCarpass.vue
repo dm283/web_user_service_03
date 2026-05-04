@@ -541,13 +541,13 @@ const refreshCard = async () => {
           <input type="text" v-model="form.car_model" :class="[errField['car_model']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Номер транспортного документа</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер транспортной накладной</label>
           <input type="text" v-model="form.ntir" :class="[errField['ntir']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
+            :required="true" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата транспортного документа</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата транспортной накладной</label>
           <input type="date" v-model="form.ntir_date" :class="[errField['ntir_date']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
+            :required="true" :disabled="isCard" />
         </div>
       </div>
 
@@ -600,7 +600,7 @@ const refreshCard = async () => {
         </div> -->
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Территория терминала</label>
-            <div :class=formInputStyle class="flex">
+            <div :class="[errField['place_tzone']==1 ? formInputStyleErr : formInputStyle]" class="flex">
               <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tzone" 
                 @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');"
                 @keyup="setFilter('place_tzone', 'tzones', 'zone_id')" :required="false"/>
@@ -626,7 +626,7 @@ const refreshCard = async () => {
         </div>
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Место территории</label>
-            <div :class=formInputStyle class="flex">
+            <div div :class="[errField['place_tcell']==1 ? formInputStyleErr : formInputStyle]" class="flex">
               <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tcell" 
                 @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4')"
                 @keyup="setFilter('place_tcell', 'tcells', 'cell_id')" :required="false"/>
