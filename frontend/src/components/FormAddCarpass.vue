@@ -677,6 +677,18 @@ const refreshCard = async () => {
       </div>
 
 
+      <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
+        <div class="float-left space-x-5">
+          <!-- <button class="formBtn" type="submit">СОХРАНИТЬ</button> -->
+          <button :class="[isNeedSave ? saveBtnStyle1 : saveBtnStyle0]" type="submit">СОХРАНИТЬ</button>
+          <button class="formBtn" type="button" @click="setInitialForm();">СБРОСИТЬ</button>
+        </div>
+        <div class="float-right" v-if="props.itemData">
+          <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
+        </div>
+      </div>
+      <div v-else class="mb-5"></div>
+
       <!-- <div v-if="itemData" class="mx-5 px-1 mb-5">
         <label class=formLabelStyle>Партии товаров</label>
         <div v-if="state.related_batches.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-20">
@@ -726,22 +738,11 @@ const refreshCard = async () => {
             </table>
             </div>
             <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет размещенных партий товаров</div>
-
       </div>
 
 
 
-      <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
-        <div class="float-left space-x-5">
-          <!-- <button class="formBtn" type="submit">СОХРАНИТЬ</button> -->
-          <button :class="[isNeedSave ? saveBtnStyle1 : saveBtnStyle0]" type="submit">СОХРАНИТЬ</button>
-          <button class="formBtn" type="button" @click="setInitialForm();">СБРОСИТЬ</button>
-        </div>
-        <div class="float-right" v-if="props.itemData">
-          <button class="formBtn" type="button" @click="postingItem">ПРОВОДКА</button>
-        </div>
-      </div>
-      <div v-else class="mb-5"></div>
+
 
 
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">

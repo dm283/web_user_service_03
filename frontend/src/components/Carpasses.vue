@@ -477,7 +477,7 @@ const clickNotificationRow = async (item) => {
 
   <!-- **********************   MODAL BATCH CARD   ************************** -->
   <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
-    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+    <FormBatch @close-modal="showCardBatch=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem"
       :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL BATCH ADD   ************************** -->
