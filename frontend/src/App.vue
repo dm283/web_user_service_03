@@ -316,7 +316,7 @@ const chatNotificationDataChange = (pointState) => {
       :selected="state.selectedMenu=='batches' ? '1' : '0'" @click="state.selectedMenu='batches'" />
     </RouterLink>
     <RouterLink to="/registration_dt" v-if="[6].includes(state.userInfo.role_id)">
-      <MenuSection :label="'Регистрация ДТ'" :icon="'clipboard'" :description="'в работе'"
+      <MenuSection :label="'Регистрация ДТ'" :icon="'clipboard'" :description="'Документы таможенного оформления'"
       :selected="state.selectedMenu=='registration_dt' ? '1' : '0'" @click="state.selectedMenu='registration_dt'" />
     </RouterLink>
 

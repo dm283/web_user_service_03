@@ -12,8 +12,11 @@ from app import models, schemas
 def create_uemail(textemail: str, doc_uuid: str, contact_uuid: str, user_uuid: str, db: Session):
     # create record in uemail table
     db_contact = get_contact_by_uuid(db=db, uuid=contact_uuid)
+    if not db_contact:
+        print(f'[ error ]  ошибка отправки email - в БД отсутствует контакт с uuid {contact_uuid}')
+        return
     if not db_contact.email:
-        print(f'[ error ]   у контакта {db_contact.name} (ИНН {db_contact.inn}) отсутствует email, сообщение email не создано!')
+        print(f'[ error ]  ошибка отправки email - у контакта {db_contact.name} (ИНН {db_contact.inn}) отсутствует email')
         return 
     adrto = db_contact.email
     # adoptation for current mSender version where email addresses via ,
@@ -51,6 +54,7 @@ def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: S
         'Клиент': 'contact',
         'Брокер': 'contact',
         'Пользователь': 'user',
+        'Таможенное оформление': 'dtreg',
     }
 
     if obj_type == 'related_docs_record':
@@ -260,6 +264,36 @@ def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: 
         order_by(models.Contact.created_datetime.desc()).all()
 
 
+# def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.Dtreg).filter(models.Dtreg.is_active==True).\
+#         order_by(models.Dtreg.created_datetime.desc()).all()
+
+
+def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Dtreg)
+    batch = aliased(models.Batch)
+    contact = aliased(models.Contact)
+
+    response = db.query(main_table, batch, contact).\
+        join(batch, batch.uuid == main_table.batch_uuid, isouter=True).\
+        join(contact, contact.uuid == batch.contact_uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        batch_id=row[1].__dict__['id'] if row[1] else ''
+        batch_tn_id=row[1].__dict__['tn_id'] if row[1] else ''
+        # batch_client=row[1].__dict__['contact_uuid'] if row[1] else ''
+        batch_client=row[2].__dict__['name'] if row[2] else ''
+        batch_identity = f"{batch_tn_id} ({batch_client})"
+        db_full_response.append(schemas.DtregJoined(**row[0].__dict__, batch_id=batch_id, batch_identity=batch_identity, 
+                                                    ))
+
+    return db_full_response
+
+
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
     #
     main_table = aliased(models.Batch)
@@ -283,8 +317,11 @@ def get_batches(db: Session, skip: int = 0, limit: int = 100):
         ncar=row[3].__dict__['ncar'] if row[3] else None
         dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
 
     return db_full_response
 
@@ -313,8 +350,44 @@ def get_batches_by_carpass_uuid(carpass_uuid: str, db: Session, skip: int = 0, l
         ncar=row[3].__dict__['ncar'] if row[3] else None
         dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"        
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
+
+    return db_full_response
+
+
+def get_batches_posted(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        filter(main_table.posted==True).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        broker_name=row[1].__dict__['name'] if row[1] else None
+        contact_name=row[2].__dict__['name'] if row[2] else None
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        dateen=row[3].__dict__['dateen'] if row[3] else None
+        docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"  
+        db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
 
     return db_full_response
 
@@ -353,8 +426,11 @@ def get_batches_client(type: str, contact_uuid: str, db: Session, skip: int = 0,
         ncar=row[3].__dict__['ncar'] if row[3] else None
         dateen=row[3].__dict__['dateen'] if row[3] else None
         docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"  
         db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist))
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
 
     return db_full_response
 
@@ -560,6 +636,23 @@ def create_batch(db: Session, item: schemas.BatchCreate, user_uuid: str):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     
     logging_action(obj_type='batch', schema=schemas.Batch, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
+    return db_item
+
+
+def create_dtreg(db: Session, item: schemas.DtregCreate, user_uuid: str):
+    #
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.Dtreg(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
 
     return db_item
 
@@ -817,6 +910,20 @@ def update_batch(db: Session, item_id: int, item: schemas.BatchUpdate, user_uuid
     return item_from_db
 
 
+def update_dtreg(db: Session, item_id: int, item: schemas.DtregUpdate, user_uuid: str):
+    #
+    item_from_db = db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db
+
+
 def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate, user_uuid: str):
     #
     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
@@ -1015,6 +1122,20 @@ def delete_batch(db: Session, item_id: int, user_uuid: str):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
     db.commit()
     logging_action(obj_type='batch', schema=schemas.Batch, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return {"message": f"Item ID {item_id} deleted successfully"}
+
+
+def delete_dtreg(db: Session, item_id: int, user_uuid: str):
+    #
+    item_from_db =  db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
@@ -1275,6 +1396,36 @@ def posting_batch(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
+def posting_dtreg(db: Session, item_id: int, user_uuid: str):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        ###
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.Dtreg, 
+                               schema_obj=schemas.DtregValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+    new_batch_status = 'Ч.офор.' if item_from_db.is_partial else 'Там.офор.'
+    set_batch_status(db=db, batch_uuid=item_from_db.batch_uuid, status=new_batch_status, user_uuid=user_uuid)
+
+    # batch_from_db =  db.query(models.Batch).filter(models.Batch.uuid == item_from_db.batch_uuid).first()
+    # setattr(batch_from_db, 'status', new_batch_status)
+    # logging_action(obj_type='batch', schema=schemas.Batch, action='set_status', item_from_db=batch_from_db, user_uuid=user_uuid, db=db)
+
+    return item_from_db
+
+
 def posting_exitcarpass(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
@@ -1375,6 +1526,21 @@ def rollback_batches(db: Session, item_id: int, user_uuid: str):
     db.commit()
 
     logging_action(obj_type='batch', schema=schemas.Batch, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db.id
+
+
+def rollback_dtreg(db: Session, item_id: int, user_uuid: str):
+    #
+    item_from_db =  db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db.id
 
 
@@ -1527,7 +1693,7 @@ def get_batch_by_sys_id(db: Session, item_sys_id: int):
     docs_exist=1 if response[4] else 0
     
     db_full_response = schemas.BatchJoined(**response[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
-                                           ncar=ncar, dateen=dateen, docs_exist=docs_exist)
+                                           ncar=ncar, dateen=dateen, docs_exist=docs_exist, place='-')
     
     return db_full_response
 
@@ -1550,6 +1716,42 @@ def get_carpass_by_uuid(db: Session, uuid: str):
 def get_batch_by_uuid(db: Session, uuid: str):
     # get single entry_request from db
     return db.query(models.Batch).filter(models.Batch.uuid == uuid).first()
+
+
+def get_batch_by_uuid_joined(uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        filter(main_table.uuid==uuid).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).first()
+
+    broker_name=response[1].__dict__['name'] if response[1] else None
+    contact_name=response[2].__dict__['name'] if response[2] else None
+    ncar=response[3].__dict__['ncar'] if response[3] else None
+    dateen=response[3].__dict__['dateen'] if response[3] else None
+    docs_exist=1 if response[4] else 0
+    tzone = response[0].__dict__['place_tzone'] if response[0].__dict__['place_tzone'] else ''
+    tcell = '/ ' + response[0].__dict__['place_tcell'] if response[0].__dict__['place_tcell'] else ''
+    place = f"{tzone} {tcell}"        
+    db_full_response = schemas.BatchJoined(**response[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place)
+
+    return db_full_response
+
+
+def get_dtreg_by_uuid(db: Session, uuid: str):
+    # get single dtreg from db
+    return db.query(models.Dtreg).filter(models.Dtreg.uuid == uuid).first()
 
 
 def get_user_by_uuid(db: Session, uuid: str):

@@ -149,8 +149,9 @@ onMounted(async () => {
 };
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
-const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const postedColor = props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white'
+const formInputStyleAct = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer' + ' ' + postedColor
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
 const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
@@ -380,7 +381,8 @@ const refreshCard = async () => {
 
 
 <template>
-  <div class="w-3/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
+  <div class="w-3/5 bg-white drop-shadow-md rounded-lg overflow-hidden"
+    :class="[props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white']">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Пропуск на въезд <span v-if="props.itemData">#{{ props.itemData.id_enter }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
@@ -429,7 +431,7 @@ const refreshCard = async () => {
 
         <div class="formInputDiv" v-if="(!props.itemData)">   <label class=formLabelStyle>Номер ТС</label>
             <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.ncar" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.ncar" 
                 @click="setFilter('null', 'entiryRequests', 'ncar'); setVars('ncar', 'reserve_2');"
                 @keyup="setFilter('ncar', 'entiryRequests', 'ncar')" :required="true"/>
               <span @click="setFilter('null', 'entiryRequests', 'ncar'); setVars('ncar', 'reserve_2');">
@@ -495,7 +497,7 @@ const refreshCard = async () => {
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
             <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
                 @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');"
                 @keyup="setFilter('contact_name_input', 'contacts', 'name', 'inn')" :required="true"/>
               <span @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
@@ -541,13 +543,13 @@ const refreshCard = async () => {
           <input type="text" v-model="form.car_model" :class="[errField['car_model']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Номер транспортного документа</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Номер транспортной накладной</label>
           <input type="text" v-model="form.ntir" :class="[errField['ntir']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
+            :required="true" :disabled="isCard" />
         </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>Дата транспортного документа</label>
+        <div class=formInputDiv>   <label class=formLabelStyle>Дата транспортной накладной</label>
           <input type="date" v-model="form.ntir_date" :class="[errField['ntir_date']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
+            :required="true" :disabled="isCard" />
         </div>
       </div>
 
@@ -593,15 +595,10 @@ const refreshCard = async () => {
       </div>
 
       <div class="flex">
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Номер стоянки</label>
-          <input type="text" v-model="form.place_n" :class="[errField['place_n']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div> -->
-
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Территория терминала</label>
-            <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tzone" 
+            <div :class="[errField['place_tzone']==1 ? formInputStyleErr : formInputStyle]" class="flex">
+              <input :class="[errField['place_tcell']==1 ? 'bg-red-100' : postedColor]"
+                 class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tzone" 
                 @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');"
                 @keyup="setFilter('place_tzone', 'tzones', 'zone_id')" :required="false"/>
               <span @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');">
@@ -626,8 +623,9 @@ const refreshCard = async () => {
         </div>
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Место территории</label>
-            <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tcell" 
+            <div div :class="[errField['place_tcell']==1 ? formInputStyleErr : formInputStyle]" class="flex">
+              <input :class="[errField['place_tcell']==1 ? 'bg-red-100' : postedColor]"
+                 class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tcell" 
                 @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4')"
                 @keyup="setFilter('place_tcell', 'tcells', 'cell_id')" :required="false"/>
               <span @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4');">
@@ -679,7 +677,7 @@ const refreshCard = async () => {
       </div>
 
 
-      <div v-if="itemData" class="mx-5 px-1 mb-5">
+      <!-- <div v-if="itemData" class="mx-5 px-1 mb-5">
         <label class=formLabelStyle>Партии товаров</label>
         <div v-if="state.related_batches.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-20">
           <table class="w-full">
@@ -700,7 +698,37 @@ const refreshCard = async () => {
         </table>
         </div>
         <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет размещенных партий товаров</div>
+      </div> -->
+      <div v-if="itemData" class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
+        <div class="space-x-5 overflow-auto">
+          <label class="mx-1 text-sm font-semibold text-blue-500">ПАРТИИ ТОВАРОВ В ТС</label>
+        </div>
+          <div v-if="state.related_batches.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-20">
+              <table class="w-full">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
+                  <td class="text-center">#</td>
+                  <td class="text-center">Товарная накладная</td>
+                  <td class="text-center">Наименование клиента</td>
+                  <td class="text-center">Описание</td>
+                  <td class="text-center">Таможенный статус</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-t text-slate-500 text-xs" v-for="rec in state.related_batches">
+                  <td class="text-center">{{ rec.id }}</td>
+                  <td class="text-center">{{ rec.tn_id }}</td>
+                  <td class="text-center">{{ rec.contact_name }}</td>
+                  <td class="text-center">{{ rec.goods }}</td>
+                  <td class="text-center">{{ rec.status }}</td>
+                </tr>
+              </tbody>
+            </table>
+            </div>
+            <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет размещенных партий товаров</div>
+
       </div>
+
 
 
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">

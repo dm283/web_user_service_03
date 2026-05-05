@@ -41,6 +41,8 @@ if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Партии товаров') {
   state.query = `http://${backendIpAddress}:${backendPort}/batches_rollback/${props.itemData.id}`;
+} else if (props.itemName == 'Таможенное оформление') {
+  state.query = `http://${backendIpAddress}:${backendPort}/dtreg_rollback/${props.itemData.id}`;
 } else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Пользователи') {
@@ -77,7 +79,7 @@ const handleSubmit = async () => {
       </div>
     </header>
 
-    <div class="mt-5 ml-5">Отменить проводку записи ID {{ itemData.id }} ?</div>
+    <div class="mt-5 ml-5">Откатить проводку записи #{{ itemData.id }} ?</div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5"> 
       <div class="my-3 flex justify-left space-x-5 py-3 px-5 text-center">
