@@ -411,7 +411,7 @@ const refreshCard = async () => {
 
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       
-      <div class="flex">
+      <div class="flex relative">
 
         <!-- <div class="formInputDiv" v-if="(!props.itemData)">   <label class=formLabelStyle>Номер ТС</label>
           <div :class=formInputStyle class="flex" @click="setFilter('null', 'entiryRequests', 'ncar'); setVars('ncar', 'reserve_1');">
@@ -594,7 +594,7 @@ const refreshCard = async () => {
         </div>
       </div>
 
-      <div class="flex">
+      <div class="flex relative">
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Территория терминала</label>
             <div :class="[errField['place_tzone']==1 ? formInputStyleErr : formInputStyle]" class="flex">
               <input :class="[errField['place_tcell']==1 ? 'bg-red-100' : postedColor]"
