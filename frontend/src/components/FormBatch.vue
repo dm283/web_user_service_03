@@ -138,7 +138,6 @@ onMounted(async () => {
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 
 const postedColor = props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white'
-// const postedColor = props.itemData.posted ? 'bg-white' : 'bg-yellow-50'
 const formInputStyleAct = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer' + ' ' + postedColor
 

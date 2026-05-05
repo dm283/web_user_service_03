@@ -149,8 +149,9 @@ onMounted(async () => {
 };
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
-const formInputStyleAct = 'bg-white border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
-        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer'
+const postedColor = props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white'
+const formInputStyleAct = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
+        hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer' + ' ' + postedColor
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
 const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
@@ -380,7 +381,8 @@ const refreshCard = async () => {
 
 
 <template>
-  <div class="w-3/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
+  <div class="w-3/5 bg-white drop-shadow-md rounded-lg overflow-hidden"
+    :class="[props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white']">
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       Пропуск на въезд <span v-if="props.itemData">#{{ props.itemData.id_enter }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
@@ -429,7 +431,7 @@ const refreshCard = async () => {
 
         <div class="formInputDiv" v-if="(!props.itemData)">   <label class=formLabelStyle>Номер ТС</label>
             <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.ncar" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.ncar" 
                 @click="setFilter('null', 'entiryRequests', 'ncar'); setVars('ncar', 'reserve_2');"
                 @keyup="setFilter('ncar', 'entiryRequests', 'ncar')" :required="true"/>
               <span @click="setFilter('null', 'entiryRequests', 'ncar'); setVars('ncar', 'reserve_2');">
@@ -495,7 +497,7 @@ const refreshCard = async () => {
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
             <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.contact_name_input" 
                 @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');"
                 @keyup="setFilter('contact_name_input', 'contacts', 'name', 'inn')" :required="true"/>
               <span @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
@@ -601,7 +603,7 @@ const refreshCard = async () => {
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Территория терминала</label>
             <div :class="[errField['place_tzone']==1 ? formInputStyleErr : formInputStyle]" class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tzone" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tzone" 
                 @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');"
                 @keyup="setFilter('place_tzone', 'tzones', 'zone_id')" :required="false"/>
               <span @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');">
@@ -627,7 +629,7 @@ const refreshCard = async () => {
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Место территории</label>
             <div div :class="[errField['place_tcell']==1 ? formInputStyleErr : formInputStyle]" class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tcell" 
+              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tcell" 
                 @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4')"
                 @keyup="setFilter('place_tcell', 'tcells', 'cell_id')" :required="false"/>
               <span @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4');">
