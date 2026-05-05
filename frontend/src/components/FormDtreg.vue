@@ -424,7 +424,7 @@ const refreshCard = async () => {
             :required="false" :disabled="isCard" />
         </div>
         <div class=formInputDiv v-if="props.itemData">   <label class=formLabelStyle>Дата-время проводки документа</label>
-          <input type="datetime-local" v-model="form.post_date" :class="[errField['post_date']==1 ? formInputStyleErr : formInputStyle]"
+          <input type="datetime" v-model="form.post_date" :class="[errField['post_date']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="true" />
         </div>
       </div>
