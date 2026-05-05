@@ -595,15 +595,10 @@ const refreshCard = async () => {
       </div>
 
       <div class="flex">
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Номер стоянки</label>
-          <input type="text" v-model="form.place_n" :class="[errField['place_n']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div> -->
-
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Территория терминала</label>
             <div :class="[errField['place_tzone']==1 ? formInputStyleErr : formInputStyle]" class="flex">
-              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tzone" 
+              <input :class="[errField['place_tcell']==1 ? 'bg-red-100' : postedColor]"
+                 class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tzone" 
                 @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');"
                 @keyup="setFilter('place_tzone', 'tzones', 'zone_id')" :required="false"/>
               <span @click="setFilter('null', 'tzones', 'zone_id'); setVars('place_tzone', 'reserve_3');">
@@ -629,7 +624,8 @@ const refreshCard = async () => {
 
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Место территории</label>
             <div div :class="[errField['place_tcell']==1 ? formInputStyleErr : formInputStyle]" class="flex">
-              <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tcell" 
+              <input :class="[errField['place_tcell']==1 ? 'bg-red-100' : postedColor]"
+                 class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.place_tcell" 
                 @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4')"
                 @keyup="setFilter('place_tcell', 'tcells', 'cell_id')" :required="false"/>
               <span @click="setFilter('null', 'tcells', 'cell_id'); setVars('place_tcell', 'reserve_4');">
@@ -681,7 +677,7 @@ const refreshCard = async () => {
       </div>
 
 
-      <div v-if="itemData" class="mx-5 px-1 mb-5">
+      <!-- <div v-if="itemData" class="mx-5 px-1 mb-5">
         <label class=formLabelStyle>Партии товаров</label>
         <div v-if="state.related_batches.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-20">
           <table class="w-full">
@@ -702,7 +698,37 @@ const refreshCard = async () => {
         </table>
         </div>
         <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет размещенных партий товаров</div>
+      </div> -->
+      <div v-if="itemData" class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
+        <div class="space-x-5 overflow-auto">
+          <label class="mx-1 text-sm font-semibold text-blue-500">ПАРТИИ ТОВАРОВ В ТС</label>
+        </div>
+          <div v-if="state.related_batches.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-20">
+              <table class="w-full">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
+                  <td class="text-center">#</td>
+                  <td class="text-center">Товарная накладная</td>
+                  <td class="text-center">Наименование клиента</td>
+                  <td class="text-center">Описание</td>
+                  <td class="text-center">Таможенный статус</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-t text-slate-500 text-xs" v-for="rec in state.related_batches">
+                  <td class="text-center">{{ rec.id }}</td>
+                  <td class="text-center">{{ rec.tn_id }}</td>
+                  <td class="text-center">{{ rec.contact_name }}</td>
+                  <td class="text-center">{{ rec.goods }}</td>
+                  <td class="text-center">{{ rec.status }}</td>
+                </tr>
+              </tbody>
+            </table>
+            </div>
+            <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет размещенных партий товаров</div>
+
       </div>
+
 
 
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
