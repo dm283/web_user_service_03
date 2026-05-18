@@ -31,6 +31,8 @@ class Batch(Base):
     place_tcell = Column(String)
     fwms = Column(Boolean, default=False)
 
+    to_sklad = Column(Boolean, default=False)
+
     fito_control = Column(Boolean, default=False)
     vet_control = Column(Boolean, default=False)
 
