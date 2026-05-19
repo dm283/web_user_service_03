@@ -864,7 +864,7 @@ def read_dtregs(current_user: Annotated[UserAuth, Depends(get_current_active_use
     return items
 
 
-@app.get('/requests_batch_to_sklad/', response_model=list[schemas.RequestBatchToSklad])
+@app.get('/requests_batch_to_sklad/', response_model=list[schemas.RequestBatchToSkladJoined])
 def read_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_requests_batch_to_sklad(db, skip=skip, limit=limit)

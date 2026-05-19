@@ -22,6 +22,7 @@ import AddBatchView from "@/views/AddBatchView.vue";
 import UploadListsView from "@/views/UploadListsView.vue";
 import DtregView from "@/views/DtregView.vue";
 import RequestBatchToSkladView from "@/views/RequestBatchToSkladView.vue";
+import AddRequestBatchToSkladView from "@/views/AddRequestBatchToSkladView.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
 // import EditItemView from "@/views/EditItemView.vue";
@@ -49,6 +50,7 @@ const router = createRouter({
     { path: '/add_batch', name: 'add_batch', component: AddBatchView, },
     { path: '/registration_dt', name: 'registration_dt', component: DtregView, },
     { path: '/requests_batch_to_sklad', name: 'requests_batch_to_sklad', component: RequestBatchToSkladView, },
+    { path: '/add_requests_batch_to_sklad', name: 'add_requests_batch_to_sklad', component: AddRequestBatchToSkladView, },
 
     { path: '/administration', name: 'administration', component: AdministrationView, },
     { path: '/users', name: 'users', component: UsersView, },

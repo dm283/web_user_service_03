@@ -265,10 +265,36 @@ def get_brokers_available(contact_uuid: str, db: Session, skip: int = 0, limit: 
         order_by(models.Contact.created_datetime.desc()).all()
 
 
-def get_requests_batch_to_sklad(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.is_active==True).\
-        order_by(models.RequestBatchToSklad.created_datetime.desc()).all()
+# def get_requests_batch_to_sklad(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.is_active==True).\
+#         order_by(models.RequestBatchToSklad.created_datetime.desc()).all()
 
+
+def get_requests_batch_to_sklad(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.RequestBatchToSklad)
+    batch = aliased(models.Batch)
+    contact = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+
+    response = db.query(main_table, batch, contact, carpass).\
+        join(batch, batch.uuid == main_table.batch_uuid, isouter=True).\
+        join(contact, contact.uuid == batch.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        batch_id=row[1].__dict__['id'] if row[1] else ''
+        batch_tn_id=row[1].__dict__['tn_id'] if row[1] else ''
+        batch_client=row[2].__dict__['name'] if row[2] else ''
+        batch_identity = f"{batch_tn_id} ({batch_client})"
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        db_full_response.append(schemas.RequestBatchToSkladJoined(**row[0].__dict__, batch_id=batch_id, batch_identity=batch_identity, 
+                                                    ncar=ncar))
+
+    return db_full_response
 
 # def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
 #     return db.query(models.Dtreg).filter(models.Dtreg.is_active==True).\

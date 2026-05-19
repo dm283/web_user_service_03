@@ -43,6 +43,8 @@ if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/batches_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Таможенное оформление') {
   state.query = `http://${backendIpAddress}:${backendPort}/dtreg_rollback/${props.itemData.id}`;
+} else if (props.itemName == 'Заявки размещения партий на склад') {
+  state.query = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad_rollback/${props.itemData.id}`;
 } else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Пользователи') {
@@ -70,7 +72,7 @@ const handleSubmit = async () => {
 
 
 <template>
-  <div class="w-74 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
+  <div class="w-96 max-h-4/5 bg-white drop-shadow-md rounded-lg overflow-hidden">
   
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
       {{ props.itemName }}

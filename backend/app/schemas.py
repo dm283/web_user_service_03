@@ -595,6 +595,7 @@ class RequestBatchToSklad(RequestBatchToSkladCreate):
     class Config:
         from_attributes = True
 
-# class RequestBatchToSkladJoined(RequestBatchToSklad):
-#     batch_id: int | None
-#     batch_identity: str | None   
+class RequestBatchToSkladJoined(RequestBatchToSklad):
+    batch_id: int | None
+    batch_identity: str | None
+    ncar: str | None

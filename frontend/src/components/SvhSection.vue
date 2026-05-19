@@ -57,7 +57,7 @@ const authHeader = () => {
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
-      <RouterLink to="/">
+      <RouterLink to="/add_requests_batch_to_sklad">
         <CatalogSection :label="'Создать заявку размещения партии'" :icon="'calendar-plus'" :description="'Создание новой заявки'" />
       </RouterLink>
     </div>

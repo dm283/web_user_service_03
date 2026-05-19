@@ -19,6 +19,7 @@ import FormUser from './FormUser.vue';
 import FormDoc from './FormDoc.vue';
 import FormBatch from './FormBatch.vue';
 import FormDtreg from './FormDtreg.vue';
+import FormRequestBatchToSklad from './FormRequestBatchToSklad.vue';
 import FormSetBatchStatus from './FormSetBatchStatus.vue';
 import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
 
@@ -79,6 +80,10 @@ const showUpdateEntryRequest = ref(false)
 const showCardDtreg = ref(false)
 const showAddDtreg = ref(false)
 const showUpdateDtreg = ref(false)
+
+const showCardRequestBatchToSklad = ref(false)
+const showAddRequestBatchToSklad = ref(false)
+const showUpdateRequestBatchToSklad = ref(false)
 
 const showCardBatch = ref(false)
 const showAddBatch = ref(false)
@@ -193,10 +198,10 @@ else if (props.view_type == 'dtreg') {
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
-else if (props.view_type == 'requests_batch_to_sklad') {
+else if (props.view_type == 'requests_batch_to_sklad' || props.view_type == 'add_requests_batch_to_sklad') {
   state.query = query_requests_batch_to_sklad;
   state.listTableColumns = {
-    'batch_uuid':'Партия товаров (№ ТН, клиент)','carpass_uuid':'№ ТС','comment':'Комментарий','post_date':'Создана'
+    'batch_identity':'Партия товаров (№ ТН, клиент)','batch_id':'id партии','ncar':'№ ТС','comment':'Комментарий','post_date':'Проведена'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
@@ -261,6 +266,9 @@ else if (props.view_type == 'tcells') {
 //
 if (props.view_type == 'add_batch') {
   showAddBatch.value = true
+}
+if (props.view_type == 'add_requests_batch_to_sklad') {
+  showAddRequestBatchToSklad.value = true
 }
 
 
@@ -362,6 +370,7 @@ const itemCard = (item, name) => {
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
   else if (name == 'Партии товаров') { showCardBatch.value = true }
   else if (name == 'Таможенное оформление') { showCardDtreg.value = true }
+  else if (name == 'Заявки размещения партий на склад') { showCardRequestBatchToSklad.value = true }
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
   else if (name == 'Пользователи') { showCardUser.value = true }
@@ -375,6 +384,7 @@ const addItem = (section) => {
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
   else if (section == 'Партии товаров') { showAddBatch.value = true; }
   else if (section == 'Таможенное оформление') { showAddDtreg.value = true; }
+  else if (section == 'Заявки размещения партий на склад') { showAddRequestBatchToSklad.value = true; }
   else if (section == 'Клиенты') { showAddContact.value = true; }
   else if (section == 'Брокеры') { showAddBroker.value = true; }
   else if (section == 'Пользователи') { showAddUser.value = true; }
@@ -389,6 +399,7 @@ const editItem = (item, name) => {
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
   else if (name == 'Партии товаров') { showUpdateBatch.value = true }
   else if (name == 'Таможенное оформление') { showUpdateDtreg.value = true }
+  else if (name == 'Заявки размещения партий на склад') { showUpdateRequestBatchToSklad.value = true }
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
   else if (name == 'Пользователи') { showUpdateUser.value = true }
@@ -498,7 +509,8 @@ const clickNotificationRow = async (item) => {
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
-    <!-- **********************   MODAL DTREG CARD   ************************** -->
+
+  <!-- **********************   MODAL DTREG CARD   ************************** -->
   <div v-if="showCardDtreg" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
     <FormDtreg @close-modal="showCardDtreg=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
       :itemData="selectedItem" :isCard="true"/>
@@ -512,6 +524,23 @@ const clickNotificationRow = async (item) => {
     <FormDtreg @close-modal="showUpdateDtreg=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
+
+
+    <!-- **********************   MODAL REQUESTBATCHTOSKLAD CARD   ************************** -->
+  <div v-if="showCardRequestBatchToSklad" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormRequestBatchToSklad @close-modal="showCardRequestBatchToSklad=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL REQUESTBATCHTOSKLAD ADD   ************************** -->
+  <div v-if="showAddRequestBatchToSklad" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormRequestBatchToSklad @close-modal="showAddRequestBatchToSklad=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL REQUESTBATCHTOSKLAD EDIT  ************************** -->
+  <div v-if="showUpdateRequestBatchToSklad" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormRequestBatchToSklad @close-modal="showUpdateRequestBatchToSklad=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
 
   <!-- **********************   MODAL CONTACT CARD   ************************** -->
   <div v-if="showCardContact" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
@@ -562,22 +591,6 @@ const clickNotificationRow = async (item) => {
     <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" @reopen-card="reopenCard" 
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
-
-
-
-  <!-- **********************   MODAL USER CARD   ************************** -->
-  <!-- <div v-if="showCardUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showCardUser=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
-  </div> -->
-  <!-- **********************   MODAL USER ADD   ************************** -->
-  <!-- <div v-if="showAddUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showAddUser=false" @doc-created="getData" />
-  </div> -->
-  <!-- **********************   MODAL USER EDIT  ************************** -->
-  <!-- <div v-if="showUpdateUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" :itemData="selectedItem"/>
-  </div> -->
-
 
 
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->
