@@ -567,3 +567,34 @@ class Dtreg(DtregCreate):
 class DtregJoined(Dtreg):
     batch_id: int | None
     batch_identity: str | None     
+
+
+##########
+class RequestBatchToSkladCreate(BaseModel):
+    batch_uuid: str
+    carpass_uuid: str
+    comment: str | None = None
+
+class RequestBatchToSkladValidation(BaseModel):
+    batch_uuid: str
+    carpass_uuid: str
+
+class RequestBatchToSkladUpdate(RequestBatchToSkladCreate):
+    updated_datetime: datetime
+
+class RequestBatchToSklad(RequestBatchToSkladCreate):
+    id: int
+    uuid: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
+
+# class RequestBatchToSkladJoined(RequestBatchToSklad):
+#     batch_id: int | None
+#     batch_identity: str | None   

@@ -677,6 +677,15 @@ def read_dtreg_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_act
     return item
 
 
+@app.get('/requests_batch_to_sklad_by_uuid/{uuid}', response_model=schemas.RequestBatchToSklad)
+def read_requests_batch_to_sklad_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    item = crud.get_requests_batch_to_sklad_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 @app.get("/role/{role_id}", response_model=schemas.Role)
 def read_role(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 role_id: int, db: Session = Depends(get_db)):
@@ -849,9 +858,16 @@ def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_ac
 
 
 @app.get('/dtreg/', response_model=list[schemas.DtregJoined])
-def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+def read_dtregs(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_dtregs(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/requests_batch_to_sklad/', response_model=list[schemas.RequestBatchToSklad])
+def read_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_requests_batch_to_sklad(db, skip=skip, limit=limit)
     return items
 
 
@@ -1065,6 +1081,14 @@ def create_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return crud.create_dtreg(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
+@app.post("/requests_batch_to_sklad/", response_model=schemas.RequestBatchToSklad)
+def create_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
+    #
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.RequestBatchToSkladCreate) 
+    return crud.create_requests_batch_to_sklad(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
+
+
 @app.post("/batches/", response_model=schemas.Batch)
 def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
@@ -1153,6 +1177,16 @@ def update_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_us
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DtregCreate)
     item = schemas.DtregUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_dtreg(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+
+
+@app.put('/requests_batch_to_sklad/{item_id}', response_model=schemas.RequestBatchToSklad)
+def update_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
+    #
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.RequestBatchToSkladCreate)
+    item = schemas.RequestBatchToSkladUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_requests_batch_to_sklad(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/contacts/{item_id}', response_model=schemas.Contact)
@@ -1246,6 +1280,12 @@ def delete_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return crud.delete_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
+@app.delete('/requests_batch_to_sklad/{item_id}')
+def delete_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_id: int, db: Session = Depends(get_db)):
+    return crud.delete_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+
+
 @app.delete('/related_contact_broker/{item_id}')
 def delete_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
@@ -1314,6 +1354,13 @@ def posting_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_u
     return crud.posting_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
+@app.put('/requests_batch_to_sklad_posting/{item_id}', response_model=schemas.RequestBatchToSklad)
+def posting_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_id: int, db: Session = Depends(get_db)):
+    #
+    return crud.posting_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+
+
 @app.put('/contacts_posting/{item_id}')
 def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
@@ -1366,6 +1413,12 @@ def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_activ
 def rollback_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
     return crud.rollback_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+
+
+@app.put('/requests_batch_to_sklad_rollback/{item_id}')
+def rollback_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_id: int, db: Session = Depends(get_db)):
+    return crud.rollback_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/contacts_rollback/{item_id}')

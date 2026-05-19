@@ -56,6 +56,16 @@ const authHeader = () => {
         <CatalogSection :label="'Регистрация ДТ'" :icon="'clipboard'" :description="'Документы таможенного оформления'" />
       </RouterLink>
     </div>
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/">
+        <CatalogSection :label="'Создать заявку размещения партии'" :icon="'calendar-plus'" :description="'Создание новой заявки'" />
+      </RouterLink>
+    </div>
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/requests_batch_to_sklad">
+        <CatalogSection :label="'Заявки размещения партий'" :icon="'calendar'" :description="'Заявки размещения партий на склад'" />
+      </RouterLink>
+    </div>
   </div>
 </div>
 </template>

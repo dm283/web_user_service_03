@@ -126,6 +126,7 @@ const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${bac
   `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.type}/${userInfo.contact_uuid}`
 
 const query_dtreg = `http://${backendIpAddress}:${backendPort}/dtreg/`
+const query_requests_batch_to_sklad = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad/`
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
@@ -189,6 +190,13 @@ else if (props.view_type == 'dtreg') {
   state.query = query_dtreg;
   state.listTableColumns = {
     'batch_identity':'Партия товаров (№ ТН, клиент)','batch_id':'id партии','declar_id':'№ декларации', 'is_partial':'Частичная выгрузка','comment':'Комментарий','post_date':'Создан'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+else if (props.view_type == 'requests_batch_to_sklad') {
+  state.query = query_requests_batch_to_sklad;
+  state.listTableColumns = {
+    'batch_uuid':'Партия товаров (№ ТН, клиент)','carpass_uuid':'№ ТС','comment':'Комментарий','post_date':'Создана'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
