@@ -599,3 +599,45 @@ class RequestBatchToSkladJoined(RequestBatchToSklad):
     batch_id: int | None
     batch_identity: str | None
     ncar: str | None
+
+
+##########
+class CertGoodsAcceptCreate(BaseModel):
+    request_batch_to_sklad_uuid: str
+    batch_uuid: str
+    place_tzone: str | None = None
+    place_tcell: str | None = None
+    goods: str | None = None
+    places_cnt: int | str | None = None
+    weight: float | str | None = None
+    comment: str | None = None
+
+class CertGoodsAcceptValidation(BaseModel):
+    request_batch_to_sklad_uuid: str
+    batch_uuid: str
+    place_tzone: str
+    place_tcell: str
+    goods: str
+    places_cnt: int
+    weight: float
+
+class CertGoodsAcceptUpdate(CertGoodsAcceptCreate):
+    updated_datetime: datetime
+
+class CertGoodsAccept(CertGoodsAcceptCreate):
+    id: int
+    uuid: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
+
+# class CertGoodsAcceptJoined(CertGoodsAccept):
+#     batch_id: int | None
+#     batch_identity: str | None
+#     ncar: str | None

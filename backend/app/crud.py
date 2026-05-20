@@ -296,6 +296,10 @@ def get_requests_batch_to_sklad(db: Session, skip: int = 0, limit: int = 100):
 
     return db_full_response
 
+def get_cert_goods_accept(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.is_active==True).\
+        order_by(models.CertGoodsAccept.created_datetime.desc()).all()
+
 # def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
 #     return db.query(models.Dtreg).filter(models.Dtreg.is_active==True).\
 #         order_by(models.Dtreg.created_datetime.desc()).all()
@@ -689,6 +693,23 @@ def create_dtreg(db: Session, item: schemas.DtregCreate, user_uuid: str):
     return db_item
 
 
+def create_cert_goods_accept(db: Session, item: schemas.CertGoodsAcceptCreate, user_uuid: str):
+    #
+    created_datetime = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.CertGoodsAccept(**item.model_dump(), uuid=uuid, created_datetime=created_datetime)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    
+    logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
+    return db_item
+
+
 def create_requests_batch_to_sklad(db: Session, item: schemas.RequestBatchToSkladCreate, user_uuid: str):
     #
     created_datetime = datetime.datetime.now()
@@ -973,6 +994,20 @@ def update_dtreg(db: Session, item_id: int, item: schemas.DtregUpdate, user_uuid
     return item_from_db
 
 
+def update_cert_goods_accept(db: Session, item_id: int, item: schemas.CertGoodsAcceptUpdate, user_uuid: str):
+    #
+    item_from_db = db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+
+    logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db
+
+
 def update_requests_batch_to_sklad(db: Session, item_id: int, item: schemas.RequestBatchToSkladUpdate, user_uuid: str):
     #
     item_from_db = db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.id == item_id).first()
@@ -1199,6 +1234,20 @@ def delete_dtreg(db: Session, item_id: int, user_uuid: str):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
     db.commit()
     logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return {"message": f"Item ID {item_id} deleted successfully"}
+
+
+def delete_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
+    #
+    item_from_db =  db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
@@ -1503,6 +1552,44 @@ def posting_dtreg(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
+def posting_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        ###
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+                               db_model=models.CertGoodsAccept, 
+                               schema_obj=schemas.CertGoodsAcceptValidation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+    batch_from_db = db.query(models.Batch).filter(models.Batch.uuid == item_from_db.batch_uuid).first()
+    setattr(batch_from_db, 'to_sklad', False)
+    setattr(batch_from_db, 'fwms', True)
+    setattr(batch_from_db, 'place_tzone', item_from_db.place_tzone)
+    setattr(batch_from_db, 'place_tcell', item_from_db.place_tcell)
+    db.commit()
+    logging_action(obj_type='batch', schema=schemas.Batch, action='sklad_accept', item_from_db=batch_from_db, user_uuid=user_uuid, db=db)
+
+    request_batch_to_sklad_from_db = db.query(models.RequestBatchToSklad).\
+        filter(models.RequestBatchToSklad.uuid == item_from_db.request_batch_to_sklad_uuid).first()
+    setattr(request_batch_to_sklad_from_db, 'is_completed', True)
+    db.commit()
+    logging_action(obj_type='request_batch_to_sklad', schema=schemas.RequestBatchToSklad, action='completed', item_from_db=request_batch_to_sklad_from_db, user_uuid=user_uuid, db=db)
+
+
+    return item_from_db
+
+
 def posting_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
@@ -1525,6 +1612,7 @@ def posting_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
 
     batch_from_db = db.query(models.Batch).filter(models.Batch.uuid == item_from_db.batch_uuid).first()
     setattr(batch_from_db, 'to_sklad', True)
+    db.commit()
     logging_action(obj_type='batch', schema=schemas.Batch, action='to_sklad', item_from_db=batch_from_db, user_uuid=user_uuid, db=db)
 
     return item_from_db
@@ -1645,6 +1733,21 @@ def rollback_dtreg(db: Session, item_id: int, user_uuid: str):
     db.commit()
 
     logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db.id
+
+
+def rollback_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
+    #
+    item_from_db =  db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if not item_from_db.posted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+    db.commit()
+
+    logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db.id
 
 
@@ -1871,6 +1974,11 @@ def get_batch_by_uuid_joined(uuid: str, db: Session, skip: int = 0, limit: int =
 def get_dtreg_by_uuid(db: Session, uuid: str):
     # get single dtreg from db
     return db.query(models.Dtreg).filter(models.Dtreg.uuid == uuid).first()
+
+
+def get_cert_goods_accept_by_uuid(db: Session, uuid: str):
+    # get single cert_goods_accept from db
+    return db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.uuid == uuid).first()
 
 
 def get_requests_batch_to_sklad_by_uuid(db: Session, uuid: str):
