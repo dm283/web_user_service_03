@@ -622,7 +622,9 @@ const niceTime = (tm) => {
     <!-- добавить запись -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200" 
       @click="emit('btnAdd', props.name)" 
-      v-if="(['Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад'].includes(props.name) & userInfo.contact_id==0) | 
+      v-if="(['Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
+        'Принятые партии товара'
+      ].includes(props.name) & userInfo.contact_id==0) | 
       ['Пропуска ТС на выезд','Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name)"
     >
       <i class="pi pi-plus" style="font-size: 1rem"></i>
@@ -631,7 +633,9 @@ const niceTime = (tm) => {
     <!-- редактировать -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnEdit', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
-      v-if="(['Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад'].includes(props.name) & userInfo.contact_id==0) | 
+      v-if="(['Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
+        'Принятые партии товара'
+      ].includes(props.name) & userInfo.contact_id==0) | 
       ['Пропуска ТС на выезд', 'Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name)"
     >
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
@@ -640,7 +644,9 @@ const niceTime = (tm) => {
     <!-- удалить -->
     <button class="w-8 h-8 rounded-lg bg-blue-100 text-slate-600 hover:bg-blue-200 disabled:text-slate-400 disabled:hover:bg-blue-100" 
       @click="emit('btnDelete', selectedItem, props.name)" :disabled="!selectedItem | selectedItem.posted" 
-      v-if="(['Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад'].includes(props.name) & userInfo.contact_id==0) | 
+      v-if="(['Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
+        'Принятые партии товара'
+      ].includes(props.name) & userInfo.contact_id==0) | 
       ['Пропуска ТС на выезд', 'Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name)"
     >
       <i class="pi pi-trash" style="font-size: 1rem"></i>
@@ -658,7 +664,9 @@ const niceTime = (tm) => {
       @click="emit('btnRollback', selectedItem, props.name)" 
       :disabled="!selectedItem | !selectedItem.posted | selectedItem.exitcarpass_created | selectedItem.carpass_created |
         ['Там.офор.','Ч.офор.','Выпуск'].includes(selectedItem.status)" 
-      v-if="(['Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад'].includes(props.name) & userInfo.contact_id==0) | 
+      v-if="(['Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
+        'Принятые партии товара'
+      ].includes(props.name) & userInfo.contact_id==0) | 
       ['Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name)"
     >
       <i class="pi pi-caret-left" style="font-size: 1rem"></i>

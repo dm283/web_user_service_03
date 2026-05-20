@@ -304,7 +304,7 @@ const chatNotificationDataChange = (pointState) => {
     </RouterLink>
 
     <RouterLink to="/svh_section" v-if="[1,4].includes(state.userInfo.role_id)">
-      <MenuSection :label="'Диспетчер СВХ'" :icon="'warehouse'" :description="'Раздел работы диспетчера СВХ'"
+      <MenuSection :label="'Диспетчер СВХ'" :icon="'directions'" :description="'Раздел работы диспетчера СВХ'"
       :selected="state.selectedMenu=='svh_section' ? '1' : '0'" @click="state.selectedMenu='svh_section'" />
     </RouterLink>
     <RouterLink to="/add_batch" v-if="[6].includes(state.userInfo.role_id)">
@@ -318,6 +318,11 @@ const chatNotificationDataChange = (pointState) => {
     <RouterLink to="/registration_dt" v-if="[6].includes(state.userInfo.role_id)">
       <MenuSection :label="'Регистрация ДТ'" :icon="'clipboard'" :description="'Документы таможенного оформления'"
       :selected="state.selectedMenu=='registration_dt' ? '1' : '0'" @click="state.selectedMenu='registration_dt'" />
+    </RouterLink>
+
+    <RouterLink to="/sklad_section" v-if="[1,4].includes(state.userInfo.role_id)">
+      <MenuSection :label="'Складская группа'" :icon="'box'" :description="'Раздел работы складской группы'"
+      :selected="state.selectedMenu=='sklad_section' ? '1' : '0'" @click="state.selectedMenu='sklad_section'" />
     </RouterLink>
 
     <RouterLink to="/catalogs" v-if="[1,4,5,6].includes(state.userInfo.role_id)">

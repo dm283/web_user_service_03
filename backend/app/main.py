@@ -887,6 +887,13 @@ def read_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_c
     return items
 
 
+@app.get('/requests_batch_to_sklad_for_cert/', response_model=list[schemas.RequestBatchToSkladJoinedForCert])
+def read_requests_batch_to_sklad_for_cert(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_requests_batch_to_sklad_for_cert(db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/batches/', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

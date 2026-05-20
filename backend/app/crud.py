@@ -296,6 +296,37 @@ def get_requests_batch_to_sklad(db: Session, skip: int = 0, limit: int = 100):
 
     return db_full_response
 
+
+def get_requests_batch_to_sklad_for_cert(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.RequestBatchToSklad)
+    batch = aliased(models.Batch)
+    contact = aliased(models.Contact)
+
+    response = db.query(main_table, batch, contact).\
+        filter(main_table.posted==True, main_table.is_completed==False).\
+        join(batch, batch.uuid == main_table.batch_uuid, isouter=True).\
+        join(contact, contact.uuid == batch.contact_uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        batch_id=row[1].__dict__['id'] if row[1] else ''
+        batch_tn_id=row[1].__dict__['tn_id'] if row[1] else ''
+        batch_client=row[2].__dict__['name'] if row[2] else ''
+        batch_identity = f"{batch_tn_id} ({batch_client})"
+        goods=row[1].__dict__['goods'] if row[1] else ''
+        places_cnt=row[1].__dict__['places_cnt'] if row[1] else ''
+        weight=row[1].__dict__['weight'] if row[1] else ''
+        db_full_response.append(schemas.RequestBatchToSkladJoinedForCert(**row[0].__dict__, tn_id=batch_tn_id, 
+                    contact_name=batch_client, batch_id=batch_id, batch_identity=batch_identity,
+                    goods=goods, places_cnt=places_cnt, weight=weight
+                    ))
+
+    return db_full_response
+
+
 def get_cert_goods_accept(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.is_active==True).\
         order_by(models.CertGoodsAccept.created_datetime.desc()).all()

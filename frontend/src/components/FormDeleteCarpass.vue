@@ -42,6 +42,8 @@ else if (props.itemName == 'Таможенное оформление') {
   state.query = `http://${backendIpAddress}:${backendPort}/dtreg/${props.itemData.id}`; }
 else if (props.itemName == 'Заявки размещения партий на склад') {
   state.query = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad/${props.itemData.id}`; }
+else if (props.itemName == 'Принятые партии товара') {
+  state.query = `http://${backendIpAddress}:${backendPort}/cert_goods_accept/${props.itemData.id}`; }
 else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts/${props.itemData.id}`; }
 else if (props.itemName == 'Пользователи') {

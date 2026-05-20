@@ -45,6 +45,8 @@ if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/dtreg_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Заявки размещения партий на склад') {
   state.query = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad_rollback/${props.itemData.id}`;
+} else if (props.itemName == 'Принятые партии товара') {
+  state.query = `http://${backendIpAddress}:${backendPort}/cert_goods_accept_rollback/${props.itemData.id}`;
 } else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
   state.query = `http://${backendIpAddress}:${backendPort}/contacts_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Пользователи') {

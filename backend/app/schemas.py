@@ -600,6 +600,15 @@ class RequestBatchToSkladJoined(RequestBatchToSklad):
     batch_identity: str | None
     ncar: str | None
 
+class RequestBatchToSkladJoinedForCert(RequestBatchToSklad):
+    batch_id: int | None
+    batch_identity: str | None
+    tn_id: str | None
+    contact_name: str | None
+    goods: str | None = None
+    places_cnt: int | str | None = None
+    weight: float | str | None = None
+
 
 ##########
 class CertGoodsAcceptCreate(BaseModel):
