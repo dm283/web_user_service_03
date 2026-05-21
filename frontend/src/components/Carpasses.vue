@@ -19,6 +19,8 @@ import FormUser from './FormUser.vue';
 import FormDoc from './FormDoc.vue';
 import FormBatch from './FormBatch.vue';
 import FormDtreg from './FormDtreg.vue';
+import FormRequestBatchToSklad from './FormRequestBatchToSklad.vue';
+import FormCertGoodsAccept from './FormCertGoodsAccept.vue';
 import FormSetBatchStatus from './FormSetBatchStatus.vue';
 import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
 
@@ -80,6 +82,14 @@ const showCardDtreg = ref(false)
 const showAddDtreg = ref(false)
 const showUpdateDtreg = ref(false)
 
+const showCardRequestBatchToSklad = ref(false)
+const showAddRequestBatchToSklad = ref(false)
+const showUpdateRequestBatchToSklad = ref(false)
+
+const showCardCertGoodsAccept = ref(false)
+const showAddCertGoodsAccept = ref(false)
+const showUpdateCertGoodsAccept = ref(false)
+
 const showCardBatch = ref(false)
 const showAddBatch = ref(false)
 const showUpdateBatch = ref(false)
@@ -126,6 +136,8 @@ const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${bac
   `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.type}/${userInfo.contact_uuid}`
 
 const query_dtreg = `http://${backendIpAddress}:${backendPort}/dtreg/`
+const query_requests_batch_to_sklad = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad/`
+const query_cert_goods_accept = `http://${backendIpAddress}:${backendPort}/cert_goods_accept/`
 const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
 const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
@@ -192,6 +204,21 @@ else if (props.view_type == 'dtreg') {
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
+else if (props.view_type == 'requests_batch_to_sklad' || props.view_type == 'add_requests_batch_to_sklad') {
+  state.query = query_requests_batch_to_sklad;
+  state.listTableColumns = {
+    'batch_identity':'Партия товаров (№ ТН, клиент)','batch_id':'id партии','ncar':'№ ТС','comment':'Комментарий','post_date':'Проведена'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+else if (props.view_type == 'cert_goods_accept' || props.view_type == 'add_cert_goods_accept') {
+  state.query = query_cert_goods_accept;
+  state.listTableColumns = {
+    'batch_identity':'Партия товаров (№ ТН, клиент)','request_batch_to_sklad_id':'id заявки размещения партии',
+    'place':'Размещение','goods':'Товары','places_cnt':'Кол-во мест','weight':'Вес','post_date':'Проведен'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
 else if (props.view_type == 'contacts') {
   state.query = query_contacts;
   state.listTableColumns = {
@@ -253,6 +280,12 @@ else if (props.view_type == 'tcells') {
 //
 if (props.view_type == 'add_batch') {
   showAddBatch.value = true
+}
+if (props.view_type == 'add_requests_batch_to_sklad') {
+  showAddRequestBatchToSklad.value = true
+}
+if (props.view_type == 'add_cert_goods_accept') {
+  showAddCertGoodsAccept.value = true
 }
 
 
@@ -354,6 +387,8 @@ const itemCard = (item, name) => {
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
   else if (name == 'Партии товаров') { showCardBatch.value = true }
   else if (name == 'Таможенное оформление') { showCardDtreg.value = true }
+  else if (name == 'Заявки размещения партий на склад') { showCardRequestBatchToSklad.value = true }
+  else if (name == 'Принятые партии товара') { showCardCertGoodsAccept.value = true }
   else if (name == 'Клиенты') { showCardContact.value = true }
   else if (name == 'Брокеры') { showCardBroker.value = true }
   else if (name == 'Пользователи') { showCardUser.value = true }
@@ -367,6 +402,8 @@ const addItem = (section) => {
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
   else if (section == 'Партии товаров') { showAddBatch.value = true; }
   else if (section == 'Таможенное оформление') { showAddDtreg.value = true; }
+  else if (section == 'Заявки размещения партий на склад') { showAddRequestBatchToSklad.value = true; }
+  else if (section == 'Принятые партии товара') { showAddCertGoodsAccept.value = true; }
   else if (section == 'Клиенты') { showAddContact.value = true; }
   else if (section == 'Брокеры') { showAddBroker.value = true; }
   else if (section == 'Пользователи') { showAddUser.value = true; }
@@ -381,6 +418,8 @@ const editItem = (item, name) => {
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
   else if (name == 'Партии товаров') { showUpdateBatch.value = true }
   else if (name == 'Таможенное оформление') { showUpdateDtreg.value = true }
+  else if (name == 'Заявки размещения партий на склад') { showUpdateRequestBatchToSklad.value = true }
+  else if (name == 'Принятые партии товара') { showUpdateCertGoodsAccept.value = true }
   else if (name == 'Клиенты') { showUpdateContact.value = true }
   else if (name == 'Брокеры') { showUpdateBroker.value = true }
   else if (name == 'Пользователи') { showUpdateUser.value = true }
@@ -490,7 +529,8 @@ const clickNotificationRow = async (item) => {
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
-    <!-- **********************   MODAL DTREG CARD   ************************** -->
+
+  <!-- **********************   MODAL DTREG CARD   ************************** -->
   <div v-if="showCardDtreg" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
     <FormDtreg @close-modal="showCardDtreg=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
       :itemData="selectedItem" :isCard="true"/>
@@ -504,6 +544,39 @@ const clickNotificationRow = async (item) => {
     <FormDtreg @close-modal="showUpdateDtreg=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
+
+
+    <!-- **********************   MODAL REQUESTBATCHTOSKLAD CARD   ************************** -->
+  <div v-if="showCardRequestBatchToSklad" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormRequestBatchToSklad @close-modal="showCardRequestBatchToSklad=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL REQUESTBATCHTOSKLAD ADD   ************************** -->
+  <div v-if="showAddRequestBatchToSklad" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormRequestBatchToSklad @close-modal="showAddRequestBatchToSklad=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL REQUESTBATCHTOSKLAD EDIT  ************************** -->
+  <div v-if="showUpdateRequestBatchToSklad" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormRequestBatchToSklad @close-modal="showUpdateRequestBatchToSklad=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
+
+    <!-- **********************   MODAL CERTGOODSACCEPT CARD   ************************** -->
+  <div v-if="showCardCertGoodsAccept" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormCertGoodsAccept @close-modal="showCardCertGoodsAccept=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL CERTGOODSACCEPT ADD   ************************** -->
+  <div v-if="showAddCertGoodsAccept" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormCertGoodsAccept @close-modal="showAddCertGoodsAccept=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL CERTGOODSACCEPT EDIT  ************************** -->
+  <div v-if="showUpdateCertGoodsAccept" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormCertGoodsAccept @close-modal="showUpdateCertGoodsAccept=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
 
   <!-- **********************   MODAL CONTACT CARD   ************************** -->
   <div v-if="showCardContact" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
@@ -554,22 +627,6 @@ const clickNotificationRow = async (item) => {
     <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" @reopen-card="reopenCard" 
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
-
-
-
-  <!-- **********************   MODAL USER CARD   ************************** -->
-  <!-- <div v-if="showCardUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showCardUser=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
-  </div> -->
-  <!-- **********************   MODAL USER ADD   ************************** -->
-  <!-- <div v-if="showAddUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showAddUser=false" @doc-created="getData" />
-  </div> -->
-  <!-- **********************   MODAL USER EDIT  ************************** -->
-  <!-- <div v-if="showUpdateUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" :itemData="selectedItem"/>
-  </div> -->
-
 
 
   <!-- **********************   MODAL ENTRY_REQUEST CARD   ************************** -->

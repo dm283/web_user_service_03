@@ -39,43 +39,56 @@ const authHeader = () => {
 
 <template>
 <div class="bg-white">
-  <div class="h-12 pl-5 py-4 text-xl font-normal">Диспетчер СВХ</div>
+  <div class="h-12 pl-5 py-4 text-xl font-normal">Складская группа</div>
   <div class="">
-    <div class="inline-block mt-5 ml-5">
-      <RouterLink to="/add_batch">
-        <CatalogSection :label="'Добавить партию товаров'" :icon="'plus-circle'" :description="'Добавление новой партии товаров'" />
-      </RouterLink>
-    </div>
-    <div class="inline-block mt-5 ml-5">
-      <RouterLink to="/batches">
-        <CatalogSection :label="'Партии товаров'" :icon="'box'" :description="'Работа с партиями товаров'" />
-      </RouterLink>
-    </div>
-    <div class="inline-block mt-5 ml-5">
-      <RouterLink to="/registration_dt">
-        <CatalogSection :label="'Регистрация ДТ'" :icon="'clipboard'" :description="'Документы таможенного оформления'" />
-      </RouterLink>
-    </div>
-    <div class="inline-block mt-5 ml-5">
-      <RouterLink to="/add_requests_batch_to_sklad">
-        <CatalogSection :label="'Создать заявку размещения партии'" :icon="'plus-circle'" :description="'Создание новой заявки'" />
-      </RouterLink>
-    </div>
+    <!-- <div class="block">
     <div class="inline-block mt-5 ml-5">
       <RouterLink to="/requests_batch_to_sklad">
         <CatalogSection :label="'Заявки размещения партий'" :icon="'directions'" :description="'Заявки размещения партий на склад'" />
       </RouterLink>
     </div>
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="">
+        <CatalogSection :label="'Заявки выдачи (выезда)'" :icon="'directions-alt'" :description="'в работе'" />
+      </RouterLink>
+    </div>
+    </div> -->
+
+    <div class="block">
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/add_cert_goods_accept">
+        <CatalogSection :label="'Создать акт приёма'" :icon="'plus-circle'" :description="'Создание нового акта'" />
+      </RouterLink>
+    </div>
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="/certs_goods_accept">
+        <CatalogSection :label="'Принятые партии товаров'" :icon="'box'" :description="'Акты приёма товаров на склад'" />
+      </RouterLink>
+    </div>
+    </div>
 
     <div class="block">
     <div class="inline-block mt-5 ml-5">
       <RouterLink to="">
-        <CatalogSection :label="'Создать заявку выдачи товара'" :icon="'plus-circle'" :description="'в работе'" />
+        <CatalogSection :label="'Создать акт выдачи'" :icon="'plus-circle'" :description="'в работе'" />
       </RouterLink>
     </div>
     <div class="inline-block mt-5 ml-5">
       <RouterLink to="">
-        <CatalogSection :label="'Заявки выдачи (выезда)'" :icon="'directions-alt'" :description="'в работе'" />
+        <CatalogSection :label="'Выдача партий товара'" :icon="'arrow-circle-right'" :description="'в работе'" />
+      </RouterLink>
+    </div>
+    </div>
+
+    <div class="block">
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="">
+        <CatalogSection :label="'Остатки товаров по складу '" :icon="'database'" :description="'в работе'" />
+      </RouterLink>
+    </div>
+    <div class="inline-block mt-5 ml-5">
+      <RouterLink to="">
+        <CatalogSection :label="'Услуги склада'" :icon="'briefcase'" :description="'в работе'" />
       </RouterLink>
     </div>
     </div>

@@ -21,6 +21,11 @@ import BatchesView from "@/views/BatchesView.vue";
 import AddBatchView from "@/views/AddBatchView.vue";
 import UploadListsView from "@/views/UploadListsView.vue";
 import DtregView from "@/views/DtregView.vue";
+import RequestBatchToSkladView from "@/views/RequestBatchToSkladView.vue";
+import AddRequestBatchToSkladView from "@/views/AddRequestBatchToSkladView.vue";
+import SkladSectionView from "@/views/SkladSectionView.vue";
+import AddCertGoodsAcceptView from "@/views/AddCertGoodsAcceptView.vue";
+import CertGoodsAcceptView from "@/views/CertGoodsAcceptView.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
 // import EditItemView from "@/views/EditItemView.vue";
@@ -47,6 +52,12 @@ const router = createRouter({
     { path: '/batches', name: 'batches', component: BatchesView, },
     { path: '/add_batch', name: 'add_batch', component: AddBatchView, },
     { path: '/registration_dt', name: 'registration_dt', component: DtregView, },
+    { path: '/requests_batch_to_sklad', name: 'requests_batch_to_sklad', component: RequestBatchToSkladView, },
+    { path: '/add_requests_batch_to_sklad', name: 'add_requests_batch_to_sklad', component: AddRequestBatchToSkladView, },
+
+    { path: '/sklad_section', name: 'sklad_section', component: SkladSectionView, },
+    { path: '/add_cert_goods_accept', name: 'add_cert_goods_accept', component: AddCertGoodsAcceptView, },
+    { path: '/certs_goods_accept', name: 'certs_goods_accept', component: CertGoodsAcceptView, },
 
     { path: '/administration', name: 'administration', component: AdministrationView, },
     { path: '/users', name: 'users', component: UsersView, },

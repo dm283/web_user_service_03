@@ -369,3 +369,45 @@ class Tcell(Base):
     id = Column(Integer, primary_key=True)
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
+
+
+class RequestBatchToSklad(Base):
+    __tablename__ = 'request_batch_to_sklad'
+    
+    batch_uuid = Column(String, ForeignKey('batches.uuid'))
+    carpass_uuid = Column(String, ForeignKey('carpasses.uuid'))
+    is_completed = Column(Boolean, default=False)
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    comment = Column(String)
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)
+    was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+
+
+class CertGoodsAccept(Base):
+    __tablename__ = 'cert_goods_accept'
+    
+    request_batch_to_sklad_uuid = Column(String, ForeignKey('request_batch_to_sklad.uuid'))
+    batch_uuid = Column(String, ForeignKey('batches.uuid'))
+    place_tzone = Column(String)
+    place_tcell = Column(String)
+    goods = Column(String)          # batch
+    places_cnt = Column(Integer)    # batch
+    weight = Column(Float)          # batch
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    comment = Column(String)
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)
+    was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
