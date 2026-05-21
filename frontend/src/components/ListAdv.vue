@@ -425,10 +425,10 @@ const dataRender = () => {
       if (renderedData[i].is_completed==true) { listRowStyle[i] = 'text-slate-400' }
     };
     if (props.name=='Заявки на въезд ТС') {
-      if (renderedData[i].status=='entered') { listRowStyle[i] = 'bg-blue-50' }
+      if (renderedData[i].status=='entered') { listRowStyle[i] = 'text-slate-400' }
     }
     if (props.name=='Пропуска ТС на въезд') {
-      if (renderedData[i].status=='archival') { listRowStyle[i] = 'bg-blue-50' }
+      if (renderedData[i].status=='archival') { listRowStyle[i] = 'text-slate-400' }
     }
     if (props.name=='Оповещения') {
       if (renderedData[i].status=='новое') { listRowStyle[i] = 'bg-red-50' }
