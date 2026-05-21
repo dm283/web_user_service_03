@@ -43,6 +43,7 @@ const itemFields = [
     'place_tcell',
     'fito_control',
     'vet_control',
+    'fwms',
     'comment',
   ]
 
@@ -184,6 +185,7 @@ const setInitialForm = () => {
       form['carpass_ncar_input'] = state.initial_ncar          // for dropdowns
       form['carpass_ncar_dateen'] = state.initial_ncar_dateen          // for dropdowns
     }
+    console.log('!!! item =', props.itemData)
   } else {  // create
     for (let field of itemFields) {
       form[field] = null

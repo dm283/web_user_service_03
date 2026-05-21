@@ -465,7 +465,7 @@ const refreshCard = async () => {
             </div>
           </div>
         </div>
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Место территори</label>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Место территории</label>
           <input type="text" v-model="form.place_tcell" :class="[errField['place_tcell']==1 ? formInputStyleErr : formInputStyle]"
             :required="true" :disabled="true" />
         </div>      

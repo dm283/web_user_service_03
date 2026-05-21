@@ -56,8 +56,8 @@ const showAskCloseWithoutSave = ref(false)
 // for dropdowns
 onMounted(async () => {
     try {
-      // заменить на партии проведенные и находящиеся на стоянке (fwms=false)
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/batches_posted/`, {headers: authHeader()});
+      // заменить на партии проведенные и находящиеся на стоянке (to_sklad=false, fwms=false)
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/batches_for_request_goods_accept/`, {headers: authHeader()});
       state.batches = response.data;
     } catch (error) {
       console.error('Error fetching docs', error);
@@ -137,7 +137,6 @@ const setInitialForm = () => {
   if (props.itemData) { // card and update
     for (let field of itemFields) {
       form[field] = props.itemData[field]
-      console.log('field', field, form[field], props.itemData[field])
       form['batch_input'] = state.initial_batch_input  // for dropdowns
       form['batch_id'] = state.initial_batch_id    // for dropdowns
       form['carpass_uuid'] = state.initial_carpass_uuid          // for dropdowns
@@ -339,15 +338,11 @@ const refreshCard = async () => {
     <div class="ml-6 mt-3" v-if="props.itemData">
        <div class="inline-block mr-3 text-sm font-semibold text-white rounded-md px-1 bg-red-400" 
           v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
-      <!-- <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-if="props.itemData.status=='на СВХ'">
-        на СВХ</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-amber-500" v-else-if="props.itemData.status=='Там.офор.'">
-        Там.офор.</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-amber-400" v-else-if="props.itemData.status=='Ч.офор.'">
-        Ч.офор.</div>
-      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-500" v-else-if="props.itemData.status=='Выпуск'">
-        Выпуск</div> -->
+      <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-if="props.itemData.is_completed==false">
+        СОЗДАНА</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-green-500" v-else-if="props.itemData.is_completed==true">
+        ВЫПОЛНЕНА</div>
       </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">

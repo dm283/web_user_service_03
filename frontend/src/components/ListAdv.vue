@@ -421,6 +421,9 @@ const dataRender = () => {
       else if (renderedData[i].status=='Ч.офор.') { listRowStyle[i] = 'bg-amber-50' }
       else if (renderedData[i].status=='Выпуск') { listRowStyle[i] = 'bg-green-100' }
     };
+    if (props.name=='Заявки размещения партий на склад') {
+      if (renderedData[i].is_completed==true) { listRowStyle[i] = 'text-slate-400' }
+    };
     if (props.name=='Заявки на въезд ТС') {
       if (renderedData[i].status=='entered') { listRowStyle[i] = 'bg-blue-50' }
     }

@@ -214,8 +214,8 @@ else if (props.view_type == 'requests_batch_to_sklad' || props.view_type == 'add
 else if (props.view_type == 'cert_goods_accept' || props.view_type == 'add_cert_goods_accept') {
   state.query = query_cert_goods_accept;
   state.listTableColumns = {
-    'batch_uuid':'Партия товаров (№ ТН, клиент)','request_batch_to_sklad_uuid':'Заявка размещения партии',
-    'place_tzone':'tzone','place_tcell':'tcell','goods':'Товары','places_cnt':'Кол-во мест','weight':'Вес','post_date':'Проведен'
+    'batch_identity':'Партия товаров (№ ТН, клиент)','request_batch_to_sklad_id':'id заявки размещения партии',
+    'place':'Размещение','goods':'Товары','places_cnt':'Кол-во мест','weight':'Вес','post_date':'Проведен'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }

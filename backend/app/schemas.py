@@ -456,6 +456,7 @@ class Batch(BatchCreate):
 
 
 class BatchJoined(Batch):
+    fwms: bool
     ncar: str | None
     dateen: date | None     
     contact_name: str | None  
@@ -596,6 +597,7 @@ class RequestBatchToSklad(RequestBatchToSkladCreate):
         from_attributes = True
 
 class RequestBatchToSkladJoined(RequestBatchToSklad):
+    is_completed: bool
     batch_id: int | None
     batch_identity: str | None
     ncar: str | None
@@ -646,7 +648,8 @@ class CertGoodsAccept(CertGoodsAcceptCreate):
     class Config:
         from_attributes = True
 
-# class CertGoodsAcceptJoined(CertGoodsAccept):
-#     batch_id: int | None
-#     batch_identity: str | None
-#     ncar: str | None
+class CertGoodsAcceptJoined(CertGoodsAccept):
+    batch_id: int | None
+    batch_identity: str | None
+    place: str | None
+    request_batch_to_sklad_id: int | None

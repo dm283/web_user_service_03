@@ -873,7 +873,7 @@ def read_dtregs(current_user: Annotated[UserAuth, Depends(get_current_active_use
     return items
 
 
-@app.get('/cert_goods_accept/', response_model=list[schemas.CertGoodsAccept])
+@app.get('/cert_goods_accept/', response_model=list[schemas.CertGoodsAcceptJoined])
 def read_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_cert_goods_accept(db, skip=skip, limit=limit)
@@ -905,6 +905,13 @@ def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def read_batches_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_batches_posted(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/batches_for_request_goods_accept/', response_model=list[schemas.BatchJoined])
+def read_batches_for_request_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_batches_for_request_goods_accept(db, skip=skip, limit=limit)
     return items
 
 

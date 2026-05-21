@@ -327,9 +327,41 @@ def get_requests_batch_to_sklad_for_cert(db: Session, skip: int = 0, limit: int 
     return db_full_response
 
 
+# def get_cert_goods_accept(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.is_active==True).\
+#         order_by(models.CertGoodsAccept.created_datetime.desc()).all()
+
+
 def get_cert_goods_accept(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.is_active==True).\
-        order_by(models.CertGoodsAccept.created_datetime.desc()).all()
+    #
+    main_table = aliased(models.CertGoodsAccept)
+    batch = aliased(models.Batch)
+    contact = aliased(models.Contact)
+    request_goods_accept = aliased(models.RequestBatchToSklad)
+
+    response = db.query(main_table, batch, contact, request_goods_accept).\
+        join(batch, batch.uuid == main_table.batch_uuid, isouter=True).\
+        join(contact, contact.uuid == batch.contact_uuid, isouter=True).\
+        join(request_goods_accept, request_goods_accept.uuid == main_table.request_batch_to_sklad_uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        batch_id=row[1].__dict__['id'] if row[1] else None
+        batch_tn_id=row[1].__dict__['tn_id'] if row[1] else ''
+        # batch_client=row[1].__dict__['contact_uuid'] if row[1] else ''
+        batch_client=row[2].__dict__['name'] if row[2] else ''
+        batch_identity = f"{batch_tn_id} ({batch_client})"
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        request_batch_to_sklad_id = row[3].__dict__['id'] if row[3] else None
+        db_full_response.append(schemas.CertGoodsAcceptJoined(**row[0].__dict__, batch_id=batch_id, batch_identity=batch_identity, 
+                                                    place=place, request_batch_to_sklad_id=request_batch_to_sklad_id))
+
+    return db_full_response
+
 
 # def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
 #     return db.query(models.Dtreg).filter(models.Dtreg.is_active==True).\
@@ -436,6 +468,39 @@ def get_batches_posted(db: Session, skip: int = 0, limit: int = 100):
 
     response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
         filter(main_table.posted==True).\
+        join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        broker_name=row[1].__dict__['name'] if row[1] else None
+        contact_name=row[2].__dict__['name'] if row[2] else None
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        dateen=row[3].__dict__['dateen'] if row[3] else None
+        docs_exist=1 if row[4] else 0
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"  
+        db_full_response.append(schemas.BatchJoined(**row[0].__dict__, contact_name=contact_name, broker_name=broker_name, 
+                                                    ncar=ncar, dateen=dateen, docs_exist=docs_exist, place=place))
+
+    return db_full_response
+
+
+def get_batches_for_request_goods_accept(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Batch)
+    contact_1 = aliased(models.Contact)
+    contact_2 = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact_1, contact_2, carpass, related_docs).\
+        filter(main_table.posted==True, main_table.to_sklad==False, main_table.fwms==False).\
         join(contact_1, contact_1.uuid == main_table.broker_uuid, isouter=True).\
         join(contact_2, contact_2.uuid == main_table.contact_uuid, isouter=True).\
         join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
