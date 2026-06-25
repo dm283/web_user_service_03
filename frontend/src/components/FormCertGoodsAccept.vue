@@ -323,7 +323,7 @@ const reattachFile = async (doc_uuid, obj_uuid) => {
 }
 
 const refreshCard = async () => {
-  let query = `http://${backendIpAddress}:${backendPort}/dtreg_by_uuid/${props.itemData.uuid}`
+  let query = `http://${backendIpAddress}:${backendPort}/cert_goods_accept_by_uuid/${props.itemData.uuid}`
   let response = await axios.get(query, {headers: authHeader()});
   let item = response.data;
   let reopenType = props.isCard ? 'card' : 'edit'

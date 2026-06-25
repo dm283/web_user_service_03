@@ -66,6 +66,24 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 #############################
+def check_endpoint_role_access(url, type, current_role_id):
+    #
+    endpoint_allowed_roles_dict = {
+        'put'+'/upload_file/': [1,],
+        'put'+'/upload_excel_list/': [1,],
+        'post'+'/document_records/': ['all', ],  #'all'
+        'put'+'/upload_file_for_carpass/': ['all', ],  #'all'
+        'get'+'/users/': [1,],
+    }
+
+    if 'all' in endpoint_allowed_roles_dict[type+url]:
+        return
+
+    print('111', type+url, endpoint_allowed_roles_dict[type+url])
+
+    if current_role_id not in endpoint_allowed_roles_dict[type+url]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Отсутствует доступ')
+    
 
 def get_db():
     db = SessionLocal()
@@ -354,6 +372,9 @@ def load_excel(entity, file_location, user_uuid, db):
 @app.put("/upload_file/")
 async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     entity: Annotated[str, Form()], file: UploadFile, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='/upload_file/', type='put', current_role_id=current_user.role_id)
+
     try:
         filecontent = file.file.read()
         if not os.path.exists('uploaded_files'):
@@ -480,6 +501,9 @@ def load_excel_list(entity, file_location, cols, cols_not_empty_val, model, sche
 @app.put("/upload_excel_list/")
 async def upload_excel_list(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     entity: Annotated[str, Form()], db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='/upload_excel_list/', type='put', current_role_id=current_user.role_id)
+
     entity_trans = {'Территории терминала': 'tzone', 'Места территорий': 'tcell'}
     file_location = {
         'Территории терминала': PATH_TZONE,
@@ -523,6 +547,8 @@ async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_
                                   post_user_id: Annotated[str, Form()],
                                   file: UploadFile, db: Session = Depends(get_db)):
     
+    check_endpoint_role_access(url='/upload_file_for_carpass/', type='put', current_role_id=current_user.role_id)
+
     file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
     if '.' in file.filename:
         fname_splited = file.filename.rpartition('.')
@@ -1153,6 +1179,9 @@ def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_
 @app.post("/document_records/", response_model=schemas.DocumentRecord)
 def create_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='/document_records/', type='post', current_role_id=current_user.role_id)
+
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
     return crud.create_document_record(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1540,6 +1569,9 @@ def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_activ
 @app.get("/users/", response_model=list[schemas.UserJoined])
 def read_users(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='/users/', type='get', current_role_id=current_user.role_id)
+
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 

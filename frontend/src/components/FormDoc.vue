@@ -199,7 +199,7 @@ const handleSubmit = async () => {
     if (!props.itemDataDoc) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/document_records/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-      toast.success('Новая документ добавлен');
+      toast.success('Новый документ добавлен');
       state.responseItem = response.data;
     } else {
       const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records/${props.itemDataDoc.id}`, 
