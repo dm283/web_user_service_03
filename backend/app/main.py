@@ -15,13 +15,17 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel
 
-from app import crud, models, schemas, views
+# from app import crud, models, schemas, views
+from app import crud, models, schemas
 from app.database import SessionLocal, engine
 from service_functions import *
-from app.database import PATH_TZONE, PATH_TCELL
+from app.database import PATH_TZONE, PATH_TCELL, DEV
 
 
-app = FastAPI()
+if DEV == 'false':
+    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+else:
+    app = FastAPI()
 
 origins = [
     "*",
@@ -35,7 +39,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(views.router, prefix='/dashboard', tags=['dashboard'])
+# app.include_router(views.router, prefix='/dashboard', tags=['dashboard'])
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -174,6 +178,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 @app.get('/')
 async def index():
     return {'message': 'fastapi server is working'}
+
 
 #########################################################    SERVICE FUNCTIONS
 def redefine_schema_values_to_none(data, schema_obj):
@@ -1626,48 +1631,48 @@ def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_acti
 
 
 
-from app import views
+# from app import views
 
-@app.post('/signin', status_code=status.HTTP_202_ACCEPTED)
-async def user_sign_in(
-    login: Union[str, None] = None,
-    password: Union[str, None] = None,
-    db: Session = Depends(get_db)
-):
-    # user authentification
-    # global IS_AUTHORIZED
+# @app.post('/signin', status_code=status.HTTP_202_ACCEPTED)
+# async def user_sign_in(
+#     login: Union[str, None] = None,
+#     password: Union[str, None] = None,
+#     db: Session = Depends(get_db)
+# ):
+#     # user authentification
+#     # global IS_AUTHORIZED
     
-    # print(f'!!!!!! post request = *{login}* *{password}*') ######
+#     # print(f'!!!!!! post request = *{login}* *{password}*') ######
 
-    if not views.IS_AUTH_REQUIRED:
-        return {'message': 'authorization is not required'}
+#     if not views.IS_AUTH_REQUIRED:
+#         return {'message': 'authorization is not required'}
     
-    # if IS_AUTH_REQUIRED and IS_AUTHORIZED:
-    #     return {'message': 'authorization has already done'}
+#     # if IS_AUTH_REQUIRED and IS_AUTHORIZED:
+#     #     return {'message': 'authorization has already done'}
 
-    if (not login) or (not password):
-        raise HTTPException(
-            status_code=401,
-            detail='Incorrect username or password',
-        )
+#     if (not login) or (not password):
+#         raise HTTPException(
+#             status_code=401,
+#             detail='Incorrect username or password',
+#         )
         
-    db_user = crud.get_user_by_login(db, login=login)
-    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    if db_user:
-        check_password = password_context.verify(password, db_user.hashed_password)
+#     db_user = crud.get_user_by_login(db, login=login)
+#     password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+#     if db_user:
+#         check_password = password_context.verify(password, db_user.hashed_password)
 
-    if db_user and check_password:
-        # IS_AUTHORIZED = True
+#     if db_user and check_password:
+#         # IS_AUTHORIZED = True
 
-        new_token = str(random.randint(1, 1000000))
-        views.TOKEN_LIST.append(new_token)
-        # print('new_token, TOKEN_LIST =', new_token, TOKEN_LIST) ##
+#         new_token = str(random.randint(1, 1000000))
+#         views.TOKEN_LIST.append(new_token)
+#         # print('new_token, TOKEN_LIST =', new_token, TOKEN_LIST) ##
 
-        # return {'user': login}
-        return {'your_new_token': new_token}
-    else:
-        raise HTTPException(
-            status_code=401,
-            detail='Incorrect username or password',
-        )
+#         # return {'user': login}
+#         return {'your_new_token': new_token}
+#     else:
+#         raise HTTPException(
+#             status_code=401,
+#             detail='Incorrect username or password',
+#         )
     
