@@ -1615,6 +1615,15 @@ def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_acti
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
+
+@app.get('/user_by_login_full/{login}', response_model=schemas.UserJoined)
+def read_user_by_login(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        login: str, db: Session = Depends(get_db)):
+    item = crud.get_user_by_login_full(db, login=login)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
 ################################ items
 # @app.post("/users/{user_id}/items/", response_model=schemas.Item)
 # def create_item_for_user(

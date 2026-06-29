@@ -56,7 +56,8 @@ const authHeader = () => {
 async function getData() {
   //
   try {
-    const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/users/by_name/${login.value}`, {headers: authHeader()})
+    // const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/users/by_name/${login.value}`, {headers: authHeader()})
+    const response1 = await axios.get(`http://${backendIpAddress}:${backendPort}/user_by_login_full/${login.value}`, {headers: authHeader()})
     state.userInfo = response1.data  // contact_id, type
     if (state.userInfo.contact_id != 0) {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts/${state.userInfo.contact_id}`, {headers: authHeader()})
