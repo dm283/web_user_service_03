@@ -168,7 +168,7 @@ const postingItem = async () => {
   //
   try {
     if (props.itemDataDoc) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records_posting/${props.itemDataDoc.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records_posting/${props.itemDataDoc.uuid}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else {

@@ -1062,9 +1062,9 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
     return item_from_db
 
 
-def update_batch(db: Session, item_id: int, item: schemas.BatchUpdate, user_uuid: str):
+def update_batch(db: Session, item_uuid: str, item: schemas.BatchUpdate, user_uuid: str):
     #
-    item_from_db = db.query(models.Batch).filter(models.Batch.id == item_id).first()
+    item_from_db = db.query(models.Batch).filter(models.Batch.uuid == item_uuid).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
@@ -1439,10 +1439,12 @@ def deactivate_carpass(db: Session, carpass_id: int):
 #     return carpass_from_db.id
 
 #########################################################    POSTING FUNCTIONS
-def common_posting_entity_item(db: Session, item_id: int, db_model, schema_obj, foo_fields_validation, foo_check_conditions):
+def common_posting_entity_item(db: Session, item_uuid: str, db_model, schema_obj, foo_fields_validation, foo_check_conditions):
+# def common_posting_entity_item(db: Session, item_id: int, db_model, schema_obj, foo_fields_validation, foo_check_conditions):
     # COMMON FUNCTION FOR ALL ENTITIES - POSTING ITEMS
     # 01 - get item from db
-    item_from_db = db.query(db_model).filter(db_model.id == item_id).first()
+    item_from_db = db.query(db_model).filter(db_model.uuid == item_uuid).first()
+    # item_from_db = db.query(db_model).filter(db_model.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     if item_from_db.posted:
@@ -1477,7 +1479,7 @@ def common_posting_entity_item(db: Session, item_id: int, db_model, schema_obj, 
     return item_from_db
 
 
-def posting_carpass(db: Session, item_id: int, user_uuid: str):
+def posting_carpass(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1489,7 +1491,7 @@ def posting_carpass(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.Carpass, 
                                schema_obj=schemas.CarpassValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1506,7 +1508,7 @@ def posting_carpass(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_contact(db: Session, item_id: int, user_uuid: str):
+def posting_contact(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1517,7 +1519,7 @@ def posting_contact(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.Contact, 
                                schema_obj=schemas.ContactValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1527,7 +1529,7 @@ def posting_contact(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_document_record(db: Session, item_id: int, user_uuid: str):
+def posting_document_record(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1538,7 +1540,7 @@ def posting_document_record(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.DocumentRecord, 
                                schema_obj=schemas.DocumentRecordValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1549,7 +1551,7 @@ def posting_document_record(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_user(db: Session, item_id: int, user_uuid: str):
+def posting_user(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1560,7 +1562,7 @@ def posting_user(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.User, 
                                schema_obj=schemas.UserValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1570,7 +1572,7 @@ def posting_user(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_entry_request(db: Session, item_id: int, user_uuid: str):
+def posting_entry_request(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1584,7 +1586,7 @@ def posting_entry_request(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.EntryRequest, 
                                schema_obj=schemas.EntryRequestValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1595,7 +1597,7 @@ def posting_entry_request(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_batch(db: Session, item_id: int, user_uuid: str):
+def posting_batch(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1607,7 +1609,7 @@ def posting_batch(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.Batch, 
                                schema_obj=schemas.BatchValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1618,7 +1620,7 @@ def posting_batch(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_dtreg(db: Session, item_id: int, user_uuid: str):
+def posting_dtreg(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1630,7 +1632,7 @@ def posting_dtreg(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.Dtreg, 
                                schema_obj=schemas.DtregValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1648,7 +1650,7 @@ def posting_dtreg(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
+def posting_cert_goods_accept(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1660,7 +1662,7 @@ def posting_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.CertGoodsAccept, 
                                schema_obj=schemas.CertGoodsAcceptValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1686,7 +1688,7 @@ def posting_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
+def posting_requests_batch_to_sklad(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1698,7 +1700,7 @@ def posting_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
         # check general conditions and data for posting posibility
         pass 
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.RequestBatchToSklad, 
                                schema_obj=schemas.RequestBatchToSkladValidation,
                                foo_fields_validation=foo_fields_validation,
@@ -1714,7 +1716,7 @@ def posting_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
     return item_from_db
 
 
-def posting_exitcarpass(db: Session, item_id: int, user_uuid: str):
+def posting_exitcarpass(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
         # fields validation - check values are correct and not contradictory
@@ -1730,7 +1732,7 @@ def posting_exitcarpass(db: Session, item_id: int, user_uuid: str):
         if carpass_enter_from_db.status != 'exit_permitted':
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Отсутствует разрешение на выезд')
 
-    item_from_db = common_posting_entity_item(db=db, item_id=item_id, 
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
                                db_model=models.Exitcarpass, 
                                schema_obj=schemas.ExitcarpassValidation,
                                foo_fields_validation=foo_fields_validation,

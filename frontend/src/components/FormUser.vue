@@ -207,7 +207,7 @@ const postingItem = async () => {
 
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/users_posting/${props.itemData.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/users_posting/${props.itemData.uuid}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else {

@@ -1326,9 +1326,9 @@ def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     return crud.update_entry_request(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/batches/{item_id}', response_model=schemas.Batch)
+@app.put('/batches/{item_uuid}', response_model=schemas.Batch)
 def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
     #
 
     check_endpoint_role_access(url='batches', type='put', current_role_name=current_user.role_name)
@@ -1336,7 +1336,7 @@ def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
     item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_batch(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_batch(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/dtreg/{item_id}', response_model=schemas.Dtreg)
@@ -1508,77 +1508,77 @@ def deactivate_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current
     return crud.deactivate_exitcarpass(db=db, carpass_id=carpass_id)
 
 #########################################################    POSTING ENDPOINTS
-@app.put('/carpasses_posting/{item_id}')
+@app.put('/carpasses_posting/{item_uuid}')
 def posting_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                    item_id: int, db: Session = Depends(get_db)):
+                    item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_carpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_carpass(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/exitcarpasses_posting/{item_id}')
+@app.put('/exitcarpasses_posting/{item_uuid}')
 def posting_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                        item_id: int, db: Session = Depends(get_db)):
+                        item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_exitcarpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_exitcarpass(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/entry_requests_posting/{item_id}')
+@app.put('/entry_requests_posting/{item_uuid}')
 def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_entry_request(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/batch_posting/{item_id}', response_model=schemas.Batch)
+@app.put('/batch_posting/{item_uuid}', response_model=schemas.Batch)
 def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
 
     check_endpoint_role_access(url='batch_posting', type='put', current_role_name=current_user.role_name)
 
-    return crud.posting_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_batch(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/dtreg_posting/{item_id}', response_model=schemas.Dtreg)
+@app.put('/dtreg_posting/{item_uuid}', response_model=schemas.Dtreg)
 def posting_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_dtreg(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/cert_goods_accept_posting/{item_id}', response_model=schemas.CertGoodsAccept)
+@app.put('/cert_goods_accept_posting/{item_uuid}', response_model=schemas.CertGoodsAccept)
 def posting_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_cert_goods_accept(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/requests_batch_to_sklad_posting/{item_id}', response_model=schemas.RequestBatchToSklad)
+@app.put('/requests_batch_to_sklad_posting/{item_uuid}', response_model=schemas.RequestBatchToSklad)
 def posting_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_requests_batch_to_sklad(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/contacts_posting/{item_id}')
+@app.put('/contacts_posting/{item_uuid}')
 def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_contact(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/document_records_posting/{item_id}')
+@app.put('/document_records_posting/{item_uuid}')
 def posting_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_document_record(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_document_record(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/users_posting/{item_id}')
+@app.put('/users_posting/{item_uuid}')
 def posting_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.posting_user(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
 #########################################################    ROLLBACK ENDPOINTS
