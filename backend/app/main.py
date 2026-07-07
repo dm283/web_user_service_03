@@ -1,6 +1,6 @@
 import os, random, ast
 from datetime import date, datetime, time, timedelta, timezone
-from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect, Depends, File # HTTPException
+from fastapi import FastAPI, status, UploadFile, Request, Form, WebSocket, WebSocketDisconnect, Depends, File # HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
@@ -20,6 +20,7 @@ from app import crud, models, schemas
 from app.database import SessionLocal, engine
 from service_functions import *
 from app.database import PATH_TZONE, PATH_TCELL, DEV
+from endpoint_allowed_roles_dict import endpoint_allowed_roles_dict
 
 
 if DEV == 'false':
@@ -38,6 +39,45 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Define permitted loopback addresses (IPv4 and IPv6)
+# ALLOWED_LOCALHOSTS = {"127.0.0.1", "::1"}
+
+# from fastapi.responses import JSONResponse
+
+# @app.middleware("http")
+# async def limit_to_localhost(request: Request, call_next):
+#     # Retrieve the raw client IP address
+#     client_ip = request.client.host
+
+#     print('!! reques', request.__dict__)
+#     print('!! request.client', request.client)
+#     print('!! request.client.host', request.client.host)
+    
+#     # Reject request if it does not originate from localhost
+#     # if client_ip not in ALLOWED_LOCALHOSTS:
+#     #     return JSONResponse(
+#     #         status_code=status.HTTP_403_FORBIDDEN,
+#     #         content={"detail": "Access forbidden: Localhost access only."}
+#     #     )
+        
+#     return await call_next(request)
+
+# @app.middleware("http")
+# async def block_curl_middleware(request: Request, call_next):
+#     user_agent = request.headers.get("user-agent", "")
+    
+#     print(print('!! request', request))
+#     print(print('!! request.headers', request.headers))
+
+#     # if "curl" in user_agent.lower():
+#     #     return Response(
+#     #         content="Access denied for curl clients.", 
+#     #         status_code=status.HTTP_403_FORBIDDEN
+#     #     )
+        
+#     return await call_next(request)
 
 # app.include_router(views.router, prefix='/dashboard', tags=['dashboard'])
 
@@ -70,22 +110,41 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 #############################
-def check_endpoint_role_access(url, type, current_role_id):
+def check_endpoint_role_access(url, type, current_role_name):
     #
-    endpoint_allowed_roles_dict = {
-        'put'+'/upload_file/': [1,],
-        'put'+'/upload_excel_list/': [1,],
-        'post'+'/document_records/': ['all', ],  #'all'
-        'put'+'/upload_file_for_carpass/': ['all', ],  #'all'
-        'get'+'/users/': [1,],
-    }
+    # endpoint_allowed_roles_dict = {
+    #     'put'+'/upload_file/': ['admin',],
+    #     'put'+'/upload_excel_list/': ['admin',],
+    #     'post'+'/document_records/': ['ALL', ],
+    #     'put'+'/upload_file_for_carpass/': ['ALL', ],
+    #     'get'+'/users/': ['admin',],
 
-    if 'all' in endpoint_allowed_roles_dict[type+url]:
+    #     # batches
+    #     'get'+'batches': ['admin',],
+    #     'get'+'batches_client': ['admin','client','broker'],
+    #     'delete'+'batches': ['admin',],
+    #     'put'+'batches_rollback': ['admin',],
+    #     'get'+'related_contact_broker': ['admin','client','broker'],
+    #     'get'+'contacts_posted': ['admin','client','broker'],
+    #     'get'+'carpasses_posted_not_archival': ['admin','client','broker'],
+    #     'get'+'contacts_by_uuid': ['admin','client','broker'],
+    #     'get'+'carpass_by_uuid': ['admin','client','broker'],
+    #     'get'+'obj_docs': ['admin','client','broker'],
+    #     'put'+'batch_posting': ['admin',],
+    #     'post'+'batches': ['admin',],
+    #     'put'+'batches': ['admin',],
+    #     'post'+'create_related_docs_record': ['admin',],
+    #     'get'+'download-file': ['admin','client','broker'],
+    #     'get'+'batch_by_uuid': ['admin','client','broker'],
+
+    # }
+
+    if 'ALL' in endpoint_allowed_roles_dict[type+url]:
         return
 
     print('111', type+url, endpoint_allowed_roles_dict[type+url])
 
-    if current_role_id not in endpoint_allowed_roles_dict[type+url]:
+    if current_role_name not in endpoint_allowed_roles_dict[type+url]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Отсутствует доступ')
     
 
@@ -106,7 +165,8 @@ def get_password_hash(password):
 
 
 def get_user(username: str, db: Session):
-    db_user = crud.get_user_by_login(db=db, login=username)
+    db_user = crud.get_user_by_login_for_auth(db=db, login=username)
+    # db_user = crud.get_user_by_login(db=db, login=username)
     if db_user:
         return db_user
     
@@ -283,6 +343,9 @@ def document_get_filename(current_user: Annotated[UserAuth, Depends(get_current_
 @app.get('/download-file/{document_record_uuid}')
 def document_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     document_record_uuid: str, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='download-file', type='get', current_role_name=current_user.role_name)
+
     document = db.query(models.Document).filter(models.Document.related_doc_uuid == document_record_uuid).first()
     filepath = document.filepath
     filename = document.filename
@@ -378,7 +441,7 @@ def load_excel(entity, file_location, user_uuid, db):
 async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     entity: Annotated[str, Form()], file: UploadFile, db: Session = Depends(get_db)):
     
-    check_endpoint_role_access(url='/upload_file/', type='put', current_role_id=current_user.role_id)
+    check_endpoint_role_access(url='/upload_file/', type='put', current_role_name=current_user.role_name)
 
     try:
         filecontent = file.file.read()
@@ -507,7 +570,7 @@ def load_excel_list(entity, file_location, cols, cols_not_empty_val, model, sche
 async def upload_excel_list(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     entity: Annotated[str, Form()], db: Session = Depends(get_db)):
     
-    check_endpoint_role_access(url='/upload_excel_list/', type='put', current_role_id=current_user.role_id)
+    check_endpoint_role_access(url='/upload_excel_list/', type='put', current_role_name=current_user.role_name)
 
     entity_trans = {'Территории терминала': 'tzone', 'Места территорий': 'tcell'}
     file_location = {
@@ -552,7 +615,7 @@ async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_
                                   post_user_id: Annotated[str, Form()],
                                   file: UploadFile, db: Session = Depends(get_db)):
     
-    check_endpoint_role_access(url='/upload_file_for_carpass/', type='put', current_role_id=current_user.role_id)
+    check_endpoint_role_access(url='/upload_file_for_carpass/', type='put', current_role_name=current_user.role_name)
 
     file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
     if '.' in file.filename:
@@ -581,6 +644,8 @@ def create_related_docs_record(current_user: Annotated[UserAuth, Depends(get_cur
     #
     # data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
     # print('create_related_docs_record', data)
+    check_endpoint_role_access(url='create_related_docs_record', type='post', current_role_name=current_user.role_name)
+
     return crud.create_related_docs_record(db=db, data=data)
 
 
@@ -666,6 +731,9 @@ def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get('/carpass_by_uuid/{uuid}', response_model=schemas.Carpass)
 def read_carpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='carpass_by_uuid', type='get', current_role_name=current_user.role_name)
+
     item = crud.get_carpass_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -684,6 +752,9 @@ def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_cur
 @app.get('/batch_by_uuid/{uuid}', response_model=schemas.Batch)
 def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='batch_by_uuid', type='get', current_role_name=current_user.role_name)
+
     item = crud.get_batch_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -747,6 +818,9 @@ def read_contact(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get("/contacts_by_uuid/{uuid}", response_model=schemas.Contact)
 def read_contact_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                  uuid: str, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='contacts_by_uuid', type='get', current_role_name=current_user.role_name)
+
     db_contact = crud.get_contact_by_uuid(db, uuid=uuid)
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Contact not found")
@@ -836,6 +910,9 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/contacts_posted/", response_model=list[schemas.Contact])
 def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='contacts_posted', type='get', current_role_name=current_user.role_name)
+
     contacts = crud.get_contacts_posted(db, skip=skip, limit=limit)
     return contacts
 
@@ -928,6 +1005,9 @@ def read_requests_batch_to_sklad_for_cert(current_user: Annotated[UserAuth, Depe
 @app.get('/batches/', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='batches', type='get', current_role_name=current_user.role_name)
+
     items = crud.get_batches(db, skip=skip, limit=limit)
     return items
 
@@ -956,6 +1036,9 @@ def read_batches_by_carpass_uuid(current_user: Annotated[UserAuth, Depends(get_c
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 type: str, contact_uuid: str,
                 skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='batches_client', type='get', current_role_name=current_user.role_name)
+
     items = crud.get_batches_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
@@ -985,6 +1068,9 @@ def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_
 @app.get('/carpasses_posted_not_archival/', response_model=list[schemas.Carpass])
 def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='carpasses_posted_not_archival', type='get', current_role_name=current_user.role_name)
+
     items = crud.get_carpasses_posted_not_archival(db, skip=skip, limit=limit)
     return items
 
@@ -1035,6 +1121,9 @@ def formatted_datetime(ov):
 def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          obj_uuid: str, db: Session = Depends(get_db)):
     # get object documents from db table document_records
+
+    check_endpoint_role_access(url='obj_docs', type='get', current_role_name=current_user.role_name)
+
     db_related_docs = db.query(models.RelatedDocs).\
            filter(models.RelatedDocs.obj_uuid==obj_uuid, models.RelatedDocs.is_active==True).\
            order_by(models.RelatedDocs.created_datetime.desc()).all()
@@ -1082,7 +1171,10 @@ def get_related_doc(current_user: Annotated[UserAuth, Depends(get_current_active
 
 @app.get('/related_contact_broker/{contact_uuid}')
 def get_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         contact_uuid: str, db: Session = Depends(get_db)):    
+                         contact_uuid: str, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='related_contact_broker', type='get', current_role_name=current_user.role_name)
+
     stmt = select(models.RelatedContactBroker, models.Contact).where(models.RelatedContactBroker.contact_uuid == contact_uuid,
                                                                      models.RelatedContactBroker.is_active==True,
                                                                      models.Contact.uuid == models.RelatedContactBroker.broker_uuid)
@@ -1162,6 +1254,9 @@ def create_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get
 def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
     #
+
+    check_endpoint_role_access(url='batches', type='post', current_role_name=current_user.role_name)
+
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate) 
     return crud.create_batch(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1185,7 +1280,7 @@ def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_
 def create_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
     
-    check_endpoint_role_access(url='/document_records/', type='post', current_role_id=current_user.role_id)
+    check_endpoint_role_access(url='/document_records/', type='post', current_role_name=current_user.role_name)
 
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
     return crud.create_document_record(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
@@ -1235,6 +1330,9 @@ def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
 def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
     #
+
+    check_endpoint_role_access(url='batches', type='put', current_role_name=current_user.role_name)
+
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
     item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
@@ -1353,6 +1451,9 @@ def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
 @app.delete('/batches/{item_id}')
 def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='batches', type='delete', current_role_name=current_user.role_name)
+
     return crud.delete_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
@@ -1432,6 +1533,9 @@ def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_
 def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_id: int, db: Session = Depends(get_db)):
     #
+
+    check_endpoint_role_access(url='batch_posting', type='put', current_role_name=current_user.role_name)
+
     return crud.posting_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
@@ -1501,6 +1605,9 @@ def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_curren
 @app.put('/batches_rollback/{item_id}')
 def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_id: int, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='batches_rollback', type='put', current_role_name=current_user.role_name)
+
     return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
@@ -1575,7 +1682,8 @@ def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_activ
 def read_users(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     
-    check_endpoint_role_access(url='/users/', type='get', current_role_id=current_user.role_id)
+    check_endpoint_role_access(url='/users/', type='get', current_role_name=current_user.role_name)
+    print('current_user =', current_user.__dict__)
 
     users = crud.get_users(db, skip=skip, limit=limit)
     return users

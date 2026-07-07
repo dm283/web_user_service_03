@@ -301,6 +301,9 @@ class User(UserBase):
 class UserJoined(User):
     contact_name: str | None
     role_name: str | None
+
+class UserFull(UserJoined):
+    hashed_password: str | None
     
         
 #####

@@ -2112,6 +2112,26 @@ def get_user_by_login_full(db: Session, login: str):
     return db_full_response
 
 
+def get_user_by_login_for_auth(db: Session, login: str):
+    #
+    main_table = aliased(models.User)
+    contact_1 = aliased(models.Contact)
+    role_2 = aliased(models.Role)
+
+    response = db.query(main_table, contact_1, role_2).\
+            filter(main_table.login==login, main_table.is_active==True).\
+            join(contact_1, contact_1.uuid==main_table.contact_uuid, isouter=True).\
+            join(role_2, role_2.role_id==main_table.role_id, isouter=True).\
+            order_by(main_table.created_datetime.desc()).first()
+
+    contact_name=response[1].__dict__['name'] if response[1] else None
+    role_name=response[2].__dict__['role_name'] if response[2] else None
+
+    db_full_response = schemas.UserFull(**response[0].__dict__, contact_name=contact_name, role_name=role_name)
+
+    return db_full_response
+
+
 def get_user_by_login(db: Session, login: str):
     #
     return db.query(models.User).filter(models.User.login==login, models.User.posted==True).first()
