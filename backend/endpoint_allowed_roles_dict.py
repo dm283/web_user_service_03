@@ -8,7 +8,6 @@ endpoint_allowed_roles_dict = {
     # batches
     'get'+'batches': ['admin',],
     'get'+'batches_client': ['admin','client','broker'],
-    'delete'+'batches': ['admin',],
     'put'+'batches_rollback': ['admin',],
     # batches card
     'get'+'related_contact_broker': ['admin','client','broker'],
@@ -23,5 +22,19 @@ endpoint_allowed_roles_dict = {
     'post'+'create_related_docs_record': ['admin','client','broker',],
     'get'+'download-file': ['admin','client','broker'],
     'get'+'batch_by_uuid': ['admin','client','broker'],
+
+    # delete items
+    'delete'+'carpasses': ['admin',],
+    'delete'+'exitcarpasses': ['admin',],
+    'delete'+'entry_requests': ['admin',],
+    'delete'+'batches': ['admin',],
+    'delete'+'dtreg': ['admin',],
+    'delete'+'requests_batch_to_sklad': ['admin',],
+    'delete'+'cert_goods_accept': ['admin',],
+    'delete'+'contacts': ['admin',],
+    'delete'+'users': ['admin',],
+    'delete'+'document_records': ['admin',],
+    'delete'+'related_contact_broker': ['admin',],
+    'delete'+'related_docs_record': ['admin','client','broker'],
 
 }

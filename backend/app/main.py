@@ -1438,102 +1438,130 @@ def update_message(current_user: Annotated[UserAuth, Depends(get_current_active_
 
 
 #########################################################    DELETE ITEM ENDPOINTS
-@app.delete('/contacts/{item_id}')
+@app.delete('/contacts/{item_uuid}')
 def delete_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   item_id: int, db: Session = Depends(get_db)):
+                   item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    # return crud.delete_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='contacts', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Contact, schema=schemas.Contact, obj_type='contact', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/users/{item_id}')
+@app.delete('/users/{item_uuid}')
 def delete_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   item_id: int, db: Session = Depends(get_db)):
+                   item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    # return crud.delete_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='users', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.User, schema=schemas.User, obj_type='user', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/carpasses/{item_id}')
+@app.delete('/carpasses/{item_uuid}')
 def delete_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   item_id: int, db: Session = Depends(get_db)):
+                   item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_carpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    # return crud.delete_carpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='carpasses', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Carpass, schema=schemas.Carpass, obj_type='carpass_enter', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/exitcarpasses/{id}')
+@app.delete('/exitcarpasses/{item_uuid}')
 def delete_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                       id: int, db: Session = Depends(get_db)):
+                       item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_exitcarpass(db=db, carpass_id=id, user_uuid=current_user.uuid)
+    # return crud.delete_exitcarpass(db=db, carpass_id=id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='exitcarpasses', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Exitcarpass, schema=schemas.Exitcarpass, obj_type='carpass_exit', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/entry_requests/{item_id}')
+@app.delete('/entry_requests/{item_uuid}')
 def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
+                         item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    #return crud.delete_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='entry_requests', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.EntryRequest, schema=schemas.EntryRequest, obj_type='entry_request', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-# @app.delete('/batches/{item_id}')
 @app.delete('/batches/{item_uuid}')
 def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_uuid: str, db: Session = Depends(get_db)):
     
     check_endpoint_role_access(url='batches', type='delete', current_role_name=current_user.role_name)
-
     # return crud.delete_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
     return crud.delete_item(model=models.Batch, schema=schemas.Batch, obj_type='batch', 
                             db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/dtreg/{item_id}')
+@app.delete('/dtreg/{item_uuid}')
 def delete_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                         item_uuid: str, db: Session = Depends(get_db)):
+    #return crud.delete_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='dtreg', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Dtreg, schema=schemas.Dtreg, obj_type='dtreg', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/cert_goods_accept/{item_id}')
+@app.delete('/cert_goods_accept/{item_uuid}')
 def delete_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                         item_uuid: str, db: Session = Depends(get_db)):
+    # return crud.delete_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='cert_goods_accept', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.CertGoodsAccept, schema=schemas.CertGoodsAccept, obj_type='cert_goods_accept', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/requests_batch_to_sklad/{item_id}')
+@app.delete('/requests_batch_to_sklad/{item_uuid}')
 def delete_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                         item_uuid: str, db: Session = Depends(get_db)):
+    # return crud.delete_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='requests_batch_to_sklad', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.RequestBatchToSklad, schema=schemas.RequestBatchToSklad, obj_type='requests_batch_to_sklad', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+
+
+@app.delete('/document_records/{item_uuid}')
+def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, db: Session = Depends(get_db)):
+    #
+    # return crud.delete_document_records(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='document_records', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.DocumentRecord, schema=schemas.DocumentRecord, obj_type='document_record', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
 @app.delete('/related_contact_broker/{item_id}')
 def delete_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='related_contact_broker', type='delete', current_role_name=current_user.role_name)
     return crud.delete_related_contact_broker(db=db, item_id=item_id)
 
 
 @app.delete('/related_docs_record/{doc_uuid}/{obj_uuid}')
 def delete_related_docs_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          doc_uuid: str, obj_uuid: str, db: Session = Depends(get_db)):
-    return crud.delete_related_docs_record(db=db, doc_uuid=doc_uuid, obj_uuid=obj_uuid)
+    check_endpoint_role_access(url='related_docs_record', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_related_docs_record(db=db, doc_uuid=doc_uuid, obj_uuid=obj_uuid, user_contact_uuid=current_user.contact_uuid)
 
 
-@app.delete('/document_records/{item_id}')
-def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    #
-    return crud.delete_document_records(db=db, item_id=item_id, user_uuid=current_user.uuid)
+# deprecated
+# @app.put('/carpasses_deactivate/{carpass_id}')
+# def deactivate_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                        carpass_id: int, db: Session = Depends(get_db)):
+#     #
+#     return crud.deactivate_carpass(db=db, carpass_id=carpass_id)
 
-
-@app.put('/carpasses_deactivate/{carpass_id}')
-def deactivate_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                       carpass_id: int, db: Session = Depends(get_db)):
-    #
-    return crud.deactivate_carpass(db=db, carpass_id=carpass_id)
-
-
-@app.put('/exitcarpasses_deactivate/{carpass_id}')
-def deactivate_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                           carpass_id: int, db: Session = Depends(get_db)):
-    #
-    return crud.deactivate_exitcarpass(db=db, carpass_id=carpass_id)
+# deprecated
+# @app.put('/exitcarpasses_deactivate/{carpass_id}')
+# def deactivate_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                            carpass_id: int, db: Session = Depends(get_db)):
+#     #
+#     return crud.deactivate_exitcarpass(db=db, carpass_id=carpass_id)
 
 #########################################################    POSTING ENDPOINTS
 @app.put('/carpasses_posting/{item_uuid}')

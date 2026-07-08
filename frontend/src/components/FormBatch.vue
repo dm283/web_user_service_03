@@ -620,8 +620,11 @@ const refreshCard = async () => {
                     @click="downloadFile(document.uuid)">
                   <i class="pi pi-download" style="font-size: 0.8rem"></i></div></td>
                 <td class="text-center max-w-48 overflow-hidden">{{ document.doc_name }}</td>
-                <td class="text-center">{{ document.doc_id }}</td>
-                <td class="text-center">{{ document.doc_date }}</td>
+                <!-- <td class="text-center">{{ document.doc_id }}</td>
+                <td class="text-center">{{ document.doc_date }}</td> -->
+                <td class="text-center">{{ document.contact_uuid }}</td>
+                <td class="text-center">{{ userInfo.contact_uuid }}</td>
+
                 <td class="text-center max-w-48 overflow-hidden">{{ document.file_name }}</td>
                 <td class="text-center">{{ document.login }}</td>
                 <td class="text-center">{{ document.contact }}</td>

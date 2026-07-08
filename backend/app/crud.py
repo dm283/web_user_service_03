@@ -1182,92 +1182,6 @@ def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd: st
     return item_from_db
 
 #########################################################    DELETE FUNCTIONS
-def delete_contact(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    try:
-        db.delete(item_from_db)
-        db.flush()
-    except IntegrityError as err:
-        db.rollback()
-        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
-        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
-    db.commit()
-
-    logging_action(obj_type='contact', schema=schemas.Contact, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-
-    return {"message": f"Contact id {item_id} deleted successfully"}
-
-
-def delete_tzone(db: Session, zone_id: str, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Tzone).filter(models.Tzone.zone_id == zone_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    try:
-        db.delete(item_from_db)
-        db.flush()
-    except IntegrityError as err:
-        db.rollback()
-        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
-        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
-    db.commit()
-
-    logging_action(obj_type='tzone', schema=schemas.Tzone, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-
-    return {"message": f"Zone id {zone_id} deleted successfully"}
-
-
-
-def delete_document_records(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    try:
-        db.delete(item_from_db)
-        db.flush()
-    except IntegrityError as err:
-        db.rollback()
-        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
-        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
-    db.commit()
-
-    logging_action(obj_type='document_record', schema=schemas.DocumentRecord, action='delete', 
-                   item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-
-    return {"message": f"DocumentRecord id {item_id} deleted successfully"}
-
-
-def delete_user(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    try:
-        db.delete(item_from_db)
-        db.flush()
-    except IntegrityError as err:
-        db.rollback()
-        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
-        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
-    db.commit()
-
-    logging_action(obj_type='user', schema=schemas.User, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-
-    return {"message": f"User id {item_id} deleted successfully"}
-
-
 
 def delete_item(model, schema, obj_type, db: Session, item_uuid: str, user_uuid: str):
     # generic delete item function
@@ -1287,10 +1201,140 @@ def delete_item(model, schema, obj_type, db: Session, item_uuid: str, user_uuid:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
     db.commit()
 
+    # SPECIFIC ACTIONS FOR DIFFERENT ENTITIES
+    if obj_type == 'carpass_exit':
+    # update carpass set exitcarpass_created = false
+        carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item_from_db.id_enter).first()
+        if carpass_from_db:
+            setattr(carpass_from_db, 'exitcarpass_created', False)
+            db.commit()
+
+    if obj_type == 'carpass_enter':
+    # update entry_request set carpass_created = false
+        entry_request_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item_from_db.ncar).first()
+        if entry_request_from_db:
+            setattr(entry_request_from_db, 'carpass_created', False)
+            db.commit()
+
+    # LOGGING
     logging_action(obj_type=obj_type, schema=schema, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
     return {"message": f"User uuid {item_uuid} deleted successfully"}
 
+
+def delete_related_contact_broker(db: Session, item_id: int):
+    # specific delete function for related contact broker
+    item_from_db =  db.query(models.RelatedContactBroker).filter(models.RelatedContactBroker.id == item_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    return {"message": f"Item ID {item_id} deleted successfully"}
+
+
+def delete_related_docs_record(db: Session, doc_uuid: str, obj_uuid: str, user_contact_uuid: str):
+    # specific delete function for related docs
+    item_from_db = db.query(models.RelatedDocs).filter(models.RelatedDocs.doc_uuid==doc_uuid,
+                                                              models.RelatedDocs.obj_uuid==obj_uuid).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    # checking if user has rights to deattach file from object (like in frontend)
+    db_docrel_user_contact_uuid = db.query(models.User).filter(models.User.uuid == item_from_db.user_uuid).first().contact_uuid
+    if db_docrel_user_contact_uuid != user_contact_uuid:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Нет доступа к файлу")
+
+    try:
+        db.delete(item_from_db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+    return {"message": f"Item ID {item_from_db.id} deleted successfully"}
+
+
+def delete_tzone(db: Session, zone_id: str, user_uuid: str):
+    # specific delete function for tzone
+    item_from_db = db.query(models.Tzone).filter(models.Tzone.zone_id == zone_id).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+    db.commit()
+    logging_action(obj_type='tzone', schema=schemas.Tzone, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return {"message": f"Zone id {zone_id} deleted successfully"}
+
+
+# def delete_contact(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+#     try:
+#         db.delete(item_from_db)
+#         db.flush()
+#     except IntegrityError as err:
+#         db.rollback()
+#         table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+#         msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+#     db.commit()
+
+#     logging_action(obj_type='contact', schema=schemas.Contact, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+#     return {"message": f"Contact id {item_id} deleted successfully"}
+
+
+# def delete_document_records(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+#     try:
+#         db.delete(item_from_db)
+#         db.flush()
+#     except IntegrityError as err:
+#         db.rollback()
+#         table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+#         msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+#     db.commit()
+
+#     logging_action(obj_type='document_record', schema=schemas.DocumentRecord, action='delete', 
+#                    item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+#     return {"message": f"DocumentRecord id {item_id} deleted successfully"}
+
+
+# def delete_user(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+#     try:
+#         db.delete(item_from_db)
+#         db.flush()
+#     except IntegrityError as err:
+#         db.rollback()
+#         table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+#         msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+#     db.commit()
+
+#     logging_action(obj_type='user', schema=schemas.User, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+#     return {"message": f"User id {item_id} deleted successfully"}
 
 
 # def delete_batch(db: Session, item_id: int, user_uuid: str):
@@ -1307,142 +1351,116 @@ def delete_item(model, schema, obj_type, db: Session, item_uuid: str, user_uuid:
 #     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
-def delete_carpass(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+# def delete_carpass(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    db.delete(item_from_db)
-    db.commit()
+#     db.delete(item_from_db)
+#     db.commit()
 
-    # update entry_request set carpass_created = false
-    entry_request_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item_from_db.ncar).first()
-    if entry_request_from_db:
-        setattr(entry_request_from_db, 'carpass_created', False)
-        db.commit()
+#     # update entry_request set carpass_created = false
+#     entry_request_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.ncar==item_from_db.ncar).first()
+#     if entry_request_from_db:
+#         setattr(entry_request_from_db, 'carpass_created', False)
+#         db.commit()
 
-    logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return {"message": f"Carpass id {item_id} deleted successfully"}
+#     logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return {"message": f"Carpass id {item_id} deleted successfully"}
 
 
-def delete_entry_request(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+# def delete_entry_request(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    try:
-        db.delete(item_from_db)
-    except Exception as err:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+#     try:
+#         db.delete(item_from_db)
+#     except Exception as err:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
 
-    db.commit()
+#     db.commit()
 
-    logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
-    return {"message": f"Item ID {item_id} deleted successfully"}
-
-
-def delete_dtreg(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    try:
-        db.delete(item_from_db)
-    except Exception as err:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
-    db.commit()
-    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return {"message": f"Item ID {item_id} deleted successfully"}
+#     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
-def delete_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    try:
-        db.delete(item_from_db)
-    except Exception as err:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
-    db.commit()
-    logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return {"message": f"Item ID {item_id} deleted successfully"}
+# def delete_dtreg(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     try:
+#         db.delete(item_from_db)
+#     except Exception as err:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+#     db.commit()
+#     logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
-def delete_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    try:
-        db.delete(item_from_db)
-    except Exception as err:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
-    db.commit()
-    logging_action(obj_type='requests_batch_to_sklad', schema=schemas.RequestBatchToSklad, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return {"message": f"Item ID {item_id} deleted successfully"}
+# def delete_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     try:
+#         db.delete(item_from_db)
+#     except Exception as err:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+#     db.commit()
+#     logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
-def delete_related_contact_broker(db: Session, item_id: int):
-    #
-    item_from_db =  db.query(models.RelatedContactBroker).filter(models.RelatedContactBroker.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    try:
-        db.delete(item_from_db)
-    except Exception as err:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
-    db.commit()
-    return {"message": f"Item ID {item_id} deleted successfully"}
+# def delete_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     try:
+#         db.delete(item_from_db)
+#     except Exception as err:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+#     db.commit()
+#     logging_action(obj_type='requests_batch_to_sklad', schema=schemas.RequestBatchToSklad, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
-def delete_related_docs_record(db: Session, doc_uuid: str, obj_uuid: str):
-    #
-    item_from_db =  db.query(models.RelatedDocs).filter(models.RelatedDocs.doc_uuid==doc_uuid,
-                                                              models.RelatedDocs.obj_uuid==obj_uuid).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    try:
-        db.delete(item_from_db)
-    except Exception as err:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
-    db.commit()
-    return {"message": f"Item ID {item_from_db.id} deleted successfully"}
+# def delete_exitcarpass(db: Session, carpass_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     db.delete(item_from_db)
+#     db.commit()
 
+#     # update carpass set exitcarpass_created = false
+#     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item_from_db.id_enter).first()
+#     if carpass_from_db:
+#         setattr(carpass_from_db, 'exitcarpass_created', False)
+#         db.commit()
 
-def delete_exitcarpass(db: Session, carpass_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    db.delete(item_from_db)
-    db.commit()
-
-    # update carpass set exitcarpass_created = false
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item_from_db.id_enter).first()
-    if carpass_from_db:
-        setattr(carpass_from_db, 'exitcarpass_created', False)
-        db.commit()
-
-    ### [ !!! DEVELOPMENT !!! ]  enrich this with saving deleted record into archive table
-    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     ### [ !!! DEVELOPMENT !!! ]  enrich this with saving deleted record into archive table
+#     logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     
-    return {"message": f"Exitcarpass id {carpass_id} deleted successfully"}
+#     return {"message": f"Exitcarpass id {carpass_id} deleted successfully"}
 
 
-def deactivate_carpass(db: Session, carpass_id: int):
-    #
-    carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
-    if carpass_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#
+# def deactivate_carpass(db: Session, carpass_id: int):
+#     #
+#     carpass_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+#     if carpass_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
-    setattr(carpass_from_db, 'is_active', False)
-    db.commit()
+#     setattr(carpass_from_db, 'is_active', False)
+#     db.commit()
 
-    return carpass_from_db.id
+#     return carpass_from_db.id
 
 
 # def deactivate_exitcarpass(db: Session, carpass_id: int):
