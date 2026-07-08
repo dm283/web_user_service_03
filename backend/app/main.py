@@ -843,12 +843,19 @@ def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_
     return documents
 
 
-@app.get('/document_records_client/{user_uuid}/{user_contact_uuid}', response_model=list[schemas.DocumentRecord])
+# @app.get('/document_records_client/{user_uuid}/{user_contact_uuid}', response_model=list[schemas.DocumentRecord])
+# def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                    user_uuid: str, user_contact_uuid: str,
+#                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     # documents = crud.get_documents(db, skip=skip, limit=limit)
+#     documents = crud.get_document_records_client(user_uuid=user_uuid, user_contact_uuid=user_contact_uuid, db=db, skip=skip, limit=limit)
+#     return documents
+
+@app.get('/document_records_client/', response_model=list[schemas.DocumentRecord])
 def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   user_uuid: str, user_contact_uuid: str,
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # documents = crud.get_documents(db, skip=skip, limit=limit)
-    documents = crud.get_document_records_client(user_uuid=user_uuid, user_contact_uuid=user_contact_uuid, db=db, skip=skip, limit=limit)
+    documents = crud.get_document_records_client(user_uuid=current_user.uuid, user_contact_uuid=current_user.contact_uuid, 
+                                                 db=db, skip=skip, limit=limit)
     return documents
 
 
@@ -966,11 +973,17 @@ def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_ac
     return items
 
 
-@app.get('/entry_requests_client/{type}/{contact_uuid}', response_model=list[schemas.EntryRequestJoined])
+# @app.get('/entry_requests_client/{type}/{contact_uuid}', response_model=list[schemas.EntryRequestJoined])
+# def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                         type: str, contact_uuid: str,
+#                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     items = crud.get_entry_requests_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+#     return items
+
+@app.get('/entry_requests_client/', response_model=list[schemas.EntryRequestJoined])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                        type: str, contact_uuid: str,
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_entry_requests_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+    items = crud.get_entry_requests_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
 
@@ -1032,15 +1045,21 @@ def read_batches_by_carpass_uuid(current_user: Annotated[UserAuth, Depends(get_c
     items = crud.get_batches_by_carpass_uuid(carpass_uuid=carpass_uuid, db=db, skip=skip, limit=limit)
     return items
 
-@app.get('/batches_client/{type}/{contact_uuid}', response_model=list[schemas.BatchJoined])
-def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                type: str, contact_uuid: str,
-                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    
-    check_endpoint_role_access(url='batches_client', type='get', current_role_name=current_user.role_name)
+# @app.get('/batches_client/{type}/{contact_uuid}', response_model=list[schemas.BatchJoined])
+# def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                 type: str, contact_uuid: str,
+#                 skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     check_endpoint_role_access(url='batches_client', type='get', current_role_name=current_user.role_name)
+#     items = crud.get_batches_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+#     return items
 
-    items = crud.get_batches_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+@app.get('/batches_client/', response_model=list[schemas.BatchJoined])
+def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batches_client', type='get', current_role_name=current_user.role_name)
+    items = crud.get_batches_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
+
 
 
 @app.get('/carpasses/', response_model=list[schemas.CarpassJoined])
@@ -1050,12 +1069,18 @@ def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_
     return items
 
 
-@app.get('/carpasses_client/{type}/{contact_uuid}', response_model=list[schemas.CarpassJoined])
+@app.get('/carpasses_client/', response_model=list[schemas.CarpassJoined])
 def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   type: str, contact_uuid: str,
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_carpasses_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+    items = crud.get_carpasses_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
+
+# @app.get('/carpasses_client/{type}/{contact_uuid}', response_model=list[schemas.CarpassJoined])
+# def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                    type: str, contact_uuid: str,
+#                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     items = crud.get_carpasses_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+#     return items
 
 
 @app.get('/carpasses_posted/', response_model=list[schemas.Carpass])
