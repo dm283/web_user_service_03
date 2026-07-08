@@ -40,7 +40,7 @@ if (props.itemName == 'Пропуска ТС на въезд') {
 } else if (props.itemName == 'Заявки на въезд ТС') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Партии товаров') {
-  state.query = `http://${backendIpAddress}:${backendPort}/batches_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/batches_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Таможенное оформление') {
   state.query = `http://${backendIpAddress}:${backendPort}/dtreg_rollback/${props.itemData.id}`;
 } else if (props.itemName == 'Заявки размещения партий на склад') {

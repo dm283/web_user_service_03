@@ -1268,6 +1268,45 @@ def delete_user(db: Session, item_id: int, user_uuid: str):
     return {"message": f"User id {item_id} deleted successfully"}
 
 
+
+def delete_item(model, schema, obj_type, db: Session, item_uuid: str, user_uuid: str):
+    # generic delete item function
+    item_from_db =  db.query(model).filter(model.uuid == item_uuid).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    try:
+        db.delete(item_from_db)
+        db.flush()
+    except IntegrityError as err:
+        db.rollback()
+        table_name = err.args[0].partition('таблицы "')[2].partition('"\n')[0]
+        msg_detail = f'Ошибка при удалении - есть связанные объекты в таблице {table_name}'
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg_detail)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+    db.commit()
+
+    logging_action(obj_type=obj_type, schema=schema, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+    return {"message": f"User uuid {item_uuid} deleted successfully"}
+
+
+
+# def delete_batch(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     try:
+#         db.delete(item_from_db)
+#     except Exception as err:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
+#     db.commit()
+#     logging_action(obj_type='batch', schema=schemas.Batch, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return {"message": f"Item ID {item_id} deleted successfully"}
+
+
 def delete_carpass(db: Session, item_id: int, user_uuid: str):
     #
     item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
@@ -1302,20 +1341,6 @@ def delete_entry_request(db: Session, item_id: int, user_uuid: str):
 
     logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
 
-    return {"message": f"Item ID {item_id} deleted successfully"}
-
-
-def delete_batch(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    try:
-        db.delete(item_from_db)
-    except Exception as err:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can't delete item")
-    db.commit()
-    logging_action(obj_type='batch', schema=schemas.Batch, action='delete', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return {"message": f"Item ID {item_id} deleted successfully"}
 
 
@@ -1762,9 +1787,7 @@ def rollback_carpass(db: Session, carpass_id: int, user_uuid: str):
     if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(item_from_db, 'posted', False)
-    setattr(item_from_db, 'post_date', None)
-    setattr(item_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
     logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
@@ -1779,9 +1802,7 @@ def rollback_exitcarpass(db: Session, carpass_id: int, user_uuid: str):
     if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(item_from_db, 'posted', False)
-    setattr(item_from_db, 'post_date', None)
-    setattr(item_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
     logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
@@ -1804,9 +1825,26 @@ def rollback_entry_requests(db: Session, item_id: int, user_uuid: str):
     return item_from_db.id
 
 
-def rollback_batches(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+# def rollback_batches(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+
+#     logging_action(obj_type='batch', schema=schemas.Batch, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
+
+
+
+def rollback_item(model, schema, obj_type, db: Session, item_uuid: str, user_uuid: str):
+    # generic rollback item function
+
+    item_from_db =  db.query(model).filter(model.uuid == item_uuid).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     if not item_from_db.posted:
@@ -1815,8 +1853,9 @@ def rollback_batches(db: Session, item_id: int, user_uuid: str):
     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
-    logging_action(obj_type='batch', schema=schemas.Batch, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    logging_action(obj_type=obj_type, schema=schema, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db.id
+
 
 
 def rollback_dtreg(db: Session, item_id: int, user_uuid: str):
@@ -1872,9 +1911,7 @@ def rollback_contact(db: Session, item_id: int, user_uuid: str):
     if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(item_from_db, 'posted', False)
-    setattr(item_from_db, 'post_date', None)
-    setattr(item_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
     logging_action(obj_type='contact', schema=schemas.Contact, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
@@ -1889,9 +1926,7 @@ def rollback_document_record(db: Session, item_id: int):
     if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(item_from_db, 'posted', False)
-    setattr(item_from_db, 'post_date', None)
-    setattr(item_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
     return item_from_db.id
@@ -1905,9 +1940,7 @@ def rollback_user(db: Session, item_id: int, user_uuid: str):
     if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
     
-    setattr(item_from_db, 'posted', False)
-    setattr(item_from_db, 'post_date', None)
-    setattr(item_from_db, 'post_user_id', None)
+    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
     db.commit()
 
     logging_action(obj_type='user', schema=schemas.User, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)

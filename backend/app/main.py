@@ -1448,13 +1448,16 @@ def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     return crud.delete_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.delete('/batches/{item_id}')
+# @app.delete('/batches/{item_id}')
+@app.delete('/batches/{item_uuid}')
 def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
+                         item_uuid: str, db: Session = Depends(get_db)):
     
     check_endpoint_role_access(url='batches', type='delete', current_role_name=current_user.role_name)
 
-    return crud.delete_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    # return crud.delete_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.delete_item(model=models.Batch, schema=schemas.Batch, obj_type='batch', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
 @app.delete('/dtreg/{item_id}')
@@ -1602,13 +1605,15 @@ def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_curren
     return crud.rollback_entry_requests(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/batches_rollback/{item_id}')
+@app.put('/batches_rollback/{item_uuid}')
 def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
+                            item_uuid: str, db: Session = Depends(get_db)):
     
     check_endpoint_role_access(url='batches_rollback', type='put', current_role_name=current_user.role_name)
 
-    return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.rollback_item(model=models.Batch, schema=schemas.Batch, obj_type='batch', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/dtreg_rollback/{item_id}')
