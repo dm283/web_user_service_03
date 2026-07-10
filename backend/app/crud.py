@@ -1797,68 +1797,6 @@ def posting_exitcarpass(db: Session, item_uuid: str, user_uuid: str):
 
 
 #########################################################    ROLLBACK FUNCTIONS
-def rollback_carpass(db: Session, carpass_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
-
-    logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
-
-
-def rollback_exitcarpass(db: Session, carpass_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
-
-    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
-
-
-def rollback_entry_requests(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
-
-    logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='rollback', 
-                   item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
-
-
-# def rollback_batches(db: Session, item_id: int, user_uuid: str):
-#     #
-#     item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
-#     if item_from_db is None:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-#     if not item_from_db.posted:
-#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-#     db.commit()
-
-#     logging_action(obj_type='batch', schema=schemas.Batch, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-#     return item_from_db.id
-
-
-
 def rollback_item(model, schema, obj_type, db: Session, item_uuid: str, user_uuid: str):
     # generic rollback item function
 
@@ -1872,97 +1810,128 @@ def rollback_item(model, schema, obj_type, db: Session, item_uuid: str, user_uui
     db.commit()
 
     logging_action(obj_type=obj_type, schema=schema, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
-
-
-
-def rollback_dtreg(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
-
-    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
-
-
-def rollback_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
-
-    logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
-
-
-def rollback_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
-
-    logging_action(obj_type='requests_batch_to_sklad', schema=schemas.RequestBatchToSklad, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
-
-
-def rollback_contact(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
-
-    logging_action(obj_type='contact', schema=schemas.Contact, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
-
-
-def rollback_document_record(db: Session, item_id: int):
-    #
-    item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
 
     return item_from_db.id
 
+# def rollback_carpass(db: Session, carpass_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == carpass_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
 
-def rollback_user(db: Session, item_id: int, user_uuid: str):
-    #
-    item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    if not item_from_db.posted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    
-    setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
-    db.commit()
+# def rollback_exitcarpass(db: Session, carpass_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == carpass_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
 
-    logging_action(obj_type='user', schema=schemas.User, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db.id
+# def rollback_entry_requests(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='rollback', 
+#                    item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
+
+# def rollback_batches(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Batch).filter(models.Batch.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='batch', schema=schemas.Batch, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
+
+# def rollback_dtreg(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
+
+# def rollback_cert_goods_accept(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
+
+# def rollback_requests_batch_to_sklad(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='requests_batch_to_sklad', schema=schemas.RequestBatchToSklad, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
+
+# def rollback_contact(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='contact', schema=schemas.Contact, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
+
+# def rollback_document_record(db: Session, item_id: int):
+#     #
+#     item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     return item_from_db.id
+
+# def rollback_user(db: Session, item_id: int, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     if not item_from_db.posted:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+#     setattr(item_from_db, 'posted', False); setattr(item_from_db, 'post_date', None); setattr(item_from_db, 'post_user_id', None)
+#     db.commit()
+#     logging_action(obj_type='user', schema=schemas.User, action='rollback', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db.id
 
 #########################################################    STATUS MANAGING FUNCTIONS
 def car_exit_permit(db: Session, carpass_id: int):

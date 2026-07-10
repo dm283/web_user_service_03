@@ -991,9 +991,7 @@ def read_requests_batch_to_sklad_for_cert(current_user: Annotated[UserAuth, Depe
 @app.get('/batches/', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    
     check_endpoint_role_access(url='batches', type='get', current_role_name=current_user.role_name)
-
     items = crud.get_batches(db, skip=skip, limit=limit)
     return items
 
@@ -1038,6 +1036,7 @@ def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get('/carpasses/', response_model=list[schemas.CarpassJoined])
 def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='carpasses', type='get', current_role_name=current_user.role_name)
     items = crud.get_carpasses(db, skip=skip, limit=limit)
     return items
 
@@ -1045,6 +1044,7 @@ def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_
 @app.get('/carpasses_client/', response_model=list[schemas.CarpassJoined])
 def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='carpasses', type='get', current_role_name=current_user.role_name)
     items = crud.get_carpasses_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
@@ -1611,71 +1611,97 @@ def posting_user(current_user: Annotated[UserAuth, Depends(get_current_active_us
 
 
 #########################################################    ROLLBACK ENDPOINTS
-@app.put('/carpasses_rollback/{carpass_id}')
+@app.put('/carpasses_rollback/{item_uuid}')
 def rollback_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                     carpass_id: int, db: Session = Depends(get_db)):
+                     item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.rollback_carpass(db=db, carpass_id=carpass_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='carpasses_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Carpass, schema=schemas.Carpass, obj_type='carpass_enter', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_carpass(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/exitcarpasses_rollback/{carpass_id}')
+@app.put('/exitcarpasses_rollback/{item_uuid}')
 def rollback_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         carpass_id: int, db: Session = Depends(get_db)):
+                         item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='exitcarpasses_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Exitcarpass, schema=schemas.Exitcarpass, obj_type='carpass_exit', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id, user_uuid=current_user.uuid)
 
 
-@app.put('/entry_requests_rollback/{item_id}')
+@app.put('/entry_requests_rollback/{item_uuid}')
 def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_entry_requests(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_requests_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.EntryRequest, schema=schemas.EntryRequest, obj_type='entry_request', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_entry_requests(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 @app.put('/batches_rollback/{item_uuid}')
 def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                             item_uuid: str, db: Session = Depends(get_db)):
-    
+    #
     check_endpoint_role_access(url='batches_rollback', type='put', current_role_name=current_user.role_name)
-
     return crud.rollback_item(model=models.Batch, schema=schemas.Batch, obj_type='batch', 
                               db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
     # return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/dtreg_rollback/{item_id}')
+@app.put('/dtreg_rollback/{item_uuid}')
 def rollback_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='dtreg_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Dtreg, schema=schemas.Dtreg, obj_type='dtreg', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/cert_goods_accept_rollback/{item_id}')
+@app.put('/cert_goods_accept_rollback/{item_uuid}')
 def rollback_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='cert_goods_accept_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.CertGoodsAccept, schema=schemas.CertGoodsAccept, obj_type='cert_goods_accept', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/requests_batch_to_sklad_rollback/{item_id}')
+@app.put('/requests_batch_to_sklad_rollback/{item_uuid}')
 def rollback_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='requests_batch_to_sklad_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.RequestBatchToSklad, schema=schemas.RequestBatchToSklad, obj_type='requests_batch_to_sklad', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/contacts_rollback/{item_id}')
+@app.put('/contacts_rollback/{item_uuid}')
 def rollback_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='contacts_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Contact, schema=schemas.Contact, obj_type='contact', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/document_records_rollback/{item_id}')
+@app.put('/document_records_rollback/{item_uuid}')
 def rollback_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_document_record(db=db, item_id=item_id)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='document_records_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.DocumentRecord, schema=schemas.DocumentRecord, obj_type='document_record', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_document_record(db=db, item_id=item_id)
 
 
-@app.put('/users_rollback/{item_id}')
+@app.put('/users_rollback/{item_uuid}')
 def rollback_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='users_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.User, schema=schemas.User, obj_type='user', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 #########################################################    STATUS MANAGING ENDPOINTS
