@@ -714,6 +714,7 @@ def read_carpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_a
 @app.get('/entry_request_by_uuid/{uuid}', response_model=schemas.EntryRequest)
 def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_request_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_entry_request_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -723,9 +724,7 @@ def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_cur
 @app.get('/batch_by_uuid/{uuid}', response_model=schemas.Batch)
 def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
-    
     check_endpoint_role_access(url='batch_by_uuid', type='get', current_role_name=current_user.role_name)
-
     item = crud.get_batch_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -939,6 +938,7 @@ def read_roles(current_user: Annotated[UserAuth, Depends(get_current_active_user
 @app.get('/entry_requests/', response_model=list[schemas.EntryRequestJoined])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_requests', type='get', current_role_name=current_user.role_name)
     items = crud.get_entry_requests(db, skip=skip, limit=limit)
     return items
 
@@ -953,6 +953,7 @@ def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_ac
 @app.get('/entry_requests_client/', response_model=list[schemas.EntryRequestJoined])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_requests_client', type='get', current_role_name=current_user.role_name)
     items = crud.get_entry_requests_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
@@ -1219,6 +1220,7 @@ def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_act
 def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='entry_requests', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate) 
     return crud.create_entry_request(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1301,7 +1303,9 @@ def update_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)
     item = schemas.CarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_carpass(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Carpass, schema=schemas.Carpass, obj_type='carpass_enter', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_carpass(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/batches/{item_uuid}', response_model=schemas.Batch)
@@ -1312,75 +1316,92 @@ def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
     item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_batch(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Batch, schema=schemas.Batch, obj_type='batch', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    #return crud.update_batch(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/exitcarpasses/{item_id}', response_model=schemas.Exitcarpass)
+@app.put('/exitcarpasses/{item_uuid}', response_model=schemas.Exitcarpass)
 def update_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                       item_id: int, data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
+                       item_uuid: str, data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)
     item = schemas.ExitcarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_exitcarpass(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Exitcarpass, schema=schemas.Exitcarpass, obj_type='carpass_exit', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_exitcarpass(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/entry_requests/{item_id}', response_model=schemas.EntryRequest)
+@app.put('/entry_requests/{item_uuid}', response_model=schemas.EntryRequest)
 def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='entry_requests', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
     item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_entry_request(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.EntryRequest, schema=schemas.EntryRequest, obj_type='entry_request', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    return crud.update_entry_request(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/dtreg/{item_id}', response_model=schemas.Dtreg)
+@app.put('/dtreg/{item_uuid}', response_model=schemas.Dtreg)
 def update_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.DtregCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.DtregCreate, Form()], db: Session = Depends(get_db)):
     #
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DtregCreate)
     item = schemas.DtregUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_dtreg(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Dtreg, schema=schemas.Dtreg, obj_type='dtreg', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_dtreg(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/cert_goods_accept/{item_id}', response_model=schemas.CertGoodsAccept)
+@app.put('/cert_goods_accept/{item_uuid}', response_model=schemas.CertGoodsAccept)
 def update_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.CertGoodsAcceptCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.CertGoodsAcceptCreate, Form()], db: Session = Depends(get_db)):
     #
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CertGoodsAcceptCreate)
     item = schemas.CertGoodsAcceptUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_cert_goods_accept(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.CertGoodsAccept, schema=schemas.CertGoodsAccept, obj_type='cert_goods_accept', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_cert_goods_accept(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/requests_batch_to_sklad/{item_id}', response_model=schemas.RequestBatchToSklad)
+@app.put('/requests_batch_to_sklad/{item_uuid}', response_model=schemas.RequestBatchToSklad)
 def update_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
     #
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.RequestBatchToSkladCreate)
     item = schemas.RequestBatchToSkladUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_requests_batch_to_sklad(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.RequestBatchToSklad, schema=schemas.RequestBatchToSklad, obj_type='requests_batch_to_sklad', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_requests_batch_to_sklad(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/contacts/{item_id}', response_model=schemas.Contact)
+@app.put('/contacts/{item_uuid}', response_model=schemas.Contact)
 def update_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.ContactCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.ContactCreate, Form()], db: Session = Depends(get_db)):
     #
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
     item = schemas.ContactUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_contact(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Contact, schema=schemas.Contact, obj_type='contact', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_contact(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/document_records/{item_id}', response_model=schemas.DocumentRecord)
+@app.put('/document_records/{item_uuid}', response_model=schemas.DocumentRecord)
 def update_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
     item = schemas.DocumentRecordUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_document_record(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.DocumentRecord, schema=schemas.DocumentRecord, obj_type='document_record', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_document_record(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/users/{item_id}', response_model=schemas.User)
@@ -1553,6 +1574,7 @@ def posting_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_ac
 def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_uuid: str, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='entry_requests_posting', type='put', current_role_name=current_user.role_name)
     return crud.posting_entry_request(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 

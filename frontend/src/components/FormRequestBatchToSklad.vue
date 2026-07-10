@@ -222,7 +222,7 @@ const handleSubmit = async () => {
         toast.success('Новая запись добавлена');
         state.responseItem = response.data;
       } else {
-        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad/${props.itemData.id}`, 
+        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad/${props.itemData.uuid}`, 
           formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
         toast.success('Запись обновлёна');      
         state.responseItem = response.data;

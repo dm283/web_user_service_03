@@ -165,7 +165,7 @@ const handleSubmit = async () => {
       toast.success('Пропуск на выезд добавлен');
       state.responseItem = response.data;
     } else {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`, 
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.uuid}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Пропуск на выезд обновлён');
       state.responseItem = response.data;  

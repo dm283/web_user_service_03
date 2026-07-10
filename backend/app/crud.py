@@ -1020,9 +1020,11 @@ def create_related_contact_broker(db: Session, data: schemas.RelatedContactBroke
     return record
 
 #########################################################    UPDATE FUNCTIONS
-def update_carpass(db: Session, item_uuid: str, item: schemas.CarpassUpdate, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Carpass).filter(models.Carpass.uuid == item_uuid).first()
+def update_item(item, model, schema, obj_type, db: Session, item_uuid: str, user_uuid: str):
+    # generic update item function
+    # item: schemas.CarpassUpdate for example
+
+    item_from_db =  db.query(model).filter(model.uuid == item_uuid).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
@@ -1030,110 +1032,114 @@ def update_carpass(db: Session, item_uuid: str, item: schemas.CarpassUpdate, use
         setattr(item_from_db, field, value)
     db.commit()
 
-    logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    logging_action(obj_type=obj_type, schema=schema, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
-def update_batch(db: Session, item_uuid: str, item: schemas.BatchUpdate, user_uuid: str):
-    #
-    item_from_db = db.query(models.Batch).filter(models.Batch.uuid == item_uuid).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
-    
-    logging_action(obj_type='batch', schema=schemas.Batch, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
 
+# def update_carpass(db: Session, item_uuid: str, item: schemas.CarpassUpdate, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Carpass).filter(models.Carpass.uuid == item_uuid).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")    
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
-def update_exitcarpass(db: Session, item_id: int, item: schemas.ExitcarpassUpdate, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
+# def update_batch(db: Session, item_uuid: str, item: schemas.BatchUpdate, user_uuid: str):
+#     #
+#     item_from_db = db.query(models.Batch).filter(models.Batch.uuid == item_uuid).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='batch', schema=schemas.Batch, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
-    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
+# def update_entry_request(db: Session, item_uuid: str, item: schemas.EntryRequestUpdate, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_uuid).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
+# def update_exitcarpass(db: Session, item_id: int, item: schemas.ExitcarpassUpdate, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
-def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUpdate, user_uuid: str):
-    #
-    item_from_db =  db.query(models.EntryRequest).filter(models.EntryRequest.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
+# def update_dtreg(db: Session, item_id: int, item: schemas.DtregUpdate, user_uuid: str):
+#     #
+#     item_from_db = db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
-    logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
+# def update_cert_goods_accept(db: Session, item_id: int, item: schemas.CertGoodsAcceptUpdate, user_uuid: str):
+#     #
+#     item_from_db = db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
+# def update_requests_batch_to_sklad(db: Session, item_id: int, item: schemas.RequestBatchToSkladUpdate, user_uuid: str):
+#     #
+#     item_from_db = db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='requests_batch_to_sklad', schema=schemas.RequestBatchToSklad, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
-def update_dtreg(db: Session, item_id: int, item: schemas.DtregUpdate, user_uuid: str):
-    #
-    item_from_db = db.query(models.Dtreg).filter(models.Dtreg.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
+# def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='contact', schema=schemas.Contact, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
-    logging_action(obj_type='dtreg', schema=schemas.Dtreg, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
-
-
-def update_cert_goods_accept(db: Session, item_id: int, item: schemas.CertGoodsAcceptUpdate, user_uuid: str):
-    #
-    item_from_db = db.query(models.CertGoodsAccept).filter(models.CertGoodsAccept.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
-
-    logging_action(obj_type='cert_goods_accept', schema=schemas.CertGoodsAccept, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
-
-
-def update_requests_batch_to_sklad(db: Session, item_id: int, item: schemas.RequestBatchToSkladUpdate, user_uuid: str):
-    #
-    item_from_db = db.query(models.RequestBatchToSklad).filter(models.RequestBatchToSklad.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
-
-    logging_action(obj_type='requests_batch_to_sklad', schema=schemas.RequestBatchToSklad, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
-
-
-def update_contact(db: Session, item_id: int, item: schemas.ContactUpdate, user_uuid: str):
-    #
-    item_from_db =  db.query(models.Contact).filter(models.Contact.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
-
-    logging_action(obj_type='contact', schema=schemas.Contact, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
+# def update_document_record(db: Session, item_id: int, item: schemas.DocumentRecordUpdate, user_uuid: str):
+#     #
+#     item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
+#     if item_from_db is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+#     for field, value in item.model_dump(exclude_unset=True).items():
+#         setattr(item_from_db, field, value)
+#     db.commit()
+#     logging_action(obj_type='document_record', schema=schemas.DocumentRecord, action='update', 
+#                    item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+#     return item_from_db
 
 
 def update_tzone(db: Session, zone_id: int, item: schemas.TzoneUpdate, user_uuid: str):
-    #
+    # specifia update function for tzone
     item_from_db =  db.query(models.Tzone).filter(models.Tzone.zone_id == zone_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
@@ -1146,23 +1152,8 @@ def update_tzone(db: Session, zone_id: int, item: schemas.TzoneUpdate, user_uuid
     return item_from_db
 
 
-def update_document_record(db: Session, item_id: int, item: schemas.DocumentRecordUpdate, user_uuid: str):
-    #
-    item_from_db =  db.query(models.DocumentRecord).filter(models.DocumentRecord.id == item_id).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
-
-    logging_action(obj_type='document_record', schema=schemas.DocumentRecord, action='update', 
-                   item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
-
-
 def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd: str, user_uuid: str):
-    #
+    # specifia update function for user
     item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")

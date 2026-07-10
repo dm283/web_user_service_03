@@ -8,7 +8,7 @@ endpoint_allowed_roles_dict = {
     # delete items
     'delete'+'carpasses': ['admin',],
     'delete'+'exitcarpasses': ['admin',],
-    'delete'+'entry_requests': ['admin',],
+    'delete'+'entry_requests': ['admin','client','broker'],
     'delete'+'batches': ['admin',],
     'delete'+'dtreg': ['admin',],
     'delete'+'requests_batch_to_sklad': ['admin',],
@@ -22,7 +22,7 @@ endpoint_allowed_roles_dict = {
     # rollback items
     'put'+'carpasses_rollback': ['admin',],
     'put'+'exitcarpasses_rollback': ['',],  # operation is not using
-    'put'+'entry_requests_rollback': ['admin',],
+    'put'+'entry_requests_rollback': ['admin','client','broker'],
     'put'+'batches_rollback': ['admin',],
     'put'+'dtreg_rollback': ['admin',],
     'put'+'requests_batch_to_sklad_rollback': ['admin',],
@@ -35,7 +35,6 @@ endpoint_allowed_roles_dict = {
     # batches
     'get'+'batches': ['admin',],
     'get'+'batches_client': ['admin','client','broker'],
-    'put'+'batches_rollback': ['admin',],
     # batches card
     'get'+'related_contact_broker': ['admin','client','broker'],
     'get'+'contacts_posted': ['admin','client1','broker'],
@@ -53,7 +52,6 @@ endpoint_allowed_roles_dict = {
     # carpasses
     'get'+'carpasses': ['admin',],
     'get'+'carpasses_client': ['admin','client','broker'],
-    'put'+'carpasses_rollback': ['admin',],
     # carpasses card
     'get'+'tcell_by_zone_id': ['admin',],
     'get'+'entry_requests_posted': ['admin',],
@@ -62,6 +60,15 @@ endpoint_allowed_roles_dict = {
     'put'+'carpasses_posting': ['admin',],
     'post'+'carpasses': ['admin',],
     'put'+'carpasses': ['admin',],
+
+    # entrty_requests
+    'get'+'entry_requests': ['admin',],
+    'get'+'entry_requests_client': ['admin','client','broker'],
+    # entrty_request card
+    'put'+'entry_requests_posting': ['admin','client','broker'],
+    'post'+'entry_requests': ['admin','client','broker'],
+    'put'+'entry_requests': ['admin','client','broker'],
+    'get'+'entry_request_by_uuid': ['admin','client','broker',],
 
 
 
