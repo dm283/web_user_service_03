@@ -112,37 +112,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 #############################
 def check_endpoint_role_access(url, type, current_role_name):
     #
-    # endpoint_allowed_roles_dict = {
-    #     'put'+'/upload_file/': ['admin',],
-    #     'put'+'/upload_excel_list/': ['admin',],
-    #     'post'+'/document_records/': ['ALL', ],
-    #     'put'+'/upload_file_for_carpass/': ['ALL', ],
-    #     'get'+'/users/': ['admin',],
-
-    #     # batches
-    #     'get'+'batches': ['admin',],
-    #     'get'+'batches_client': ['admin','client','broker'],
-    #     'delete'+'batches': ['admin',],
-    #     'put'+'batches_rollback': ['admin',],
-    #     'get'+'related_contact_broker': ['admin','client','broker'],
-    #     'get'+'contacts_posted': ['admin','client','broker'],
-    #     'get'+'carpasses_posted_not_archival': ['admin','client','broker'],
-    #     'get'+'contacts_by_uuid': ['admin','client','broker'],
-    #     'get'+'carpass_by_uuid': ['admin','client','broker'],
-    #     'get'+'obj_docs': ['admin','client','broker'],
-    #     'put'+'batch_posting': ['admin',],
-    #     'post'+'batches': ['admin',],
-    #     'put'+'batches': ['admin',],
-    #     'post'+'create_related_docs_record': ['admin',],
-    #     'get'+'download-file': ['admin','client','broker'],
-    #     'get'+'batch_by_uuid': ['admin','client','broker'],
-
-    # }
-
     if 'ALL' in endpoint_allowed_roles_dict[type+url]:
         return
 
-    print('111', type+url, endpoint_allowed_roles_dict[type+url])
+    # print('111', type+url, endpoint_allowed_roles_dict[type+url])
 
     if current_role_name not in endpoint_allowed_roles_dict[type+url]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Отсутствует доступ')
@@ -1739,10 +1712,7 @@ def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_activ
 @app.get("/users/", response_model=list[schemas.UserJoined])
 def read_users(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    
     check_endpoint_role_access(url='/users/', type='get', current_role_name=current_user.role_name)
-    print('current_user =', current_user.__dict__)
-
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
