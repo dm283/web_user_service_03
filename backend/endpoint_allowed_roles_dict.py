@@ -57,19 +57,11 @@ endpoint_allowed_roles_dict = {
     # carpasses card
     'get'+'tcell_by_zone_id': ['admin',],
     'get'+'entry_requests_posted': ['admin',],
-    # 'get' contacts_posted
     'get'+'tzone': ['admin',],
-    # 'get'	contacts_by_uuid
-    'get'+'batches_by_carpass_uuid': ['admin',],
-    # 'get'	obj_docs
+    'get'+'batches_by_carpass_uuid': ['admin','client','broker'],
     'put'+'carpasses_posting': ['admin',],
     'post'+'carpasses': ['admin',],
     'put'+'carpasses': ['admin',],
-    # 'post'	create_related_docs_record
-    # 'get'	download-file
-    # 'get'	obj_docs
-    # 'get'	carpass_by_uuid
-
 
 
 

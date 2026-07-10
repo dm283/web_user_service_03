@@ -704,9 +704,7 @@ def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get('/carpass_by_uuid/{uuid}', response_model=schemas.Carpass)
 def read_carpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
-    
     check_endpoint_role_access(url='carpass_by_uuid', type='get', current_role_name=current_user.role_name)
-
     item = crud.get_carpass_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -842,6 +840,7 @@ def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_activ
 @app.get("/tzone/", response_model=list[schemas.Tzone])
 def read_tzone(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='tzone', type='get', current_role_name=current_user.role_name)
     tzones = crud.get_tzone(db, skip=skip, limit=limit)
     return tzones
 
@@ -856,7 +855,7 @@ def read_tcell(current_user: Annotated[UserAuth, Depends(get_current_active_user
 @app.get("/tcell_by_zone_id/{zone_id}", response_model=list[schemas.Tcell])
 def read_tcell_by_zone_id(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   zone_id: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    print('zone_id = ', zone_id)
+    check_endpoint_role_access(url='tcell_by_zone_id', type='get', current_role_name=current_user.role_name)
     tcells = crud.get_tcell_by_zone_id(zone_id=zone_id, db=db, skip=skip, limit=limit)
     return tcells
 
@@ -890,9 +889,7 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/contacts_posted/", response_model=list[schemas.Contact])
 def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    
     check_endpoint_role_access(url='contacts_posted', type='get', current_role_name=current_user.role_name)
-
     contacts = crud.get_contacts_posted(db, skip=skip, limit=limit)
     return contacts
 
@@ -1013,6 +1010,7 @@ def read_batches_for_request_goods_accept(current_user: Annotated[UserAuth, Depe
 @app.get('/batches_by_carpass_uuid/{carpass_uuid}', response_model=list[schemas.BatchJoined])
 def read_batches_by_carpass_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    carpass_uuid: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batches_by_carpass_uuid', type='get', current_role_name=current_user.role_name)
     items = crud.get_batches_by_carpass_uuid(carpass_uuid=carpass_uuid, db=db, skip=skip, limit=limit)
     return items
 
@@ -1044,7 +1042,7 @@ def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_
 @app.get('/carpasses_client/', response_model=list[schemas.CarpassJoined])
 def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    check_endpoint_role_access(url='carpasses', type='get', current_role_name=current_user.role_name)
+    check_endpoint_role_access(url='carpasses_client', type='get', current_role_name=current_user.role_name)
     items = crud.get_carpasses_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
@@ -1097,6 +1095,7 @@ def read_exitcarpasses(current_user: Annotated[UserAuth, Depends(get_current_act
 @app.get('/entry_requests_posted/', response_model=list[schemas.EntryRequest])
 def read_entry_requests_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_requests_posted', type='get', current_role_name=current_user.role_name)
     items = crud.get_entry_requests_posted(db, skip=skip, limit=limit)
     return items
 
@@ -1252,9 +1251,7 @@ def create_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get
 def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
     #
-
     check_endpoint_role_access(url='batches', type='post', current_role_name=current_user.role_name)
-
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate) 
     return crud.create_batch(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1263,6 +1260,7 @@ def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def create_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='carpasses', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)  
     return crud.create_carpass(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1295,14 +1293,26 @@ def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_use
 
 
 #########################################################    UPDATE ITEM ENDPOINTS
-@app.put('/carpasses/{item_id}', response_model=schemas.Carpass)
+@app.put('/carpasses/{item_uuid}', response_model=schemas.Carpass)
 def update_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   item_id: int, data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
+                   item_uuid: str, data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='carpasses', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)
     item = schemas.CarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_carpass(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_carpass(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
+
+
+@app.put('/batches/{item_uuid}', response_model=schemas.Batch)
+def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='batches', type='put', current_role_name=current_user.role_name)
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
+    item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_batch(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/exitcarpasses/{item_id}', response_model=schemas.Exitcarpass)
@@ -1322,19 +1332,6 @@ def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
     item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_entry_request(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
-
-
-@app.put('/batches/{item_uuid}', response_model=schemas.Batch)
-def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_uuid: str, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
-    #
-
-    check_endpoint_role_access(url='batches', type='put', current_role_name=current_user.role_name)
-
-    updated_datetime = datetime.now()
-    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
-    item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_batch(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
 
 
 @app.put('/dtreg/{item_id}', response_model=schemas.Dtreg)
@@ -1541,6 +1538,7 @@ def delete_related_docs_record(current_user: Annotated[UserAuth, Depends(get_cur
 def posting_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     item_uuid: str, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='carpasses_posting', type='put', current_role_name=current_user.role_name)
     return crud.posting_carpass(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
@@ -1562,9 +1560,7 @@ def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_
 def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_uuid: str, db: Session = Depends(get_db)):
     #
-
     check_endpoint_role_access(url='batch_posting', type='put', current_role_name=current_user.role_name)
-
     return crud.posting_batch(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 

@@ -1020,9 +1020,9 @@ def create_related_contact_broker(db: Session, data: schemas.RelatedContactBroke
     return record
 
 #########################################################    UPDATE FUNCTIONS
-def update_carpass(db: Session, item_id: int, item: schemas.CarpassUpdate, user_uuid: str):
+def update_carpass(db: Session, item_uuid: str, item: schemas.CarpassUpdate, user_uuid: str):
     #
-    item_from_db =  db.query(models.Carpass).filter(models.Carpass.id == item_id).first()
+    item_from_db =  db.query(models.Carpass).filter(models.Carpass.uuid == item_uuid).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     
@@ -1031,6 +1031,20 @@ def update_carpass(db: Session, item_id: int, item: schemas.CarpassUpdate, user_
     db.commit()
 
     logging_action(obj_type='carpass_enter', schema=schemas.Carpass, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+    return item_from_db
+
+
+def update_batch(db: Session, item_uuid: str, item: schemas.BatchUpdate, user_uuid: str):
+    #
+    item_from_db = db.query(models.Batch).filter(models.Batch.uuid == item_uuid).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    
+    for field, value in item.model_dump(exclude_unset=True).items():
+        setattr(item_from_db, field, value)
+    db.commit()
+    
+    logging_action(obj_type='batch', schema=schemas.Batch, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
@@ -1059,20 +1073,6 @@ def update_entry_request(db: Session, item_id: int, item: schemas.EntryRequestUp
     db.commit()
 
     logging_action(obj_type='entry_request', schema=schemas.EntryRequest, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
-    return item_from_db
-
-
-def update_batch(db: Session, item_uuid: str, item: schemas.BatchUpdate, user_uuid: str):
-    #
-    item_from_db = db.query(models.Batch).filter(models.Batch.uuid == item_uuid).first()
-    if item_from_db is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    
-    for field, value in item.model_dump(exclude_unset=True).items():
-        setattr(item_from_db, field, value)
-    db.commit()
-
-    logging_action(obj_type='batch', schema=schemas.Batch, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
 
