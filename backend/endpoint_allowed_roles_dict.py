@@ -1,9 +1,13 @@
 endpoint_allowed_roles_dict = {
-    'put'+'/upload_file/': ['admin',],
+    'put'+'upload_file': ['admin',],
     'put'+'/upload_excel_list/': ['admin',],
     'put'+'/upload_file_for_carpass/': ['ALL', ],
     'get'+'car_terminal': ['admin',],
-    
+    'put'+'car_exit_permit': ['admin',],
+    'put'+'exit_prohibited': ['admin',],
+    'get'+'car_terminal_for_exit': ['admin',],
+    'put'+'set_batch_status': ['admin',],
+    'put'+'set_default_car_status': ['admin',],
 
     # delete items
     'delete'+'carpasses': ['admin',],
@@ -109,6 +113,25 @@ endpoint_allowed_roles_dict = {
     'post'+'dtreg': ['admin',],
     'put'+'dtreg': ['admin',],
     'get'+'dtreg_by_uuid': ['admin',],
+
+    # requests_batch_to_sklad
+    'get'+'requests_batch_to_sklad': ['admin',],
+    # requests_batch_to_sklad card
+    'get'+'batches_for_request_goods_accept': ['admin',],
+    'put'+'requests_batch_to_sklad_posting': ['admin',],
+    'post'+'requests_batch_to_sklad': ['admin',],
+    'put'+'requests_batch_to_sklad': ['admin',],
+
+    # cert_goods_accept
+    'get'+'cert_goods_accept': ['admin',],
+    # cert_goods_accept card
+    'get'+'requests_batch_to_sklad_for_cert': ['admin',],
+    'get'+'requests_batch_to_sklad_by_uuid': ['admin',],
+    'put'+'cert_goods_accept_posting': ['admin',],
+    'post'+'cert_goods_accept': ['admin',],
+    'put'+'cert_goods_accept': ['admin',],
+    'get'+'cert_goods_accept_by_uuid': ['admin',],
+
 
 
 

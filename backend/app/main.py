@@ -414,7 +414,7 @@ def load_excel(entity, file_location, user_uuid, db):
 async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     entity: Annotated[str, Form()], file: UploadFile, db: Session = Depends(get_db)):
     
-    check_endpoint_role_access(url='/upload_file/', type='put', current_role_name=current_user.role_name)
+    check_endpoint_role_access(url='upload_file', type='put', current_role_name=current_user.role_name)
 
     try:
         filecontent = file.file.read()
@@ -754,6 +754,7 @@ def read_dtreg_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_act
 @app.get('/cert_goods_accept_by_uuid/{uuid}', response_model=schemas.CertGoodsAccept)
 def read_cert_goods_accept_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='cert_goods_accept_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_cert_goods_accept_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -763,6 +764,7 @@ def read_cert_goods_accept_by_uuid(current_user: Annotated[UserAuth, Depends(get
 @app.get('/requests_batch_to_sklad_by_uuid/{uuid}', response_model=schemas.RequestBatchToSklad)
 def read_requests_batch_to_sklad_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='requests_batch_to_sklad_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_requests_batch_to_sklad_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -975,6 +977,7 @@ def read_dtregs(current_user: Annotated[UserAuth, Depends(get_current_active_use
 @app.get('/cert_goods_accept/', response_model=list[schemas.CertGoodsAcceptJoined])
 def read_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='cert_goods_accept', type='get', current_role_name=current_user.role_name)
     items = crud.get_cert_goods_accept(db, skip=skip, limit=limit)
     return items
 
@@ -982,6 +985,7 @@ def read_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current
 @app.get('/requests_batch_to_sklad/', response_model=list[schemas.RequestBatchToSkladJoined])
 def read_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='requests_batch_to_sklad', type='get', current_role_name=current_user.role_name)
     items = crud.get_requests_batch_to_sklad(db, skip=skip, limit=limit)
     return items
 
@@ -989,6 +993,7 @@ def read_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_c
 @app.get('/requests_batch_to_sklad_for_cert/', response_model=list[schemas.RequestBatchToSkladJoinedForCert])
 def read_requests_batch_to_sklad_for_cert(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='requests_batch_to_sklad_for_cert', type='get', current_role_name=current_user.role_name)
     items = crud.get_requests_batch_to_sklad_for_cert(db, skip=skip, limit=limit)
     return items
 
@@ -1012,6 +1017,7 @@ def read_batches_posted(current_user: Annotated[UserAuth, Depends(get_current_ac
 @app.get('/batches_for_request_goods_accept/', response_model=list[schemas.BatchJoined])
 def read_batches_for_request_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batches_for_request_goods_accept', type='get', current_role_name=current_user.role_name)
     items = crud.get_batches_for_request_goods_accept(db, skip=skip, limit=limit)
     return items
 
@@ -1089,6 +1095,7 @@ def read_car_at_terminal(current_user: Annotated[UserAuth, Depends(get_current_a
 @app.get('/car_terminal_for_exit/')
 def read_car_at_terminal_for_exit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='car_terminal_for_exit', type='get', current_role_name=current_user.role_name)
     items = crud.get_cars_at_terminal_for_exit(db, skip=skip, limit=limit)
     return items
 
@@ -1246,6 +1253,7 @@ def create_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def create_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.CertGoodsAcceptCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='cert_goods_accept', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CertGoodsAcceptCreate) 
     return crud.create_cert_goods_accept(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1254,6 +1262,7 @@ def create_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_curre
 def create_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='requests_batch_to_sklad', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.RequestBatchToSkladCreate) 
     return crud.create_requests_batch_to_sklad(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1370,6 +1379,7 @@ def update_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def update_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_uuid: str, data: Annotated[schemas.CertGoodsAcceptCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='cert_goods_accept', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CertGoodsAcceptCreate)
     item = schemas.CertGoodsAcceptUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
@@ -1382,6 +1392,7 @@ def update_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_curre
 def update_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_uuid: str, data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='requests_batch_to_sklad', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.RequestBatchToSkladCreate)
     item = schemas.RequestBatchToSkladUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
@@ -1609,6 +1620,7 @@ def posting_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_u
 def posting_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_uuid: str, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='cert_goods_accept_posting', type='put', current_role_name=current_user.role_name)
     return crud.posting_cert_goods_accept(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
@@ -1616,6 +1628,7 @@ def posting_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_curr
 def posting_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_uuid: str, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='requests_batch_to_sklad_posting', type='put', current_role_name=current_user.role_name)
     return crud.posting_requests_batch_to_sklad(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
@@ -1743,6 +1756,7 @@ def rollback_user(current_user: Annotated[UserAuth, Depends(get_current_active_u
 def car_exit_permit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     carpass_id: int, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='car_exit_permit', type='put', current_role_name=current_user.role_name)
     return crud.car_exit_permit(db=db, carpass_id=carpass_id)
 
 
@@ -1750,6 +1764,7 @@ def car_exit_permit(current_user: Annotated[UserAuth, Depends(get_current_active
 def set_default_car_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                            carpass_id: int, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='set_default_car_status', type='put', current_role_name=current_user.role_name)
     return crud.set_default_car_status(db=db, carpass_id=carpass_id)
 
 
@@ -1757,6 +1772,7 @@ def set_default_car_status(current_user: Annotated[UserAuth, Depends(get_current
 def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     carpass_id: int, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='exit_prohibited', type='put', current_role_name=current_user.role_name)
     return crud.exit_prohibited(db=db, carpass_id=carpass_id)
 
 
@@ -1765,6 +1781,7 @@ def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active
 def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     batch_uuid: str, status: str, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='set_batch_status', type='put', current_role_name=current_user.role_name)
     return crud.set_batch_status(db=db, batch_uuid=batch_uuid, status=status, user_uuid=current_user.uuid)
 
 #########################################################    USERS ENDPOINTS
