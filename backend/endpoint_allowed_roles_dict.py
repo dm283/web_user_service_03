@@ -1,9 +1,9 @@
 endpoint_allowed_roles_dict = {
     'put'+'/upload_file/': ['admin',],
     'put'+'/upload_excel_list/': ['admin',],
-    'post'+'/document_records/': ['ALL', ],
     'put'+'/upload_file_for_carpass/': ['ALL', ],
-    'get'+'/users/': ['admin',],
+    'get'+'car_terminal': ['admin',],
+    
 
     # delete items
     'delete'+'carpasses': ['admin',],
@@ -61,7 +61,7 @@ endpoint_allowed_roles_dict = {
     'post'+'carpasses': ['admin',],
     'put'+'carpasses': ['admin',],
 
-    # entrty_requests
+    # entry_requests
     'get'+'entry_requests': ['admin',],
     'get'+'entry_requests_client': ['admin','client','broker'],
     # entrty_request card
@@ -69,6 +69,47 @@ endpoint_allowed_roles_dict = {
     'post'+'entry_requests': ['admin','client','broker'],
     'put'+'entry_requests': ['admin','client','broker'],
     'get'+'entry_request_by_uuid': ['admin','client','broker',],
+
+    # document_records
+    'get'+'document_records': ['admin',],
+    'get'+'document_records_client': ['admin','client','broker'],
+    # document_records card
+    'get'+'entity_documents': ['admin','client','broker'],
+    'get'+'related_docs': ['admin','client','broker'],
+    'put'+'document_records_posting': ['',],  # operation is not using
+    'post'+'document_records': ['admin','client','broker'],
+    'put'+'document_records': ['admin','client','broker'],
+
+    # contacts
+    'get'+'contacts': ['admin',],
+    # contacts card
+    'get'+'brokers_posted': ['admin',],
+    'get'+'brokers_available': ['admin',],
+    'put'+'contacts_posting': ['admin',],
+    'post'+'contacts': ['admin',],
+    'put'+'contacts': ['admin',],
+    'post'+'create_related_contact_broker': ['admin',],
+
+    # brokers
+    'get'+'brokers': ['admin',],
+    # brokers card
+    'get'+'related_broker_contact': ['admin',],
+
+    # users
+    'get'+'users': ['admin',],
+    # user card
+    # user backend (auth)
+
+    # dtreg
+    'get'+'dtreg': ['admin',],
+    # dtreg card
+    'get'+'batches_posted': ['admin',],
+    'get'+'batch_by_uuid_joined': ['admin',],
+    'put'+'dtreg_posting': ['admin',],
+    'post'+'dtreg': ['admin',],
+    'put'+'dtreg': ['admin',],
+    'get'+'dtreg_by_uuid': ['admin',],
+
 
 
 

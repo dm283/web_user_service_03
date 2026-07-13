@@ -85,7 +85,6 @@ onMounted(async () => {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_docs/${props.itemDataDoc.uuid}`,
         {headers: authHeader()}
       );
-      console.log('response2.data =', response2.data)
       state.related_objects = response2.data;
 
 

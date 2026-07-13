@@ -70,6 +70,7 @@ async function getData() {
       "bg-gradient-to-r from-teal-800 to-teal-600"
     sidebarColor.value = state.userInfo.contact_id == 0 ? "bg-sky-700" : "bg-teal-700"
 
+    // for notifications and messages
     state.users = [];
     let query_users = `http://${backendIpAddress}:${backendPort}/users/`
     const response_users = await axios.get(query_users, {headers: authHeader()})
