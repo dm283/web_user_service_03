@@ -8,6 +8,10 @@ endpoint_allowed_roles_dict = {
     'get'+'car_terminal_for_exit': ['admin',],
     'put'+'set_batch_status': ['admin',],
     'put'+'set_default_car_status': ['admin',],
+    'get'+'log_records': ['admin',],
+    'get'+'tcell': ['admin',],
+    'get'+'download_carpass': ['admin',],
+    'get'+'download-file-by-filename': ['admin',],
 
     # delete items
     'delete'+'carpasses': ['admin',],
@@ -132,8 +136,13 @@ endpoint_allowed_roles_dict = {
     'put'+'cert_goods_accept': ['admin',],
     'get'+'cert_goods_accept_by_uuid': ['admin',],
 
-
-
+    # exitcarpasses
+    'get'+'exitcarpasses': ['admin',],
+    # exitcarpasses card
+    'get'+'carpass_by_id_enter': ['admin',],
+    'put'+'exitcarpasses_posting': ['admin',],
+    'post'+'exitcarpasses': ['admin',],
+    'put'+'exitcarpasses': ['admin',],
 
 
 }

@@ -740,11 +740,6 @@ const refreshCard = async () => {
             <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет размещенных партий товаров</div>
       </div>
 
-
-
-
-
-
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
         <div class="space-x-5 overflow-auto">
           <label class="mx-1 text-sm font-semibold text-blue-500">ДОКУМЕНТЫ</label>

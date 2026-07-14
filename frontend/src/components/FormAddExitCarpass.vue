@@ -197,10 +197,10 @@ const handleSubmit = async () => {
 };
 
 
-async function downloadFile(document_id) {
+async function downloadFile(document_record_uuid) {
   // downloads file
-  const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, 
-    {responseType: "blob", headers: authHeader()});
+  let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_record_uuid}`
+  const response = await axios.get(query, {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
 
   var url = window.URL.createObjectURL(new Blob([response.data]));
@@ -212,6 +212,24 @@ async function downloadFile(document_id) {
   link.remove();
   window.URL.revokeObjectURL(url);
 }
+
+
+
+// async function downloadFile(document_id) {
+//   // downloads file
+//   const response = await axios.get(`http://${backendIpAddress}:${backendPort}/download-file/${document_id}`, 
+//     {responseType: "blob", headers: authHeader()});
+//   const filename = decodeURI(response.headers["file-name"])
+
+//   var url = window.URL.createObjectURL(new Blob([response.data]));
+//   var link = document.createElement('a');
+//   link.href = url;
+//   link.setAttribute('download', filename);
+//   document.body.appendChild(link);
+//   link.click();
+//   link.remove();
+//   window.URL.revokeObjectURL(url);
+// }
 
 </script>
 
@@ -293,7 +311,7 @@ async function downloadFile(document_id) {
         <label class=formLabelStyle>Документы</label>
         <div class="flex space-x-3 mt-3">
         <div class="border rounded-md p-2 w-15 h-30 text-center text-xs " v-for="document in state.documents">
-          <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.id)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
+          <div class="text-blue-500 cursor-pointer" @click="downloadFile(document.uuid)"><i class="pi pi-file" style="font-size: 1rem"></i></div>
           <div class="">{{ document.filename }}</div>
         </div>
         </div>

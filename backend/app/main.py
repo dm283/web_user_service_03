@@ -276,30 +276,30 @@ def redefine_schema_values_to_none(data, schema_obj):
 
 
 #########################################################    DOCUMENT (FILE)
-@app.post("/document/")      # check this!!!!!!
-async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                      doc_name: Annotated[str, Form()], 
-                      related_doc_uuid: Annotated[str, Form()],
-                      customer_name: Annotated[str, Form()],
-                      file: UploadFile,
-                      db: Session = Depends(get_db)
-                      ):
+# @app.post("/document/")      # check this!!!!!!
+# async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                       doc_name: Annotated[str, Form()], 
+#                       related_doc_uuid: Annotated[str, Form()],
+#                       customer_name: Annotated[str, Form()],
+#                       file: UploadFile,
+#                       db: Session = Depends(get_db)
+#                       ):
 
-    file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
-    fname_splited = file.filename.rpartition('.')
-    filename_with_postfix = f'{fname_splited[0]}_{file_name_postfix}.{fname_splited[2]}'
-    filepath = os.path.join('saved_files', filename_with_postfix)
+#     file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
+#     fname_splited = file.filename.rpartition('.')
+#     filename_with_postfix = f'{fname_splited[0]}_{file_name_postfix}.{fname_splited[2]}'
+#     filepath = os.path.join('saved_files', filename_with_postfix)
 
-    document = schemas.DocumentCreate(
-        doc_name = doc_name,
-        related_doc_uuid = related_doc_uuid,
-        customer_name = customer_name,
-        filename = file.filename,
-        filepath = filepath,
-        filecontent = None
-    )
+#     document = schemas.DocumentCreate(
+#         doc_name = doc_name,
+#         related_doc_uuid = related_doc_uuid,
+#         customer_name = customer_name,
+#         filename = file.filename,
+#         filepath = filepath,
+#         filecontent = None
+#     )
 
-    return crud.create_n_save_document(db=db, file=file, document=document)
+#     return crud.create_n_save_document(db=db, file=file, document=document)
 
 
 # get name of downloading file  -   check is it using!
@@ -316,9 +316,7 @@ def document_get_filename(current_user: Annotated[UserAuth, Depends(get_current_
 @app.get('/download-file/{document_record_uuid}')
 def document_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     document_record_uuid: str, db: Session = Depends(get_db)):
-    
     check_endpoint_role_access(url='download-file', type='get', current_role_name=current_user.role_name)
-
     document = db.query(models.Document).filter(models.Document.related_doc_uuid == document_record_uuid).first()
     filepath = document.filepath
     filename = document.filename
@@ -334,9 +332,9 @@ def document_download(current_user: Annotated[UserAuth, Depends(get_current_acti
 
 # download file from filesystem
 @app.get('/download-file-by-filename/{filename}')
-def file_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                    filename: str,
-                    db: Session = Depends(get_db)):
+def file_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)], filename: str, db: Session = Depends(get_db)):
+    # currently download template of excel list of clients
+    check_endpoint_role_access(url='download-file-by-filename', type='get', current_role_name=current_user.role_name)
     filepath = f'../data/files/{filename}'
     filename = filename
     response = FileResponse(path=filepath,
@@ -643,6 +641,8 @@ async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depe
 @app.get('/download_carpass/{section}/{item_sys_id}')
 def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                      section: str, item_sys_id: int,  db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='download_carpass', type='get', current_role_name=current_user.role_name)
     # create and download carpass pdf file
     if section == 'Пропуска ТС на въезд':
         carpass_from_db = crud.get_carpass_by_id(db=db, carpass_id=item_sys_id)
@@ -695,6 +695,7 @@ def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_activ
 @app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
 def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                  carpass_id_enter: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='carpass_by_id_enter', type='get', current_role_name=current_user.role_name)
     db_carpass = crud.get_carpass(db, carpass_id_enter=carpass_id_enter)
     if db_carpass is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -836,6 +837,8 @@ def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_
 @app.get("/log_records/", response_model=list[schemas.LogRecordJoined])
 def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='log_records', type='get', current_role_name=current_user.role_name)
     log_records = crud.get_log_records(db, skip=skip, limit=limit)
     return log_records
 
@@ -843,6 +846,7 @@ def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_activ
 @app.get("/tzone/", response_model=list[schemas.Tzone])
 def read_tzone(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
     check_endpoint_role_access(url='tzone', type='get', current_role_name=current_user.role_name)
     tzones = crud.get_tzone(db, skip=skip, limit=limit)
     return tzones
@@ -851,6 +855,8 @@ def read_tzone(current_user: Annotated[UserAuth, Depends(get_current_active_user
 @app.get("/tcell/", response_model=list[schemas.Tcell])
 def read_tcell(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='tcell', type='get', current_role_name=current_user.role_name)
     tcells = crud.get_tcell(db, skip=skip, limit=limit)
     return tcells
 
@@ -1103,6 +1109,7 @@ def read_car_at_terminal_for_exit(current_user: Annotated[UserAuth, Depends(get_
 @app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
 def read_exitcarpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                        skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='exitcarpasses', type='get', current_role_name=current_user.role_name)
     items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
     return items
 
@@ -1227,6 +1234,7 @@ def create_message(current_user: Annotated[UserAuth, Depends(get_current_active_
 def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                        data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='exitcarpasses', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)  
     return crud.create_exitcarpass(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1341,6 +1349,8 @@ def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.put('/exitcarpasses/{item_uuid}', response_model=schemas.Exitcarpass)
 def update_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                        item_uuid: str, data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='exitcarpasses', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)
     item = schemas.ExitcarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
@@ -1589,6 +1599,7 @@ def posting_carpass(current_user: Annotated[UserAuth, Depends(get_current_active
 def posting_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         item_uuid: str, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='exitcarpasses_posting', type='put', current_role_name=current_user.role_name)
     return crud.posting_exitcarpass(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
