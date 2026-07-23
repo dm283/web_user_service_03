@@ -2,147 +2,154 @@ endpoint_allowed_roles_dict = {
     'put'+'upload_file': ['admin',],
     'put'+'/upload_excel_list/': ['admin',],
     'put'+'/upload_file_for_carpass/': ['ALL', ],
-    'get'+'car_terminal': ['admin',],
-    'put'+'car_exit_permit': ['admin',],
-    'put'+'exit_prohibited': ['admin',],
-    'get'+'car_terminal_for_exit': ['admin',],
-    'put'+'set_batch_status': ['admin',],
-    'put'+'set_default_car_status': ['admin',],
     'get'+'log_records': ['admin',],
-    'get'+'tcell': ['admin',],
-    'get'+'download_carpass': ['admin',],
-    'get'+'download-file-by-filename': ['admin',],
-
-    # delete items
-    'delete'+'carpasses': ['admin',],
-    'delete'+'exitcarpasses': ['admin',],
-    'delete'+'entry_requests': ['admin','client','broker'],
-    'delete'+'batches': ['admin',],
-    'delete'+'dtreg': ['admin',],
-    'delete'+'requests_batch_to_sklad': ['admin',],
-    'delete'+'cert_goods_accept': ['admin',],
-    'delete'+'contacts': ['admin',],
-    'delete'+'users': ['admin',],
-    'delete'+'document_records': ['admin',],
-    'delete'+'related_contact_broker': ['admin',],
-    'delete'+'related_docs_record': ['admin','client','broker'],
-
-    # rollback items
-    'put'+'carpasses_rollback': ['admin',],
-    'put'+'exitcarpasses_rollback': ['',],  # operation is not using
-    'put'+'entry_requests_rollback': ['admin','client','broker'],
-    'put'+'batches_rollback': ['admin',],
-    'put'+'dtreg_rollback': ['admin',],
-    'put'+'requests_batch_to_sklad_rollback': ['admin',],
-    'put'+'cert_goods_accept_rollback': ['admin',],
-    'put'+'contacts_rollback': ['admin',],
-    'put'+'users_rollback': ['admin',],
-    'put'+'document_records_rollback': ['',],  # operation is not using
-
-
-    # batches
-    'get'+'batches': ['admin',],
-    'get'+'batches_client': ['admin','client','broker'],
-    # batches card
-    'get'+'related_contact_broker': ['admin','client','broker'],
-    'get'+'contacts_posted': ['admin','client1','broker'],
-    'get'+'carpasses_posted_not_archival': ['admin','client1','broker'],
-    'get'+'contacts_by_uuid': ['admin','client','broker'],
-    'get'+'carpass_by_uuid': ['admin','client','broker'],
-    'get'+'obj_docs': ['admin','client','broker'],
-    'put'+'batch_posting': ['admin',],
-    'post'+'batches': ['admin',],
-    'put'+'batches': ['admin',],
-    'post'+'create_related_docs_record': ['admin','client','broker',],
+    'get'+'tcell': ['admin', 'dispatcher'],
+    'get'+'download_carpass': ['admin', 'dispatcher'],
+    'get'+'download-file-by-filename': ['admin', 'dispatcher'],
+    'post'+'create_related_docs_record': ['admin', 'dispatcher', 'client', 'broker',],
     'get'+'download-file': ['admin','client','broker'],
-    'get'+'batch_by_uuid': ['admin','client','broker'],
-
-    # carpasses
-    'get'+'carpasses': ['admin',],
-    'get'+'carpasses_client': ['admin','client','broker'],
-    # carpasses card
-    'get'+'tcell_by_zone_id': ['admin',],
-    'get'+'entry_requests_posted': ['admin',],
-    'get'+'tzone': ['admin',],
-    'get'+'batches_by_carpass_uuid': ['admin','client','broker'],
-    'put'+'carpasses_posting': ['admin',],
-    'post'+'carpasses': ['admin',],
-    'put'+'carpasses': ['admin',],
-
-    # entry_requests
-    'get'+'entry_requests': ['admin',],
-    'get'+'entry_requests_client': ['admin','client','broker'],
-    # entrty_request card
-    'put'+'entry_requests_posting': ['admin','client','broker'],
-    'post'+'entry_requests': ['admin','client','broker'],
-    'put'+'entry_requests': ['admin','client','broker'],
-    'get'+'entry_request_by_uuid': ['admin','client','broker',],
-
-    # document_records
-    'get'+'document_records': ['admin',],
-    'get'+'document_records_client': ['admin','client','broker'],
-    # document_records card
-    'get'+'entity_documents': ['admin','client','broker'],
-    'get'+'related_docs': ['admin','client','broker'],
-    'put'+'document_records_posting': ['',],  # operation is not using
-    'post'+'document_records': ['admin','client','broker'],
-    'put'+'document_records': ['admin','client','broker'],
-
-    # contacts
-    'get'+'contacts': ['admin',],
-    # contacts card
-    'get'+'brokers_posted': ['admin',],
-    'get'+'brokers_available': ['admin',],
-    'put'+'contacts_posting': ['admin',],
-    'post'+'contacts': ['admin',],
-    'put'+'contacts': ['admin',],
-    'post'+'create_related_contact_broker': ['admin',],
-
-    # brokers
-    'get'+'brokers': ['admin',],
-    # brokers card
-    'get'+'related_broker_contact': ['admin',],
+    'get'+'obj_docs': ['admin', 'dispatcher', 'client', 'broker'],
 
     # users
     'get'+'users': ['admin',],
     # user card
+    'get'+'roles': ['admin',],
+    'get'+'partners_posted': ['admin',],
+    'get'+'role': ['admin',],
+    'put'+'users_posting': ['admin',],
+    'post'+'users': ['admin',],
+    'put'+'users': ['admin',],
+    'get'+'user_by_uuid': ['admin',],
     # user backend (auth)
 
-    # dtreg
-    'get'+'dtreg': ['admin',],
-    # dtreg card
-    'get'+'batches_posted': ['admin',],
-    'get'+'batch_by_uuid_joined': ['admin',],
-    'put'+'dtreg_posting': ['admin',],
-    'post'+'dtreg': ['admin',],
-    'put'+'dtreg': ['admin',],
-    'get'+'dtreg_by_uuid': ['admin',],
+    # delete items
+    'delete'+'carpasses': ['admin', 'dispatcher'],
+    'delete'+'exitcarpasses': ['admin', 'dispatcher'],
+    'delete'+'entry_requests': ['admin', 'dispatcher', 'client', 'broker'],
+    'delete'+'batches': ['admin', 'dispatcher'],
+    'delete'+'dtreg': ['admin', 'dispatcher'],
+    'delete'+'requests_batch_to_sklad': ['admin', 'dispatcher'],
+    'delete'+'cert_goods_accept': ['admin', 'dispatcher'],
+    'delete'+'contacts': ['admin', 'dispatcher'],
+    'delete'+'users': ['admin',],
+    'delete'+'document_records': ['admin', 'dispatcher', 'client', 'broker'],
+    'delete'+'related_contact_broker': ['admin', 'dispatcher'],
+    'delete'+'related_docs_record': ['admin', 'dispatcher', 'client', 'broker'],
 
-    # requests_batch_to_sklad
-    'get'+'requests_batch_to_sklad': ['admin',],
-    # requests_batch_to_sklad card
-    'get'+'batches_for_request_goods_accept': ['admin',],
-    'put'+'requests_batch_to_sklad_posting': ['admin',],
-    'post'+'requests_batch_to_sklad': ['admin',],
-    'put'+'requests_batch_to_sklad': ['admin',],
+    # rollback items
+    'put'+'carpasses_rollback': ['admin', 'dispatcher',],
+    'put'+'exitcarpasses_rollback': ['',],  # operation is not using
+    'put'+'entry_requests_rollback': ['admin', 'dispatcher', 'client', 'broker'],
+    'put'+'batches_rollback': ['admin', 'dispatcher',],
+    'put'+'dtreg_rollback': ['admin', 'dispatcher',],
+    'put'+'requests_batch_to_sklad_rollback': ['admin', 'dispatcher',],
+    'put'+'cert_goods_accept_rollback': ['admin', 'dispatcher',],
+    'put'+'contacts_rollback': ['admin', 'dispatcher',],
+    'put'+'users_rollback': ['admin',],
+    'put'+'document_records_rollback': ['',],  # operation is not using
 
-    # cert_goods_accept
-    'get'+'cert_goods_accept': ['admin',],
-    # cert_goods_accept card
-    'get'+'requests_batch_to_sklad_for_cert': ['admin',],
-    'get'+'requests_batch_to_sklad_by_uuid': ['admin',],
-    'put'+'cert_goods_accept_posting': ['admin',],
-    'post'+'cert_goods_accept': ['admin',],
-    'put'+'cert_goods_accept': ['admin',],
-    'get'+'cert_goods_accept_by_uuid': ['admin',],
+    # batches
+    'get'+'batches': ['admin', 'dispatcher',],
+    'get'+'batches_client': ['admin','client','broker'],
+    'put'+'set_batch_status': ['admin', 'dispatcher'],
+    # batches card
+    'get'+'related_contact_broker': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'contacts_posted': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'carpasses_posted_not_archival': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'contacts_by_uuid': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'carpass_by_uuid': ['admin', 'dispatcher', 'client', 'broker'],
+    'put'+'batch_posting': ['admin', 'dispatcher',],
+    'post'+'batches': ['admin', 'dispatcher',],
+    'put'+'batches': ['admin', 'dispatcher',],
+    'get'+'batch_by_uuid': ['admin', 'dispatcher', 'client', 'broker'],
+
+    # carpasses
+    'get'+'carpasses': ['admin', 'dispatcher', 'checkpoint'],
+    'get'+'carpasses_client': ['admin','client','broker'],
+    'get'+'car_terminal': ['admin', 'dispatcher', 'checkpoint'],
+    'put'+'car_exit_permit': ['admin', 'dispatcher'],
+    'put'+'exit_prohibited': ['admin', 'dispatcher'],
+    'put'+'set_default_car_status': ['admin', 'dispatcher'],
+    # carpasses card
+    'get'+'tcell_by_zone_id': ['admin', 'dispatcher',],
+    'get'+'entry_requests_posted': ['admin', 'dispatcher',],
+    'get'+'tzone': ['admin', 'dispatcher',],
+    'get'+'batches_by_carpass_uuid': ['admin', 'dispatcher', 'client', 'broker'],
+    'put'+'carpasses_posting': ['admin', 'dispatcher',],
+    'post'+'carpasses': ['admin', 'dispatcher',],
+    'put'+'carpasses': ['admin', 'dispatcher',],
+
+    # entry_requests
+    'get'+'entry_requests': ['admin', 'dispatcher', 'checkpoint'],
+    'get'+'entry_requests_client': ['admin','client','broker'],
+    # entrty_request card
+    'put'+'entry_requests_posting': ['admin', 'dispatcher', 'client','broker'],
+    'post'+'entry_requests': ['admin', 'dispatcher', 'client', 'broker'],
+    'put'+'entry_requests': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'entry_request_by_uuid': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker',],
 
     # exitcarpasses
-    'get'+'exitcarpasses': ['admin',],
+    'get'+'exitcarpasses': ['admin', 'dispatcher', 'checkpoint'],
+    'get'+'car_terminal_for_exit': ['admin', 'dispatcher', 'checkpoint'],
     # exitcarpasses card
-    'get'+'carpass_by_id_enter': ['admin',],
-    'put'+'exitcarpasses_posting': ['admin',],
-    'post'+'exitcarpasses': ['admin',],
-    'put'+'exitcarpasses': ['admin',],
+    'get'+'carpass_by_id_enter': ['admin', 'dispatcher', 'checkpoint'],
+    'put'+'exitcarpasses_posting': ['admin', 'dispatcher',],
+    'post'+'exitcarpasses': ['admin', 'dispatcher',],
+    'put'+'exitcarpasses': ['admin', 'dispatcher',],
+
+    # document_records
+    'get'+'document_records': ['admin', 'dispatcher',],
+    'get'+'document_records_client': ['admin','client','broker'],
+    # document_records card
+    'get'+'entity_documents': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'related_docs': ['admin', 'dispatcher', 'client', 'broker'],
+    'put'+'document_records_posting': ['',],  # operation is not using
+    'post'+'document_records': ['admin', 'dispatcher', 'client', 'broker'],
+    'put'+'document_records': ['admin', 'dispatcher', 'client', 'broker'],
+
+    # contacts
+    'get'+'contacts': ['admin', 'dispatcher',],
+    # contacts card
+    'get'+'brokers_posted': ['admin', 'dispatcher',],
+    'get'+'brokers_available': ['admin', 'dispatcher',],
+    'put'+'contacts_posting': ['admin', 'dispatcher',],
+    'post'+'contacts': ['admin', 'dispatcher',],
+    'put'+'contacts': ['admin', 'dispatcher',],
+    'post'+'create_related_contact_broker': ['admin', 'dispatcher',],
+
+    # brokers
+    'get'+'brokers': ['admin', 'dispatcher',],
+    # brokers card
+    'get'+'related_broker_contact': ['admin', 'dispatcher',],
+
+    # dtreg
+    'get'+'dtreg': ['admin', 'dispatcher',],
+    # dtreg card
+    'get'+'batches_posted': ['admin', 'dispatcher',],
+    'get'+'batch_by_uuid_joined': ['admin', 'dispatcher',],
+    'put'+'dtreg_posting': ['admin', 'dispatcher',],
+    'post'+'dtreg': ['admin', 'dispatcher',],
+    'put'+'dtreg': ['admin', 'dispatcher',],
+    'get'+'dtreg_by_uuid': ['admin', 'dispatcher',],
+
+    # requests_batch_to_sklad
+    'get'+'requests_batch_to_sklad': ['admin', 'dispatcher',],
+    # requests_batch_to_sklad card
+    'get'+'batches_for_request_goods_accept': ['admin', 'dispatcher',],
+    'put'+'requests_batch_to_sklad_posting': ['admin', 'dispatcher',],
+    'post'+'requests_batch_to_sklad': ['admin', 'dispatcher',],
+    'put'+'requests_batch_to_sklad': ['admin', 'dispatcher',],
+
+    # cert_goods_accept
+    'get'+'cert_goods_accept': ['admin', 'dispatcher',],
+    # cert_goods_accept card
+    'get'+'requests_batch_to_sklad_for_cert': ['admin', 'dispatcher',],
+    'get'+'requests_batch_to_sklad_by_uuid': ['admin', 'dispatcher',],
+    'put'+'cert_goods_accept_posting': ['admin', 'dispatcher',],
+    'post'+'cert_goods_accept': ['admin', 'dispatcher',],
+    'put'+'cert_goods_accept': ['admin', 'dispatcher',],
+    'get'+'cert_goods_accept_by_uuid': ['admin', 'dispatcher',],
+
 
 
 }

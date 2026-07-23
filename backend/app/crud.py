@@ -1152,9 +1152,9 @@ def update_tzone(db: Session, zone_id: int, item: schemas.TzoneUpdate, user_uuid
     return item_from_db
 
 
-def update_user(db: Session, item_id: int, item: schemas.UserUpdate, new_pwd: str, user_uuid: str):
+def update_user(db: Session, item_uuid: str, item: schemas.UserUpdate, new_pwd: str, user_uuid: str):
     # specifia update function for user
-    item_from_db =  db.query(models.User).filter(models.User.id == item_id).first()
+    item_from_db =  db.query(models.User).filter(models.User.uuid == item_uuid).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     

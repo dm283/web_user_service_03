@@ -775,6 +775,7 @@ def read_requests_batch_to_sklad_by_uuid(current_user: Annotated[UserAuth, Depen
 @app.get("/role/{role_id}", response_model=schemas.Role)
 def read_role(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 role_id: int, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='role', type='get', current_role_name=current_user.role_name)
     db_role = crud.get_role(db, role_id=role_id)
     if db_role is None:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -938,6 +939,7 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/partners_posted/", response_model=list[schemas.Contact])
 def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='partners_posted', type='get', current_role_name=current_user.role_name)
     contacts = crud.get_partners_posted(db, skip=skip, limit=limit)
     return contacts
 
@@ -945,6 +947,7 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/roles/{partner_type}", response_model=list[schemas.Role])
 def read_roles(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 partner_type: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='roles', type='get', current_role_name=current_user.role_name)
     roles = crud.get_roles(partner_type, db, skip=skip, limit=limit)
     return roles
 
@@ -1312,6 +1315,7 @@ def create_document_record(current_user: Annotated[UserAuth, Depends(get_current
 @app.post("/users/", response_model=schemas.User)
 def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='users', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
     db_user = crud.get_user_by_login(db, login=data_none_values_redefined.login)
     if db_user:
@@ -1436,14 +1440,15 @@ def update_document_record(current_user: Annotated[UserAuth, Depends(get_current
     # return crud.update_document_record(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/users/{item_id}', response_model=schemas.User)
+@app.put('/users/{item_uuid}', response_model=schemas.User)
 def update_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='users', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
     item = schemas.UserUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_user(db=db, item_id=item_id, item=item, new_pwd=data_none_values_redefined.password, user_uuid=current_user.uuid)
+    return crud.update_user(db=db, item_uuid=item_uuid, item=item, new_pwd=data_none_values_redefined.password, user_uuid=current_user.uuid)
 
 
 @app.put('/messages/set_status_viewed/{item_id}')
@@ -1664,6 +1669,7 @@ def posting_document_record(current_user: Annotated[UserAuth, Depends(get_curren
 def posting_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_uuid: str, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='users_posting', type='put', current_role_name=current_user.role_name)
     return crud.posting_user(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
@@ -1824,6 +1830,8 @@ def read_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)
 @app.get('/user_by_uuid/{uuid}', response_model=schemas.User)
 def read_user_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='user_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_user_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
