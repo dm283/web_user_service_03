@@ -584,6 +584,24 @@ def get_entry_requests(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
+def get_entry_requests_posted(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.EntryRequest)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        filter(main_table.posted==True).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        db_full_response.append(schemas.EntryRequestJoined(**row[0].__dict__, contact_name=contact_name))
+
+    return db_full_response
+
+
 def get_entry_requests_client(type: str, contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
     #   
     main_table = aliased(models.EntryRequest)
@@ -628,6 +646,53 @@ def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
+def get_carpasses(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Carpass)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
+
+    return db_full_response
+
+
+def get_carpasses_posted(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Carpass)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        filter(main_table.posted==True, main_table.is_active==True).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        order_by(main_table.created_datetime.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        tzone = row[0].__dict__['place_tzone'] if row[0].__dict__['place_tzone'] else ''
+        tcell = '/ ' + row[0].__dict__['place_tcell'] if row[0].__dict__['place_tcell'] else ''
+        place = f"{tzone} {tcell}"
+        db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
+
+    return db_full_response
+
+
+# def get_carpasses_posted(db: Session, skip: int = 0, limit: int = 100):
+#     #
+#     return db.query(models.Carpass).filter(models.Carpass.posted==True, models.Carpass.is_active==True).\
+#         order_by(models.Carpass.created_datetime.desc()).all()
+
+
 def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 0, limit: int = 100):
     #
     # + get client batches - get all batch.carpass_uuid - get add carpasses by carpass_uuid
@@ -665,12 +730,6 @@ def get_carpasses_client(type: str, contact_uuid: str, db: Session, skip: int = 
         db_full_response.append(schemas.CarpassJoined(**row[0].__dict__, contact_name=contact_name, place=place))
 
     return db_full_response
-
-
-def get_carpasses_posted(db: Session, skip: int = 0, limit: int = 100):
-    #
-    return db.query(models.Carpass).filter(models.Carpass.posted==True, models.Carpass.is_active==True).\
-        order_by(models.Carpass.created_datetime.desc()).all()
 
 
 def get_carpasses_posted_not_archival(db: Session, skip: int = 0, limit: int = 100):
@@ -716,8 +775,14 @@ def get_exitcarpasses(db: Session, skip: int = 0, limit: int = 100):
         order_by(models.Exitcarpass.created_datetime.desc()).all()
 
 
-def get_entry_requests_posted(db: Session, skip: int = 0, limit: int = 100):
+def get_exitcarpasses_posted(db: Session, skip: int = 0, limit: int = 100):
     #
+    return db.query(models.Exitcarpass).filter(models.Exitcarpass.is_active == True, models.Exitcarpass.posted==True).\
+        order_by(models.Exitcarpass.created_datetime.desc()).all()
+
+
+def get_entry_requests_for_new_carpass(db: Session, skip: int = 0, limit: int = 100):
+    # заявки для выпадающего списка при создании нового пропуска на въезд (активные-проведенные-по которым нет пропуска)
     return db.query(models.EntryRequest).filter(models.EntryRequest.is_active==True, models.EntryRequest.posted==True, \
                                                 models.EntryRequest.carpass_created==False).\
         order_by(models.EntryRequest.dateen, models.EntryRequest.timeen).all()
@@ -1774,12 +1839,13 @@ def posting_exitcarpass(db: Session, item_uuid: str, user_uuid: str):
     
     # additional actions after posting item
     # write to Carpass - set dateex & timeex for related carpass 
-    dateex = item_from_db.dateex
-    timeex = item_from_db.timeex 
+    # dateex = item_from_db.dateex
+    # timeex = item_from_db.timeex 
     carpass_enter_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item_from_db.id_enter).first()
-    setattr(carpass_enter_from_db, 'dateex', dateex)
-    setattr(carpass_enter_from_db, 'timeex', timeex)
-    setattr(carpass_enter_from_db, 'status', 'archival')
+    # setattr(carpass_enter_from_db, 'dateex', dateex)
+    # setattr(carpass_enter_from_db, 'timeex', timeex)
+    # setattr(carpass_enter_from_db, 'status', 'archival')
+    setattr(carpass_enter_from_db, 'status', 'for_exit')
     db.commit()
 
     logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
@@ -2042,6 +2108,11 @@ def get_entry_request_by_uuid(db: Session, uuid: str):
 def get_carpass_by_uuid(db: Session, uuid: str):
     # get single entry_request from db
     return db.query(models.Carpass).filter(models.Carpass.uuid == uuid).first()
+
+
+def get_exitcarpass_by_uuid(db: Session, uuid: str):
+    # get single exit carpass from db
+    return db.query(models.Exitcarpass).filter(models.Exitcarpass.uuid == uuid).first()
 
 
 def get_batch_by_uuid(db: Session, uuid: str):

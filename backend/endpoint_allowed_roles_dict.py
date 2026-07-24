@@ -6,9 +6,9 @@ endpoint_allowed_roles_dict = {
     'get'+'tcell': ['admin', 'dispatcher'],
     'get'+'download_carpass': ['admin', 'dispatcher'],
     'get'+'download-file-by-filename': ['admin', 'dispatcher'],
-    'post'+'create_related_docs_record': ['admin', 'dispatcher', 'client', 'broker',],
+    'post'+'create_related_docs_record': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker',],
     'get'+'download-file': ['admin','client','broker'],
-    'get'+'obj_docs': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'obj_docs': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker'],
 
     # users
     'get'+'users': ['admin',],
@@ -56,32 +56,34 @@ endpoint_allowed_roles_dict = {
     'get'+'related_contact_broker': ['admin', 'dispatcher', 'client', 'broker'],
     'get'+'contacts_posted': ['admin', 'dispatcher', 'client', 'broker'],
     'get'+'carpasses_posted_not_archival': ['admin', 'dispatcher', 'client', 'broker'],
-    'get'+'contacts_by_uuid': ['admin', 'dispatcher', 'client', 'broker'],
-    'get'+'carpass_by_uuid': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'contacts_by_uuid': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker'],
     'put'+'batch_posting': ['admin', 'dispatcher',],
     'post'+'batches': ['admin', 'dispatcher',],
     'put'+'batches': ['admin', 'dispatcher',],
     'get'+'batch_by_uuid': ['admin', 'dispatcher', 'client', 'broker'],
 
     # carpasses
-    'get'+'carpasses': ['admin', 'dispatcher', 'checkpoint'],
+    'get'+'carpasses': ['admin', 'dispatcher'],
     'get'+'carpasses_client': ['admin','client','broker'],
+    'get'+'carpasses_posted': ['admin', 'dispatcher', 'checkpoint'],
     'get'+'car_terminal': ['admin', 'dispatcher', 'checkpoint'],
     'put'+'car_exit_permit': ['admin', 'dispatcher'],
     'put'+'exit_prohibited': ['admin', 'dispatcher'],
     'put'+'set_default_car_status': ['admin', 'dispatcher'],
     # carpasses card
     'get'+'tcell_by_zone_id': ['admin', 'dispatcher',],
-    'get'+'entry_requests_posted': ['admin', 'dispatcher',],
+    'get'+'entry_requests_for_new_carpass': ['admin', 'dispatcher',],
     'get'+'tzone': ['admin', 'dispatcher',],
-    'get'+'batches_by_carpass_uuid': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'batches_by_carpass_uuid': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker'],
     'put'+'carpasses_posting': ['admin', 'dispatcher',],
     'post'+'carpasses': ['admin', 'dispatcher',],
     'put'+'carpasses': ['admin', 'dispatcher',],
+    'get'+'carpass_by_uuid': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker'],
 
     # entry_requests
-    'get'+'entry_requests': ['admin', 'dispatcher', 'checkpoint'],
+    'get'+'entry_requests': ['admin', 'dispatcher'],
     'get'+'entry_requests_client': ['admin','client','broker'],
+    'get'+'entry_requests_posted': ['admin', 'dispatcher', 'checkpoint'],
     # entrty_request card
     'put'+'entry_requests_posting': ['admin', 'dispatcher', 'client','broker'],
     'post'+'entry_requests': ['admin', 'dispatcher', 'client', 'broker'],
@@ -96,6 +98,7 @@ endpoint_allowed_roles_dict = {
     'put'+'exitcarpasses_posting': ['admin', 'dispatcher',],
     'post'+'exitcarpasses': ['admin', 'dispatcher',],
     'put'+'exitcarpasses': ['admin', 'dispatcher',],
+    'get'+'exitcarpass_by_uuid': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker',],
 
     # document_records
     'get'+'document_records': ['admin', 'dispatcher',],
@@ -104,7 +107,7 @@ endpoint_allowed_roles_dict = {
     'get'+'entity_documents': ['admin', 'dispatcher', 'client', 'broker'],
     'get'+'related_docs': ['admin', 'dispatcher', 'client', 'broker'],
     'put'+'document_records_posting': ['',],  # operation is not using
-    'post'+'document_records': ['admin', 'dispatcher', 'client', 'broker'],
+    'post'+'document_records': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker'],
     'put'+'document_records': ['admin', 'dispatcher', 'client', 'broker'],
 
     # contacts

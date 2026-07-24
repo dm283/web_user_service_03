@@ -712,6 +712,16 @@ def read_carpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_a
     return item
 
 
+@app.get('/exitcarpass_by_uuid/{uuid}', response_model=schemas.Exitcarpass)
+def read_exitcarpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='exitcarpass_by_uuid', type='get', current_role_name=current_user.role_name)
+    item = crud.get_exitcarpass_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 @app.get('/entry_request_by_uuid/{uuid}', response_model=schemas.EntryRequest)
 def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
@@ -960,6 +970,14 @@ def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_ac
     return items
 
 
+@app.get('/entry_requests_posted/', response_model=list[schemas.EntryRequestJoined])
+def read_entry_requests_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_requests_posted', type='get', current_role_name=current_user.role_name)
+    items = crud.get_entry_requests_posted(db, skip=skip, limit=limit)
+    return items
+
+
 # @app.get('/entry_requests_client/{type}/{contact_uuid}', response_model=list[schemas.EntryRequestJoined])
 # def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
 #                         type: str, contact_uuid: str,
@@ -1079,9 +1097,25 @@ def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_
 
 
 @app.get('/carpasses_posted/', response_model=list[schemas.Carpass])
-def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+def read_carpasses_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_carpasses_posted(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
+def read_exitcarpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='exitcarpasses', type='get', current_role_name=current_user.role_name)
+    items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/exitcarpasses_posted/', response_model=list[schemas.Exitcarpass])
+def read_exitcarpasses_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='exitcarpasses', type='get', current_role_name=current_user.role_name)
+    items = crud.get_exitcarpasses_posted(db, skip=skip, limit=limit)
     return items
 
 
@@ -1109,19 +1143,11 @@ def read_car_at_terminal_for_exit(current_user: Annotated[UserAuth, Depends(get_
     return items
 
 
-@app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
-def read_exitcarpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                       skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    check_endpoint_role_access(url='exitcarpasses', type='get', current_role_name=current_user.role_name)
-    items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
-    return items
-
-
-@app.get('/entry_requests_posted/', response_model=list[schemas.EntryRequest])
-def read_entry_requests_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+@app.get('/entry_requests_for_new_carpass/', response_model=list[schemas.EntryRequest])
+def read_entry_requests_for_new_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    check_endpoint_role_access(url='entry_requests_posted', type='get', current_role_name=current_user.role_name)
-    items = crud.get_entry_requests_posted(db, skip=skip, limit=limit)
+    check_endpoint_role_access(url='entry_requests_for_new_carpass', type='get', current_role_name=current_user.role_name)
+    items = crud.get_entry_requests_for_new_carpass(db, skip=skip, limit=limit)
     return items
 
 

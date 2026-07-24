@@ -83,21 +83,20 @@ const showAskCloseWithoutSave = ref(false)
 
 const getTcells = async (zone_id) => {
   if (!zone_id) { state.tcells = []; return }
-  let response = await axios.get(`http://${backendIpAddress}:${backendPort}/tcell_by_zone_id/${zone_id}`,
-        {headers: authHeader()} );
+  if (props.isCard) { return }
+  console.log('READ TCELLS BY TZONE')
+  let response = await axios.get(`http://${backendIpAddress}:${backendPort}/tcell_by_zone_id/${zone_id}`, {headers: authHeader()});
   state.tcells = response.data;
-  console.log('tcells =', state.tcells)
 } 
 
 // for dropdowns
 if (!props.isCard) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entry_requests_posted/`, {headers: authHeader()});
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entry_requests_for_new_carpass/`, {headers: authHeader()});
       state.entiryRequests = response.data;
       const response_2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
       state.contacts = response_2.data;
-
       const response_3 = await axios.get(`http://${backendIpAddress}:${backendPort}/tzone/`, {headers: authHeader()});
       state.tzones = response_3.data;
     } catch (error) {
@@ -403,6 +402,8 @@ const refreshCard = async () => {
         АРХИВНЫЙ</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-red-600" v-else-if="props.itemData.status=='exit_prohibited'">
         ВЫЕЗД ЗАПРЕЩЁН</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-amber-600" v-else-if="props.itemData.status=='for_exit'">
+        К ВЫЕЗДУ</div>      
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
         СТОЯНКА</div>
 
