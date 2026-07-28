@@ -75,8 +75,6 @@ def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: S
     )
     created_date = datetime.date.today()
     created_time = datetime.datetime.now().strftime("%H:%M:%S")
-    #print('datetime.datetime.now() =', datetime.datetime.now())
-    #print('created_date, created_time =', created_date, created_time)
     log_rec = models.LogRecord(**log_rec.model_dump(), created_date = created_date, created_time = created_time)
     try:
         db.add(log_rec); db.commit(); db.refresh(log_rec)
