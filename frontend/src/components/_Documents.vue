@@ -5,7 +5,7 @@ import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import Card from '@/components/Card.vue';
 import List from '@/components/List.vue';
 import BarHorizont from '@/components/BarHorizont.vue';
-import FormAddDoc from './FormAddDoc.vue';
+import FormAddDoc from './_FormAddDoc.vue';
 
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";

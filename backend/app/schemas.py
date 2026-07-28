@@ -101,8 +101,8 @@ class ExitcarpassValidation(BaseModel):
     driver_phone: str
     driver_licence: str
     ndexit: str
-    dateex: date
-    timeex: time
+    # dateex: date
+    # timeex: time
 
 class ExitcarpassUpdate(ExitcarpassCreate):
     updated_datetime: datetime
@@ -301,6 +301,9 @@ class User(UserBase):
 class UserJoined(User):
     contact_name: str | None
     role_name: str | None
+
+class UserFull(UserJoined):
+    hashed_password: str | None
     
         
 #####

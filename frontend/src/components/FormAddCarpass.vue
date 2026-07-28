@@ -83,21 +83,20 @@ const showAskCloseWithoutSave = ref(false)
 
 const getTcells = async (zone_id) => {
   if (!zone_id) { state.tcells = []; return }
-  let response = await axios.get(`http://${backendIpAddress}:${backendPort}/tcell_by_zone_id/${zone_id}`,
-        {headers: authHeader()} );
+  if (props.isCard) { return }
+  console.log('READ TCELLS BY TZONE')
+  let response = await axios.get(`http://${backendIpAddress}:${backendPort}/tcell_by_zone_id/${zone_id}`, {headers: authHeader()});
   state.tcells = response.data;
-  console.log('tcells =', state.tcells)
 } 
 
 // for dropdowns
 if (!props.isCard) {
 onMounted(async () => {
     try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entry_requests_posted/`, {headers: authHeader()});
+      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/entry_requests_for_new_carpass/`, {headers: authHeader()});
       state.entiryRequests = response.data;
       const response_2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
       state.contacts = response_2.data;
-
       const response_3 = await axios.get(`http://${backendIpAddress}:${backendPort}/tzone/`, {headers: authHeader()});
       state.tzones = response_3.data;
     } catch (error) {
@@ -237,7 +236,7 @@ const postingItem = async () => {
   
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses_posting/${props.itemData.uuid}`,
         '', {headers: authHeader()});
       toast.success('Запись проведена');
     } else {
@@ -270,7 +269,7 @@ const handleSubmit = async () => {
         toast.success('Новый запись добавлена');
         state.responseItem = response.data;
       } else {
-        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`, 
+        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.uuid}`, 
           formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
         toast.success('Запись обновлена');
         state.responseItem = response.data;
@@ -403,6 +402,8 @@ const refreshCard = async () => {
         АРХИВНЫЙ</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-red-600" v-else-if="props.itemData.status=='exit_prohibited'">
         ВЫЕЗД ЗАПРЕЩЁН</div>
+      <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-amber-600" v-else-if="props.itemData.status=='for_exit'">
+        К ВЫЕЗДУ</div>      
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-else>
         СТОЯНКА</div>
 
@@ -739,11 +740,6 @@ const refreshCard = async () => {
             </div>
             <div class="mt-2 max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет размещенных партий товаров</div>
       </div>
-
-
-
-
-
 
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
         <div class="space-x-5 overflow-auto">

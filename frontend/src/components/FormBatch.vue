@@ -236,7 +236,7 @@ const postingItem = async () => {
 
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/batch_posting/${props.itemData.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/batch_posting/${props.itemData.uuid}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
       //emit('notification', 'проводка', 'партия_товаров', response.data.id, response.data.contact_uuid)
@@ -270,7 +270,7 @@ const handleSubmit = async () => {
         toast.success('Новая запись добавлена');
         state.responseItem = response.data;
       } else {
-        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/batches/${props.itemData.id}`, 
+        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/batches/${props.itemData.uuid}`, 
           formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
         toast.success('Запись обновлёна');      
         state.responseItem = response.data;
@@ -620,8 +620,11 @@ const refreshCard = async () => {
                     @click="downloadFile(document.uuid)">
                   <i class="pi pi-download" style="font-size: 0.8rem"></i></div></td>
                 <td class="text-center max-w-48 overflow-hidden">{{ document.doc_name }}</td>
-                <td class="text-center">{{ document.doc_id }}</td>
-                <td class="text-center">{{ document.doc_date }}</td>
+                <!-- <td class="text-center">{{ document.doc_id }}</td>
+                <td class="text-center">{{ document.doc_date }}</td> -->
+                <td class="text-center">{{ document.contact_uuid }}</td>
+                <td class="text-center">{{ userInfo.contact_uuid }}</td>
+
                 <td class="text-center max-w-48 overflow-hidden">{{ document.file_name }}</td>
                 <td class="text-center">{{ document.login }}</td>
                 <td class="text-center">{{ document.contact }}</td>

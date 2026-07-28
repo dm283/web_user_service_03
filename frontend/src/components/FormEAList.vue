@@ -39,8 +39,8 @@ const state = reactive({
 
 
 state.query = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/document_records/`:
-  `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
-// state.query = `http://${backendIpAddress}:${backendPort}/document_records/`
+  `http://${backendIpAddress}:${backendPort}/document_records_client/`
+
 state.listTableColumns = {
     'doc_name':'Наименование','doc_id':'Номер документа','doc_date':'Дата документа','filename':'Файл','created_datetime':'Дата загрузки'
   };

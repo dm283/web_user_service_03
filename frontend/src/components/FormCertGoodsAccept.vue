@@ -207,7 +207,7 @@ const postingItem = async () => {
 
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/cert_goods_accept_posting/${props.itemData.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/cert_goods_accept_posting/${props.itemData.uuid}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else { return; }
@@ -238,7 +238,7 @@ const handleSubmit = async () => {
         toast.success('Новая запись добавлена');
         state.responseItem = response.data;
       } else {
-        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/cert_goods_accept/${props.itemData.id}`, 
+        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/cert_goods_accept/${props.itemData.uuid}`, 
           formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
         toast.success('Запись обновлёна');      
         state.responseItem = response.data;
@@ -323,7 +323,7 @@ const reattachFile = async (doc_uuid, obj_uuid) => {
 }
 
 const refreshCard = async () => {
-  let query = `http://${backendIpAddress}:${backendPort}/dtreg_by_uuid/${props.itemData.uuid}`
+  let query = `http://${backendIpAddress}:${backendPort}/cert_goods_accept_by_uuid/${props.itemData.uuid}`
   let response = await axios.get(query, {headers: authHeader()});
   let item = response.data;
   let reopenType = props.isCard ? 'card' : 'edit'

@@ -34,25 +34,25 @@ const userAccessToken = () => {
 
 
 if (props.itemName == 'Пропуска ТС на въезд') {
-  state.query = `http://${backendIpAddress}:${backendPort}/carpasses_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/carpasses_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Пропуска ТС на выезд') {
-  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Заявки на въезд ТС') {
-  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Партии товаров') {
-  state.query = `http://${backendIpAddress}:${backendPort}/batches_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/batches_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Таможенное оформление') {
-  state.query = `http://${backendIpAddress}:${backendPort}/dtreg_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/dtreg_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Заявки размещения партий на склад') {
-  state.query = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Принятые партии товара') {
-  state.query = `http://${backendIpAddress}:${backendPort}/cert_goods_accept_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/cert_goods_accept_rollback/${props.itemData.uuid}`;
 } else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
-  state.query = `http://${backendIpAddress}:${backendPort}/contacts_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/contacts_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Пользователи') {
-  state.query = `http://${backendIpAddress}:${backendPort}/users_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/users_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Электронный архив') {
-  state.query = `http://${backendIpAddress}:${backendPort}/document_records_rollback/${props.itemData.id}`;
+  state.query = `http://${backendIpAddress}:${backendPort}/document_records_rollback/${props.itemData.uuid}`;
 }
 
 

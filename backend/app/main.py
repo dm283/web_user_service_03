@@ -1,6 +1,6 @@
 import os, random, ast
 from datetime import date, datetime, time, timedelta, timezone
-from fastapi import FastAPI, status, UploadFile, Form, WebSocket, WebSocketDisconnect, Depends, File # HTTPException
+from fastapi import FastAPI, status, UploadFile, Request, Form, WebSocket, WebSocketDisconnect, Depends, File # HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
@@ -15,13 +15,18 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel
 
-from app import crud, models, schemas, views
+# from app import crud, models, schemas, views
+from app import crud, models, schemas
 from app.database import SessionLocal, engine
 from service_functions import *
-from app.database import PATH_TZONE, PATH_TCELL
+from app.database import PATH_TZONE, PATH_TCELL, DEV
+from endpoint_allowed_roles_dict import endpoint_allowed_roles_dict
 
 
-app = FastAPI()
+if DEV == 'false':
+    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+else:
+    app = FastAPI()
 
 origins = [
     "*",
@@ -35,7 +40,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(views.router, prefix='/dashboard', tags=['dashboard'])
+
+# Define permitted loopback addresses (IPv4 and IPv6)
+# ALLOWED_LOCALHOSTS = {"127.0.0.1", "::1"}
+
+# from fastapi.responses import JSONResponse
+
+# @app.middleware("http")
+# async def limit_to_localhost(request: Request, call_next):
+#     # Retrieve the raw client IP address
+#     client_ip = request.client.host
+
+#     print('!! reques', request.__dict__)
+#     print('!! request.client', request.client)
+#     print('!! request.client.host', request.client.host)
+    
+#     # Reject request if it does not originate from localhost
+#     # if client_ip not in ALLOWED_LOCALHOSTS:
+#     #     return JSONResponse(
+#     #         status_code=status.HTTP_403_FORBIDDEN,
+#     #         content={"detail": "Access forbidden: Localhost access only."}
+#     #     )
+        
+#     return await call_next(request)
+
+# @app.middleware("http")
+# async def block_curl_middleware(request: Request, call_next):
+#     user_agent = request.headers.get("user-agent", "")
+    
+#     print(print('!! request', request))
+#     print(print('!! request.headers', request.headers))
+
+#     # if "curl" in user_agent.lower():
+#     #     return Response(
+#     #         content="Access denied for curl clients.", 
+#     #         status_code=status.HTTP_403_FORBIDDEN
+#     #     )
+        
+#     return await call_next(request)
+
+# app.include_router(views.router, prefix='/dashboard', tags=['dashboard'])
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -66,6 +110,16 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 #############################
+def check_endpoint_role_access(url, type, current_role_name):
+    #
+    if 'ALL' in endpoint_allowed_roles_dict[type+url]:
+        return
+
+    # print('111', type+url, endpoint_allowed_roles_dict[type+url])
+
+    if current_role_name not in endpoint_allowed_roles_dict[type+url]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Отсутствует доступ')
+    
 
 def get_db():
     db = SessionLocal()
@@ -84,7 +138,8 @@ def get_password_hash(password):
 
 
 def get_user(username: str, db: Session):
-    db_user = crud.get_user_by_login(db=db, login=username)
+    db_user = crud.get_user_by_login_for_auth(db=db, login=username)
+    # db_user = crud.get_user_by_login(db=db, login=username)
     if db_user:
         return db_user
     
@@ -157,6 +212,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 async def index():
     return {'message': 'fastapi server is working'}
 
+
 #########################################################    SERVICE FUNCTIONS
 def redefine_schema_values_to_none(data, schema_obj):
     # get data received from frontend and redefine values if value is any kind of none to None
@@ -220,30 +276,30 @@ def redefine_schema_values_to_none(data, schema_obj):
 
 
 #########################################################    DOCUMENT (FILE)
-@app.post("/document/")      # check this!!!!!!
-async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                      doc_name: Annotated[str, Form()], 
-                      related_doc_uuid: Annotated[str, Form()],
-                      customer_name: Annotated[str, Form()],
-                      file: UploadFile,
-                      db: Session = Depends(get_db)
-                      ):
+# @app.post("/document/")      # check this!!!!!!
+# async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                       doc_name: Annotated[str, Form()], 
+#                       related_doc_uuid: Annotated[str, Form()],
+#                       customer_name: Annotated[str, Form()],
+#                       file: UploadFile,
+#                       db: Session = Depends(get_db)
+#                       ):
 
-    file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
-    fname_splited = file.filename.rpartition('.')
-    filename_with_postfix = f'{fname_splited[0]}_{file_name_postfix}.{fname_splited[2]}'
-    filepath = os.path.join('saved_files', filename_with_postfix)
+#     file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
+#     fname_splited = file.filename.rpartition('.')
+#     filename_with_postfix = f'{fname_splited[0]}_{file_name_postfix}.{fname_splited[2]}'
+#     filepath = os.path.join('saved_files', filename_with_postfix)
 
-    document = schemas.DocumentCreate(
-        doc_name = doc_name,
-        related_doc_uuid = related_doc_uuid,
-        customer_name = customer_name,
-        filename = file.filename,
-        filepath = filepath,
-        filecontent = None
-    )
+#     document = schemas.DocumentCreate(
+#         doc_name = doc_name,
+#         related_doc_uuid = related_doc_uuid,
+#         customer_name = customer_name,
+#         filename = file.filename,
+#         filepath = filepath,
+#         filecontent = None
+#     )
 
-    return crud.create_n_save_document(db=db, file=file, document=document)
+#     return crud.create_n_save_document(db=db, file=file, document=document)
 
 
 # get name of downloading file  -   check is it using!
@@ -260,6 +316,7 @@ def document_get_filename(current_user: Annotated[UserAuth, Depends(get_current_
 @app.get('/download-file/{document_record_uuid}')
 def document_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     document_record_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='download-file', type='get', current_role_name=current_user.role_name)
     document = db.query(models.Document).filter(models.Document.related_doc_uuid == document_record_uuid).first()
     filepath = document.filepath
     filename = document.filename
@@ -275,9 +332,9 @@ def document_download(current_user: Annotated[UserAuth, Depends(get_current_acti
 
 # download file from filesystem
 @app.get('/download-file-by-filename/{filename}')
-def file_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                    filename: str,
-                    db: Session = Depends(get_db)):
+def file_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)], filename: str, db: Session = Depends(get_db)):
+    # currently download template of excel list of clients
+    check_endpoint_role_access(url='download-file-by-filename', type='get', current_role_name=current_user.role_name)
     filepath = f'../data/files/{filename}'
     filename = filename
     response = FileResponse(path=filepath,
@@ -354,6 +411,9 @@ def load_excel(entity, file_location, user_uuid, db):
 @app.put("/upload_file/")
 async def upload_file(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     entity: Annotated[str, Form()], file: UploadFile, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='upload_file', type='put', current_role_name=current_user.role_name)
+
     try:
         filecontent = file.file.read()
         if not os.path.exists('uploaded_files'):
@@ -480,6 +540,9 @@ def load_excel_list(entity, file_location, cols, cols_not_empty_val, model, sche
 @app.put("/upload_excel_list/")
 async def upload_excel_list(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     entity: Annotated[str, Form()], db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='/upload_excel_list/', type='put', current_role_name=current_user.role_name)
+
     entity_trans = {'Территории терминала': 'tzone', 'Места территорий': 'tcell'}
     file_location = {
         'Территории терминала': PATH_TZONE,
@@ -523,6 +586,8 @@ async def upload_file_for_carpass(current_user: Annotated[UserAuth, Depends(get_
                                   post_user_id: Annotated[str, Form()],
                                   file: UploadFile, db: Session = Depends(get_db)):
     
+    check_endpoint_role_access(url='/upload_file_for_carpass/', type='put', current_role_name=current_user.role_name)
+
     file_name_postfix = datetime.now().strftime("%Y%m%d%H%M%S%f")
     if '.' in file.filename:
         fname_splited = file.filename.rpartition('.')
@@ -550,6 +615,7 @@ def create_related_docs_record(current_user: Annotated[UserAuth, Depends(get_cur
     #
     # data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
     # print('create_related_docs_record', data)
+    check_endpoint_role_access(url='create_related_docs_record', type='post', current_role_name=current_user.role_name)
     return crud.create_related_docs_record(db=db, data=data)
 
 
@@ -557,6 +623,7 @@ def create_related_docs_record(current_user: Annotated[UserAuth, Depends(get_cur
 def create_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         data: Annotated[schemas.RelatedContactBrokerCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='create_related_contact_broker', type='post', current_role_name=current_user.role_name)
     # data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
     # print('create_related_docs_record', data)
     return crud.create_related_contact_broker(db=db, data=data)
@@ -574,6 +641,8 @@ async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depe
 @app.get('/download_carpass/{section}/{item_sys_id}')
 def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                      section: str, item_sys_id: int,  db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='download_carpass', type='get', current_role_name=current_user.role_name)
     # create and download carpass pdf file
     if section == 'Пропуска ТС на въезд':
         carpass_from_db = crud.get_carpass_by_id(db=db, carpass_id=item_sys_id)
@@ -626,6 +695,7 @@ def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_activ
 @app.get("/carpasses/{carpass_id_enter}", response_model=schemas.Carpass)
 def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                  carpass_id_enter: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='carpass_by_id_enter', type='get', current_role_name=current_user.role_name)
     db_carpass = crud.get_carpass(db, carpass_id_enter=carpass_id_enter)
     if db_carpass is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -635,7 +705,18 @@ def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get('/carpass_by_uuid/{uuid}', response_model=schemas.Carpass)
 def read_carpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='carpass_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_carpass_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
+@app.get('/exitcarpass_by_uuid/{uuid}', response_model=schemas.Exitcarpass)
+def read_exitcarpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='exitcarpass_by_uuid', type='get', current_role_name=current_user.role_name)
+    item = crud.get_exitcarpass_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
@@ -644,6 +725,7 @@ def read_carpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_a
 @app.get('/entry_request_by_uuid/{uuid}', response_model=schemas.EntryRequest)
 def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_request_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_entry_request_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -653,6 +735,7 @@ def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_cur
 @app.get('/batch_by_uuid/{uuid}', response_model=schemas.Batch)
 def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batch_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_batch_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -662,6 +745,7 @@ def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_act
 @app.get('/batch_by_uuid_joined/{uuid}', response_model=schemas.BatchJoined)
 def read_batch_by_uuid_joined(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batch_by_uuid_joined', type='get', current_role_name=current_user.role_name)
     item = crud.get_batch_by_uuid_joined(uuid=uuid, db=db)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -671,6 +755,7 @@ def read_batch_by_uuid_joined(current_user: Annotated[UserAuth, Depends(get_curr
 @app.get('/dtreg_by_uuid/{uuid}', response_model=schemas.Dtreg)
 def read_dtreg_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='dtreg_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_dtreg_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -680,6 +765,7 @@ def read_dtreg_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_act
 @app.get('/cert_goods_accept_by_uuid/{uuid}', response_model=schemas.CertGoodsAccept)
 def read_cert_goods_accept_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='cert_goods_accept_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_cert_goods_accept_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -689,6 +775,7 @@ def read_cert_goods_accept_by_uuid(current_user: Annotated[UserAuth, Depends(get
 @app.get('/requests_batch_to_sklad_by_uuid/{uuid}', response_model=schemas.RequestBatchToSklad)
 def read_requests_batch_to_sklad_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='requests_batch_to_sklad_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_requests_batch_to_sklad_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -698,6 +785,7 @@ def read_requests_batch_to_sklad_by_uuid(current_user: Annotated[UserAuth, Depen
 @app.get("/role/{role_id}", response_model=schemas.Role)
 def read_role(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 role_id: int, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='role', type='get', current_role_name=current_user.role_name)
     db_role = crud.get_role(db, role_id=role_id)
     if db_role is None:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -716,6 +804,7 @@ def read_contact(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get("/contacts_by_uuid/{uuid}", response_model=schemas.Contact)
 def read_contact_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                  uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='contacts_by_uuid', type='get', current_role_name=current_user.role_name)
     db_contact = crud.get_contact_by_uuid(db, uuid=uuid)
     if db_contact is None:
         raise HTTPException(status_code=404, detail="Contact not found")
@@ -734,22 +823,33 @@ def get_document_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_a
 @app.get('/document_records/', response_model=list[schemas.DocumentRecordJoined2])
 def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='document_records', type='get', current_role_name=current_user.role_name)
     documents = crud.get_document_records(db, skip=skip, limit=limit)
     return documents
 
 
-@app.get('/document_records_client/{user_uuid}/{user_contact_uuid}', response_model=list[schemas.DocumentRecord])
+# @app.get('/document_records_client/{user_uuid}/{user_contact_uuid}', response_model=list[schemas.DocumentRecord])
+# def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                    user_uuid: str, user_contact_uuid: str,
+#                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     # documents = crud.get_documents(db, skip=skip, limit=limit)
+#     documents = crud.get_document_records_client(user_uuid=user_uuid, user_contact_uuid=user_contact_uuid, db=db, skip=skip, limit=limit)
+#     return documents
+
+@app.get('/document_records_client/', response_model=list[schemas.DocumentRecord])
 def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   user_uuid: str, user_contact_uuid: str,
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # documents = crud.get_documents(db, skip=skip, limit=limit)
-    documents = crud.get_document_records_client(user_uuid=user_uuid, user_contact_uuid=user_contact_uuid, db=db, skip=skip, limit=limit)
+    check_endpoint_role_access(url='document_records_client', type='get', current_role_name=current_user.role_name)
+    documents = crud.get_document_records_client(user_uuid=current_user.uuid, user_contact_uuid=current_user.contact_uuid, 
+                                                 db=db, skip=skip, limit=limit)
     return documents
 
 
 @app.get("/log_records/", response_model=list[schemas.LogRecordJoined])
 def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='log_records', type='get', current_role_name=current_user.role_name)
     log_records = crud.get_log_records(db, skip=skip, limit=limit)
     return log_records
 
@@ -757,6 +857,8 @@ def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_activ
 @app.get("/tzone/", response_model=list[schemas.Tzone])
 def read_tzone(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='tzone', type='get', current_role_name=current_user.role_name)
     tzones = crud.get_tzone(db, skip=skip, limit=limit)
     return tzones
 
@@ -764,6 +866,8 @@ def read_tzone(current_user: Annotated[UserAuth, Depends(get_current_active_user
 @app.get("/tcell/", response_model=list[schemas.Tcell])
 def read_tcell(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='tcell', type='get', current_role_name=current_user.role_name)
     tcells = crud.get_tcell(db, skip=skip, limit=limit)
     return tcells
 
@@ -771,7 +875,7 @@ def read_tcell(current_user: Annotated[UserAuth, Depends(get_current_active_user
 @app.get("/tcell_by_zone_id/{zone_id}", response_model=list[schemas.Tcell])
 def read_tcell_by_zone_id(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   zone_id: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    print('zone_id = ', zone_id)
+    check_endpoint_role_access(url='tcell_by_zone_id', type='get', current_role_name=current_user.role_name)
     tcells = crud.get_tcell_by_zone_id(zone_id=zone_id, db=db, skip=skip, limit=limit)
     return tcells
 
@@ -798,6 +902,7 @@ def read_messages(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/contacts/", response_model=list[schemas.Contact])
 def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='contacts', type='get', current_role_name=current_user.role_name)
     contacts = crud.get_contacts(db, skip=skip, limit=limit)
     return contacts
 
@@ -805,6 +910,7 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/contacts_posted/", response_model=list[schemas.Contact])
 def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='contacts_posted', type='get', current_role_name=current_user.role_name)
     contacts = crud.get_contacts_posted(db, skip=skip, limit=limit)
     return contacts
 
@@ -812,6 +918,7 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/brokers/", response_model=list[schemas.Contact])
 def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='brokers', type='get', current_role_name=current_user.role_name)
     brokers = crud.get_brokers(db, skip=skip, limit=limit)
     return brokers
 
@@ -819,6 +926,7 @@ def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get("/brokers_posted/", response_model=list[schemas.Contact])
 def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='brokers_posted', type='get', current_role_name=current_user.role_name)
     brokers = crud.get_brokers_posted(db, skip=skip, limit=limit)
     return brokers
 
@@ -826,6 +934,7 @@ def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get("/brokers_available/{contact_uuid}", response_model=list[schemas.Contact])
 def read_brokers(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                  contact_uuid: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='brokers_available', type='get', current_role_name=current_user.role_name)
     brokers = crud.get_brokers_available(contact_uuid, db, skip=skip, limit=limit)
     return brokers
 
@@ -840,6 +949,7 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/partners_posted/", response_model=list[schemas.Contact])
 def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='partners_posted', type='get', current_role_name=current_user.role_name)
     contacts = crud.get_partners_posted(db, skip=skip, limit=limit)
     return contacts
 
@@ -847,6 +957,7 @@ def read_contacts(current_user: Annotated[UserAuth, Depends(get_current_active_u
 @app.get("/roles/{partner_type}", response_model=list[schemas.Role])
 def read_roles(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 partner_type: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='roles', type='get', current_role_name=current_user.role_name)
     roles = crud.get_roles(partner_type, db, skip=skip, limit=limit)
     return roles
 
@@ -854,21 +965,38 @@ def read_roles(current_user: Annotated[UserAuth, Depends(get_current_active_user
 @app.get('/entry_requests/', response_model=list[schemas.EntryRequestJoined])
 def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_requests', type='get', current_role_name=current_user.role_name)
     items = crud.get_entry_requests(db, skip=skip, limit=limit)
     return items
 
 
-@app.get('/entry_requests_client/{type}/{contact_uuid}', response_model=list[schemas.EntryRequestJoined])
-def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                        type: str, contact_uuid: str,
+@app.get('/entry_requests_posted/', response_model=list[schemas.EntryRequestJoined])
+def read_entry_requests_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_entry_requests_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+    check_endpoint_role_access(url='entry_requests_posted', type='get', current_role_name=current_user.role_name)
+    items = crud.get_entry_requests_posted(db, skip=skip, limit=limit)
+    return items
+
+
+# @app.get('/entry_requests_client/{type}/{contact_uuid}', response_model=list[schemas.EntryRequestJoined])
+# def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                         type: str, contact_uuid: str,
+#                         skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     items = crud.get_entry_requests_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+#     return items
+
+@app.get('/entry_requests_client/', response_model=list[schemas.EntryRequestJoined])
+def read_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_requests_client', type='get', current_role_name=current_user.role_name)
+    items = crud.get_entry_requests_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
 
 
 @app.get('/dtreg/', response_model=list[schemas.DtregJoined])
 def read_dtregs(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='dtreg', type='get', current_role_name=current_user.role_name)
     items = crud.get_dtregs(db, skip=skip, limit=limit)
     return items
 
@@ -876,6 +1004,7 @@ def read_dtregs(current_user: Annotated[UserAuth, Depends(get_current_active_use
 @app.get('/cert_goods_accept/', response_model=list[schemas.CertGoodsAcceptJoined])
 def read_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='cert_goods_accept', type='get', current_role_name=current_user.role_name)
     items = crud.get_cert_goods_accept(db, skip=skip, limit=limit)
     return items
 
@@ -883,6 +1012,7 @@ def read_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current
 @app.get('/requests_batch_to_sklad/', response_model=list[schemas.RequestBatchToSkladJoined])
 def read_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='requests_batch_to_sklad', type='get', current_role_name=current_user.role_name)
     items = crud.get_requests_batch_to_sklad(db, skip=skip, limit=limit)
     return items
 
@@ -890,6 +1020,7 @@ def read_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_c
 @app.get('/requests_batch_to_sklad_for_cert/', response_model=list[schemas.RequestBatchToSkladJoinedForCert])
 def read_requests_batch_to_sklad_for_cert(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='requests_batch_to_sklad_for_cert', type='get', current_role_name=current_user.role_name)
     items = crud.get_requests_batch_to_sklad_for_cert(db, skip=skip, limit=limit)
     return items
 
@@ -897,6 +1028,7 @@ def read_requests_batch_to_sklad_for_cert(current_user: Annotated[UserAuth, Depe
 @app.get('/batches/', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batches', type='get', current_role_name=current_user.role_name)
     items = crud.get_batches(db, skip=skip, limit=limit)
     return items
 
@@ -904,6 +1036,7 @@ def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_us
 @app.get('/batches_posted/', response_model=list[schemas.BatchJoined])
 def read_batches_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batches_posted', type='get', current_role_name=current_user.role_name)
     items = crud.get_batches_posted(db, skip=skip, limit=limit)
     return items
 
@@ -911,6 +1044,7 @@ def read_batches_posted(current_user: Annotated[UserAuth, Depends(get_current_ac
 @app.get('/batches_for_request_goods_accept/', response_model=list[schemas.BatchJoined])
 def read_batches_for_request_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batches_for_request_goods_accept', type='get', current_role_name=current_user.role_name)
     items = crud.get_batches_for_request_goods_accept(db, skip=skip, limit=limit)
     return items
 
@@ -918,42 +1052,77 @@ def read_batches_for_request_goods_accept(current_user: Annotated[UserAuth, Depe
 @app.get('/batches_by_carpass_uuid/{carpass_uuid}', response_model=list[schemas.BatchJoined])
 def read_batches_by_carpass_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    carpass_uuid: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='batches_by_carpass_uuid', type='get', current_role_name=current_user.role_name)
     items = crud.get_batches_by_carpass_uuid(carpass_uuid=carpass_uuid, db=db, skip=skip, limit=limit)
     return items
 
-@app.get('/batches_client/{type}/{contact_uuid}', response_model=list[schemas.BatchJoined])
+# @app.get('/batches_client/{type}/{contact_uuid}', response_model=list[schemas.BatchJoined])
+# def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                 type: str, contact_uuid: str,
+#                 skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     check_endpoint_role_access(url='batches_client', type='get', current_role_name=current_user.role_name)
+#     items = crud.get_batches_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+#     return items
+
+@app.get('/batches_client/', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                type: str, contact_uuid: str,
                 skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_batches_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+    check_endpoint_role_access(url='batches_client', type='get', current_role_name=current_user.role_name)
+    items = crud.get_batches_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
+
 
 
 @app.get('/carpasses/', response_model=list[schemas.CarpassJoined])
 def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='carpasses', type='get', current_role_name=current_user.role_name)
     items = crud.get_carpasses(db, skip=skip, limit=limit)
     return items
 
 
-@app.get('/carpasses_client/{type}/{contact_uuid}', response_model=list[schemas.CarpassJoined])
+@app.get('/carpasses_client/', response_model=list[schemas.CarpassJoined])
 def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   type: str, contact_uuid: str,
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_carpasses_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+    check_endpoint_role_access(url='carpasses_client', type='get', current_role_name=current_user.role_name)
+    items = crud.get_carpasses_client(type=current_user.type, contact_uuid=current_user.contact_uuid, db=db, skip=skip, limit=limit)
     return items
+
+# @app.get('/carpasses_client/{type}/{contact_uuid}', response_model=list[schemas.CarpassJoined])
+# def read_carpasses_client(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                    type: str, contact_uuid: str,
+#                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     items = crud.get_carpasses_client(type=type, contact_uuid=contact_uuid, db=db, skip=skip, limit=limit)
+#     return items
 
 
 @app.get('/carpasses_posted/', response_model=list[schemas.Carpass])
-def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+def read_carpasses_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_carpasses_posted(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
+def read_exitcarpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='exitcarpasses', type='get', current_role_name=current_user.role_name)
+    items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
+    return items
+
+
+@app.get('/exitcarpasses_posted/', response_model=list[schemas.Exitcarpass])
+def read_exitcarpasses_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='exitcarpasses', type='get', current_role_name=current_user.role_name)
+    items = crud.get_exitcarpasses_posted(db, skip=skip, limit=limit)
     return items
 
 
 @app.get('/carpasses_posted_not_archival/', response_model=list[schemas.Carpass])
 def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='carpasses_posted_not_archival', type='get', current_role_name=current_user.role_name)
     items = crud.get_carpasses_posted_not_archival(db, skip=skip, limit=limit)
     return items
 
@@ -961,6 +1130,7 @@ def read_carpasses(current_user: Annotated[UserAuth, Depends(get_current_active_
 @app.get('/car_terminal/', response_model=list[schemas.CarpassJoined])
 def read_car_at_terminal(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='car_terminal', type='get', current_role_name=current_user.role_name)
     items = crud.get_cars_at_terminal(db, skip=skip, limit=limit)
     return items
 
@@ -968,21 +1138,16 @@ def read_car_at_terminal(current_user: Annotated[UserAuth, Depends(get_current_a
 @app.get('/car_terminal_for_exit/')
 def read_car_at_terminal_for_exit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='car_terminal_for_exit', type='get', current_role_name=current_user.role_name)
     items = crud.get_cars_at_terminal_for_exit(db, skip=skip, limit=limit)
     return items
 
 
-@app.get('/exitcarpasses/', response_model=list[schemas.Exitcarpass])
-def read_exitcarpasses(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                       skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_exitcarpasses(db, skip=skip, limit=limit)
-    return items
-
-
-@app.get('/entry_requests_posted/', response_model=list[schemas.EntryRequest])
-def read_entry_requests_posted(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+@app.get('/entry_requests_for_new_carpass/', response_model=list[schemas.EntryRequest])
+def read_entry_requests_for_new_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_entry_requests_posted(db, skip=skip, limit=limit)
+    check_endpoint_role_access(url='entry_requests_for_new_carpass', type='get', current_role_name=current_user.role_name)
+    items = crud.get_entry_requests_for_new_carpass(db, skip=skip, limit=limit)
     return items
 
 
@@ -990,6 +1155,7 @@ def read_entry_requests_posted(current_user: Annotated[UserAuth, Depends(get_cur
 def get_entity_documents(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          related_doc_uuid: str, db: Session = Depends(get_db)):
     # get entity documents from db table documents
+    check_endpoint_role_access(url='entity_documents', type='get', current_role_name=current_user.role_name)
     documents =  db.query(models.Document).filter(models.Document.related_doc_uuid.contains(related_doc_uuid)).\
         order_by(models.Document.created_datetime.desc()).all()
     # documents =  db.query(models.Document).filter(models.Document.related_doc_uuid == related_doc_uuid).\
@@ -1004,6 +1170,9 @@ def formatted_datetime(ov):
 def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          obj_uuid: str, db: Session = Depends(get_db)):
     # get object documents from db table document_records
+
+    check_endpoint_role_access(url='obj_docs', type='get', current_role_name=current_user.role_name)
+
     db_related_docs = db.query(models.RelatedDocs).\
            filter(models.RelatedDocs.obj_uuid==obj_uuid, models.RelatedDocs.is_active==True).\
            order_by(models.RelatedDocs.created_datetime.desc()).all()
@@ -1042,6 +1211,7 @@ def get_obj_doc(current_user: Annotated[UserAuth, Depends(get_current_active_use
 def get_related_doc(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          doc_uuid: str, db: Session = Depends(get_db)):
     # get objects which have document_record
+    check_endpoint_role_access(url='related_docs', type='get', current_role_name=current_user.role_name)
     db_related_docs = db.query(models.RelatedDocs).\
            filter(models.RelatedDocs.doc_uuid==doc_uuid, models.RelatedDocs.is_active==True).\
            order_by(models.RelatedDocs.created_datetime.desc()).all()
@@ -1051,7 +1221,8 @@ def get_related_doc(current_user: Annotated[UserAuth, Depends(get_current_active
 
 @app.get('/related_contact_broker/{contact_uuid}')
 def get_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         contact_uuid: str, db: Session = Depends(get_db)):    
+                         contact_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='related_contact_broker', type='get', current_role_name=current_user.role_name)
     stmt = select(models.RelatedContactBroker, models.Contact).where(models.RelatedContactBroker.contact_uuid == contact_uuid,
                                                                      models.RelatedContactBroker.is_active==True,
                                                                      models.Contact.uuid == models.RelatedContactBroker.broker_uuid)
@@ -1066,6 +1237,7 @@ def get_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_cur
 @app.get('/related_broker_contact/{broker_uuid}')
 def get_related_broker_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          broker_uuid: str, db: Session = Depends(get_db)):    
+    check_endpoint_role_access(url='related_broker_contact', type='get', current_role_name=current_user.role_name)
     stmt = select(models.RelatedContactBroker, models.Contact).where(models.RelatedContactBroker.broker_uuid == broker_uuid,
                                                                      models.RelatedContactBroker.is_active==True,
                                                                      models.Contact.uuid == models.RelatedContactBroker.contact_uuid)
@@ -1091,6 +1263,7 @@ def create_message(current_user: Annotated[UserAuth, Depends(get_current_active_
 def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                        data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='exitcarpasses', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)  
     return crud.create_exitcarpass(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1099,6 +1272,7 @@ def create_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_act
 def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='entry_requests', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate) 
     return crud.create_entry_request(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1107,6 +1281,7 @@ def create_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
 def create_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.DtregCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='dtreg', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DtregCreate) 
     return crud.create_dtreg(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1115,6 +1290,7 @@ def create_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def create_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.CertGoodsAcceptCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='cert_goods_accept', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CertGoodsAcceptCreate) 
     return crud.create_cert_goods_accept(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1123,6 +1299,7 @@ def create_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_curre
 def create_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='requests_batch_to_sklad', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.RequestBatchToSkladCreate) 
     return crud.create_requests_batch_to_sklad(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1131,6 +1308,7 @@ def create_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get
 def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='batches', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate) 
     return crud.create_batch(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1139,6 +1317,7 @@ def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_us
 def create_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='carpasses', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)  
     return crud.create_carpass(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1146,6 +1325,7 @@ def create_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_
 @app.post("/contacts/", response_model=schemas.Contact)
 def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.ContactCreate, Form()], db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='contacts', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
     return crud.create_contact(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1153,6 +1333,7 @@ def create_contact(current_user: Annotated[UserAuth, Depends(get_current_active_
 @app.post("/document_records/", response_model=schemas.DocumentRecord)
 def create_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='document_records', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
     return crud.create_document_record(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
@@ -1160,6 +1341,7 @@ def create_document_record(current_user: Annotated[UserAuth, Depends(get_current
 @app.post("/users/", response_model=schemas.User)
 def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='users', type='post', current_role_name=current_user.role_name)
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
     db_user = crud.get_user_by_login(db, login=data_none_values_redefined.login)
     if db_user:
@@ -1168,102 +1350,131 @@ def create_user(current_user: Annotated[UserAuth, Depends(get_current_active_use
 
 
 #########################################################    UPDATE ITEM ENDPOINTS
-@app.put('/carpasses/{item_id}', response_model=schemas.Carpass)
+@app.put('/carpasses/{item_uuid}', response_model=schemas.Carpass)
 def update_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   item_id: int, data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
+                   item_uuid: str, data: Annotated[schemas.CarpassCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='carpasses', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarpassCreate)
     item = schemas.CarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_carpass(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Carpass, schema=schemas.Carpass, obj_type='carpass_enter', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_carpass(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/exitcarpasses/{item_id}', response_model=schemas.Exitcarpass)
-def update_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                       item_id: int, data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
-    updated_datetime = datetime.now()
-    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)
-    item = schemas.ExitcarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_exitcarpass(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
-
-
-@app.put('/entry_requests/{item_id}', response_model=schemas.EntryRequest)
-def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
-    #
-    updated_datetime = datetime.now()
-    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
-    item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_entry_request(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
-
-
-@app.put('/batches/{item_id}', response_model=schemas.Batch)
+@app.put('/batches/{item_uuid}', response_model=schemas.Batch)
 def update_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='batches', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.BatchCreate)
     item = schemas.BatchUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_batch(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Batch, schema=schemas.Batch, obj_type='batch', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    #return crud.update_batch(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/dtreg/{item_id}', response_model=schemas.Dtreg)
-def update_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.DtregCreate, Form()], db: Session = Depends(get_db)):
+@app.put('/exitcarpasses/{item_uuid}', response_model=schemas.Exitcarpass)
+def update_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                       item_uuid: str, data: Annotated[schemas.ExitcarpassCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='exitcarpasses', type='put', current_role_name=current_user.role_name)
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ExitcarpassCreate)
+    item = schemas.ExitcarpassUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_item(item=item, model=models.Exitcarpass, schema=schemas.Exitcarpass, obj_type='carpass_exit', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_exitcarpass(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+
+
+@app.put('/entry_requests/{item_uuid}', response_model=schemas.EntryRequest)
+def update_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, data: Annotated[schemas.EntryRequestCreate, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='entry_requests', type='put', current_role_name=current_user.role_name)
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.EntryRequestCreate)
+    item = schemas.EntryRequestUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_item(item=item, model=models.EntryRequest, schema=schemas.EntryRequest, obj_type='entry_request', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    return crud.update_entry_request(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
+
+
+@app.put('/dtreg/{item_uuid}', response_model=schemas.Dtreg)
+def update_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, data: Annotated[schemas.DtregCreate, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='dtreg', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DtregCreate)
     item = schemas.DtregUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_dtreg(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Dtreg, schema=schemas.Dtreg, obj_type='dtreg', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_dtreg(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/cert_goods_accept/{item_id}', response_model=schemas.CertGoodsAccept)
+@app.put('/cert_goods_accept/{item_uuid}', response_model=schemas.CertGoodsAccept)
 def update_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.CertGoodsAcceptCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.CertGoodsAcceptCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='cert_goods_accept', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CertGoodsAcceptCreate)
     item = schemas.CertGoodsAcceptUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_cert_goods_accept(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.CertGoodsAccept, schema=schemas.CertGoodsAccept, obj_type='cert_goods_accept', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_cert_goods_accept(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/requests_batch_to_sklad/{item_id}', response_model=schemas.RequestBatchToSklad)
+@app.put('/requests_batch_to_sklad/{item_uuid}', response_model=schemas.RequestBatchToSklad)
 def update_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.RequestBatchToSkladCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='requests_batch_to_sklad', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.RequestBatchToSkladCreate)
     item = schemas.RequestBatchToSkladUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_requests_batch_to_sklad(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.RequestBatchToSklad, schema=schemas.RequestBatchToSklad, obj_type='requests_batch_to_sklad', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_requests_batch_to_sklad(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/contacts/{item_id}', response_model=schemas.Contact)
+@app.put('/contacts/{item_uuid}', response_model=schemas.Contact)
 def update_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.ContactCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.ContactCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='contacts', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ContactCreate)
     item = schemas.ContactUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_contact(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.Contact, schema=schemas.Contact, obj_type='contact', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_contact(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/document_records/{item_id}', response_model=schemas.DocumentRecord)
+@app.put('/document_records/{item_uuid}', response_model=schemas.DocumentRecord)
 def update_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.DocumentRecordCreate, Form()], db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='document_records', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.DocumentRecordCreate)
     item = schemas.DocumentRecordUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_document_record(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
+    return crud.update_item(item=item, model=models.DocumentRecord, schema=schemas.DocumentRecord, obj_type='document_record', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.update_document_record(db=db, item_id=item_id, item=item, user_uuid=current_user.uuid)
 
 
-@app.put('/users/{item_id}', response_model=schemas.User)
+@app.put('/users/{item_uuid}', response_model=schemas.User)
 def update_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
+                         item_uuid: str, data: Annotated[schemas.UserCreate, Form()], db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='users', type='put', current_role_name=current_user.role_name)
     updated_datetime = datetime.now()
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.UserCreate)
     item = schemas.UserUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
-    return crud.update_user(db=db, item_id=item_id, item=item, new_pwd=data_none_values_redefined.password, user_uuid=current_user.uuid)
+    return crud.update_user(db=db, item_uuid=item_uuid, item=item, new_pwd=data_none_values_redefined.password, user_uuid=current_user.uuid)
 
 
 @app.put('/messages/set_status_viewed/{item_id}')
@@ -1281,229 +1492,305 @@ def update_message(current_user: Annotated[UserAuth, Depends(get_current_active_
 
 
 #########################################################    DELETE ITEM ENDPOINTS
-@app.delete('/contacts/{item_id}')
+@app.delete('/contacts/{item_uuid}')
 def delete_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   item_id: int, db: Session = Depends(get_db)):
+                   item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    # return crud.delete_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='contacts', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Contact, schema=schemas.Contact, obj_type='contact', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/users/{item_id}')
+@app.delete('/users/{item_uuid}')
 def delete_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   item_id: int, db: Session = Depends(get_db)):
+                   item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    # return crud.delete_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='users', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.User, schema=schemas.User, obj_type='user', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/carpasses/{item_id}')
+@app.delete('/carpasses/{item_uuid}')
 def delete_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                   item_id: int, db: Session = Depends(get_db)):
+                   item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_carpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    # return crud.delete_carpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='carpasses', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Carpass, schema=schemas.Carpass, obj_type='carpass_enter', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/exitcarpasses/{id}')
+@app.delete('/exitcarpasses/{item_uuid}')
 def delete_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                       id: int, db: Session = Depends(get_db)):
+                       item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_exitcarpass(db=db, carpass_id=id, user_uuid=current_user.uuid)
+    # return crud.delete_exitcarpass(db=db, carpass_id=id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='exitcarpasses', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Exitcarpass, schema=schemas.Exitcarpass, obj_type='carpass_exit', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/entry_requests/{item_id}')
+@app.delete('/entry_requests/{item_uuid}')
 def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
+                         item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.delete_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    #return crud.delete_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='entry_requests', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.EntryRequest, schema=schemas.EntryRequest, obj_type='entry_request', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/batches/{item_id}')
+@app.delete('/batches/{item_uuid}')
 def delete_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                         item_uuid: str, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='batches', type='delete', current_role_name=current_user.role_name)
+    # return crud.delete_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    return crud.delete_item(model=models.Batch, schema=schemas.Batch, obj_type='batch', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/dtreg/{item_id}')
+@app.delete('/dtreg/{item_uuid}')
 def delete_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                         item_uuid: str, db: Session = Depends(get_db)):
+    #return crud.delete_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='dtreg', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Dtreg, schema=schemas.Dtreg, obj_type='dtreg', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/cert_goods_accept/{item_id}')
+@app.delete('/cert_goods_accept/{item_uuid}')
 def delete_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                         item_uuid: str, db: Session = Depends(get_db)):
+    # return crud.delete_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='cert_goods_accept', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.CertGoodsAccept, schema=schemas.CertGoodsAccept, obj_type='cert_goods_accept', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.delete('/requests_batch_to_sklad/{item_id}')
+@app.delete('/requests_batch_to_sklad/{item_uuid}')
 def delete_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                         item_uuid: str, db: Session = Depends(get_db)):
+    # return crud.delete_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='requests_batch_to_sklad', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.RequestBatchToSklad, schema=schemas.RequestBatchToSklad, obj_type='requests_batch_to_sklad', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+
+
+@app.delete('/document_records/{item_uuid}')
+def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, db: Session = Depends(get_db)):
+    #
+    # return crud.delete_document_records(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='document_records', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.DocumentRecord, schema=schemas.DocumentRecord, obj_type='document_record', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
 @app.delete('/related_contact_broker/{item_id}')
 def delete_related_contact_broker(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_id: int, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='related_contact_broker', type='delete', current_role_name=current_user.role_name)
     return crud.delete_related_contact_broker(db=db, item_id=item_id)
 
 
 @app.delete('/related_docs_record/{doc_uuid}/{obj_uuid}')
 def delete_related_docs_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          doc_uuid: str, obj_uuid: str, db: Session = Depends(get_db)):
-    return crud.delete_related_docs_record(db=db, doc_uuid=doc_uuid, obj_uuid=obj_uuid)
+    check_endpoint_role_access(url='related_docs_record', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_related_docs_record(db=db, doc_uuid=doc_uuid, obj_uuid=obj_uuid, user_contact_uuid=current_user.contact_uuid)
 
 
-@app.delete('/document_records/{item_id}')
-def delete_document_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         item_id: int, db: Session = Depends(get_db)):
-    #
-    return crud.delete_document_records(db=db, item_id=item_id, user_uuid=current_user.uuid)
+# deprecated
+# @app.put('/carpasses_deactivate/{carpass_id}')
+# def deactivate_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                        carpass_id: int, db: Session = Depends(get_db)):
+#     #
+#     return crud.deactivate_carpass(db=db, carpass_id=carpass_id)
 
-
-@app.put('/carpasses_deactivate/{carpass_id}')
-def deactivate_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                       carpass_id: int, db: Session = Depends(get_db)):
-    #
-    return crud.deactivate_carpass(db=db, carpass_id=carpass_id)
-
-
-@app.put('/exitcarpasses_deactivate/{carpass_id}')
-def deactivate_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                           carpass_id: int, db: Session = Depends(get_db)):
-    #
-    return crud.deactivate_exitcarpass(db=db, carpass_id=carpass_id)
+# deprecated
+# @app.put('/exitcarpasses_deactivate/{carpass_id}')
+# def deactivate_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                            carpass_id: int, db: Session = Depends(get_db)):
+#     #
+#     return crud.deactivate_exitcarpass(db=db, carpass_id=carpass_id)
 
 #########################################################    POSTING ENDPOINTS
-@app.put('/carpasses_posting/{item_id}')
+@app.put('/carpasses_posting/{item_uuid}')
 def posting_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                    item_id: int, db: Session = Depends(get_db)):
+                    item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_carpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='carpasses_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_carpass(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/exitcarpasses_posting/{item_id}')
+@app.put('/exitcarpasses_posting/{item_uuid}')
 def posting_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                        item_id: int, db: Session = Depends(get_db)):
+                        item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_exitcarpass(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='exitcarpasses_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_exitcarpass(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/entry_requests_posting/{item_id}')
+@app.put('/entry_requests_posting/{item_uuid}')
 def posting_entry_request(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='entry_requests_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_entry_request(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/batch_posting/{item_id}', response_model=schemas.Batch)
+@app.put('/batch_posting/{item_uuid}', response_model=schemas.Batch)
 def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_batch(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='batch_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_batch(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/dtreg_posting/{item_id}', response_model=schemas.Dtreg)
+@app.put('/dtreg_posting/{item_uuid}', response_model=schemas.Dtreg)
 def posting_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='dtreg_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_dtreg(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/cert_goods_accept_posting/{item_id}', response_model=schemas.CertGoodsAccept)
+@app.put('/cert_goods_accept_posting/{item_uuid}', response_model=schemas.CertGoodsAccept)
 def posting_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='cert_goods_accept_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_cert_goods_accept(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/requests_batch_to_sklad_posting/{item_id}', response_model=schemas.RequestBatchToSklad)
+@app.put('/requests_batch_to_sklad_posting/{item_uuid}', response_model=schemas.RequestBatchToSklad)
 def posting_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='requests_batch_to_sklad_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_requests_batch_to_sklad(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/contacts_posting/{item_id}')
+@app.put('/contacts_posting/{item_uuid}')
 def posting_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='contacts_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_contact(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/document_records_posting/{item_id}')
+# not been using
+@app.put('/document_records_posting/{item_uuid}')
 def posting_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_document_record(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='document_records_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_document_record(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/users_posting/{item_id}')
+@app.put('/users_posting/{item_uuid}')
 def posting_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                          item_id: int, db: Session = Depends(get_db)):
+                          item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.posting_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='users_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_user(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
 #########################################################    ROLLBACK ENDPOINTS
-@app.put('/carpasses_rollback/{carpass_id}')
+@app.put('/carpasses_rollback/{item_uuid}')
 def rollback_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                     carpass_id: int, db: Session = Depends(get_db)):
+                     item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.rollback_carpass(db=db, carpass_id=carpass_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='carpasses_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Carpass, schema=schemas.Carpass, obj_type='carpass_enter', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_carpass(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
-@app.put('/exitcarpasses_rollback/{carpass_id}')
+@app.put('/exitcarpasses_rollback/{item_uuid}')
 def rollback_exitcarpass(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                         carpass_id: int, db: Session = Depends(get_db)):
+                         item_uuid: str, db: Session = Depends(get_db)):
     #
-    return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id, user_uuid=current_user.uuid)
+    check_endpoint_role_access(url='exitcarpasses_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Exitcarpass, schema=schemas.Exitcarpass, obj_type='carpass_exit', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_exitcarpass(db=db, carpass_id=carpass_id, user_uuid=current_user.uuid)
 
 
-@app.put('/entry_requests_rollback/{item_id}')
+@app.put('/entry_requests_rollback/{item_uuid}')
 def rollback_entry_requests(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_entry_requests(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='entry_requests_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.EntryRequest, schema=schemas.EntryRequest, obj_type='entry_request', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_entry_requests(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/batches_rollback/{item_id}')
+@app.put('/batches_rollback/{item_uuid}')
 def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='batches_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Batch, schema=schemas.Batch, obj_type='batch', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/dtreg_rollback/{item_id}')
+@app.put('/dtreg_rollback/{item_uuid}')
 def rollback_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='dtreg_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Dtreg, schema=schemas.Dtreg, obj_type='dtreg', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_dtreg(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/cert_goods_accept_rollback/{item_id}')
+@app.put('/cert_goods_accept_rollback/{item_uuid}')
 def rollback_cert_goods_accept(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='cert_goods_accept_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.CertGoodsAccept, schema=schemas.CertGoodsAccept, obj_type='cert_goods_accept', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_cert_goods_accept(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/requests_batch_to_sklad_rollback/{item_id}')
+@app.put('/requests_batch_to_sklad_rollback/{item_uuid}')
 def rollback_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='requests_batch_to_sklad_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.RequestBatchToSklad, schema=schemas.RequestBatchToSklad, obj_type='requests_batch_to_sklad', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_requests_batch_to_sklad(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/contacts_rollback/{item_id}')
+@app.put('/contacts_rollback/{item_uuid}')
 def rollback_contact(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='contacts_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.Contact, schema=schemas.Contact, obj_type='contact', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_contact(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
-@app.put('/document_records_rollback/{item_id}')
+@app.put('/document_records_rollback/{item_uuid}')
 def rollback_document_record(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_document_record(db=db, item_id=item_id)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='document_records_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.DocumentRecord, schema=schemas.DocumentRecord, obj_type='document_record', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_document_record(db=db, item_id=item_id)
 
 
-@app.put('/users_rollback/{item_id}')
+@app.put('/users_rollback/{item_uuid}')
 def rollback_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                            item_id: int, db: Session = Depends(get_db)):
-    return crud.rollback_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
+                            item_uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='users_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.User, schema=schemas.User, obj_type='user', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+    # return crud.rollback_user(db=db, item_id=item_id, user_uuid=current_user.uuid)
 
 
 #########################################################    STATUS MANAGING ENDPOINTS
@@ -1512,6 +1799,7 @@ def rollback_user(current_user: Annotated[UserAuth, Depends(get_current_active_u
 def car_exit_permit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     carpass_id: int, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='car_exit_permit', type='put', current_role_name=current_user.role_name)
     return crud.car_exit_permit(db=db, carpass_id=carpass_id)
 
 
@@ -1519,6 +1807,7 @@ def car_exit_permit(current_user: Annotated[UserAuth, Depends(get_current_active
 def set_default_car_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                            carpass_id: int, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='set_default_car_status', type='put', current_role_name=current_user.role_name)
     return crud.set_default_car_status(db=db, carpass_id=carpass_id)
 
 
@@ -1526,6 +1815,7 @@ def set_default_car_status(current_user: Annotated[UserAuth, Depends(get_current
 def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     carpass_id: int, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='exit_prohibited', type='put', current_role_name=current_user.role_name)
     return crud.exit_prohibited(db=db, carpass_id=carpass_id)
 
 
@@ -1534,12 +1824,14 @@ def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active
 def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                     batch_uuid: str, status: str, db: Session = Depends(get_db)):
     #
+    check_endpoint_role_access(url='set_batch_status', type='put', current_role_name=current_user.role_name)
     return crud.set_batch_status(db=db, batch_uuid=batch_uuid, status=status, user_uuid=current_user.uuid)
 
 #########################################################    USERS ENDPOINTS
 @app.get("/users/", response_model=list[schemas.UserJoined])
 def read_users(current_user: Annotated[UserAuth, Depends(get_current_active_user)], 
                skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='users', type='get', current_role_name=current_user.role_name)
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
@@ -1564,6 +1856,8 @@ def read_user(current_user: Annotated[UserAuth, Depends(get_current_active_user)
 @app.get('/user_by_uuid/{uuid}', response_model=schemas.User)
 def read_user_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='user_by_uuid', type='get', current_role_name=current_user.role_name)
     item = crud.get_user_by_uuid(db, uuid=uuid)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -1577,6 +1871,15 @@ def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_acti
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+
+@app.get('/user_by_login_full/{login}', response_model=schemas.UserJoined)
+def read_user_by_login(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        login: str, db: Session = Depends(get_db)):
+    item = crud.get_user_by_login_full(db, login=login)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
 
 ################################ items
 # @app.post("/users/{user_id}/items/", response_model=schemas.Item)
@@ -1594,48 +1897,48 @@ def read_user_by_name(current_user: Annotated[UserAuth, Depends(get_current_acti
 
 
 
-from app import views
+# from app import views
 
-@app.post('/signin', status_code=status.HTTP_202_ACCEPTED)
-async def user_sign_in(
-    login: Union[str, None] = None,
-    password: Union[str, None] = None,
-    db: Session = Depends(get_db)
-):
-    # user authentification
-    # global IS_AUTHORIZED
+# @app.post('/signin', status_code=status.HTTP_202_ACCEPTED)
+# async def user_sign_in(
+#     login: Union[str, None] = None,
+#     password: Union[str, None] = None,
+#     db: Session = Depends(get_db)
+# ):
+#     # user authentification
+#     # global IS_AUTHORIZED
     
-    # print(f'!!!!!! post request = *{login}* *{password}*') ######
+#     # print(f'!!!!!! post request = *{login}* *{password}*') ######
 
-    if not views.IS_AUTH_REQUIRED:
-        return {'message': 'authorization is not required'}
+#     if not views.IS_AUTH_REQUIRED:
+#         return {'message': 'authorization is not required'}
     
-    # if IS_AUTH_REQUIRED and IS_AUTHORIZED:
-    #     return {'message': 'authorization has already done'}
+#     # if IS_AUTH_REQUIRED and IS_AUTHORIZED:
+#     #     return {'message': 'authorization has already done'}
 
-    if (not login) or (not password):
-        raise HTTPException(
-            status_code=401,
-            detail='Incorrect username or password',
-        )
+#     if (not login) or (not password):
+#         raise HTTPException(
+#             status_code=401,
+#             detail='Incorrect username or password',
+#         )
         
-    db_user = crud.get_user_by_login(db, login=login)
-    password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    if db_user:
-        check_password = password_context.verify(password, db_user.hashed_password)
+#     db_user = crud.get_user_by_login(db, login=login)
+#     password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+#     if db_user:
+#         check_password = password_context.verify(password, db_user.hashed_password)
 
-    if db_user and check_password:
-        # IS_AUTHORIZED = True
+#     if db_user and check_password:
+#         # IS_AUTHORIZED = True
 
-        new_token = str(random.randint(1, 1000000))
-        views.TOKEN_LIST.append(new_token)
-        # print('new_token, TOKEN_LIST =', new_token, TOKEN_LIST) ##
+#         new_token = str(random.randint(1, 1000000))
+#         views.TOKEN_LIST.append(new_token)
+#         # print('new_token, TOKEN_LIST =', new_token, TOKEN_LIST) ##
 
-        # return {'user': login}
-        return {'your_new_token': new_token}
-    else:
-        raise HTTPException(
-            status_code=401,
-            detail='Incorrect username or password',
-        )
+#         # return {'user': login}
+#         return {'your_new_token': new_token}
+#     else:
+#         raise HTTPException(
+#             status_code=401,
+#             detail='Incorrect username or password',
+#         )
     

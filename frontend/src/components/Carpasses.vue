@@ -54,6 +54,9 @@ const state = reactive({
   listTableColumns: {},
   additionalColumns: {},
   listItemFileds: {},
+  query_entry_requests: '',
+  query_carpass: '',
+  query_exitcarpass: '',
 })
   
 const showDeleteItem = ref(false)
@@ -123,23 +126,60 @@ const modalStyle = "absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity
 const modalStyleSecond = "absolute z-20 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
 
 // queries
-const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/carpasses/`:
-  `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.type}/${userInfo.contact_uuid}`
+// const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/carpasses/`:
+//   `http://${backendIpAddress}:${backendPort}/carpasses_client/${userInfo.type}/${userInfo.contact_uuid}`
+// const query_carpass = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/carpasses/`:
+//   `http://${backendIpAddress}:${backendPort}/carpasses_client/`
 
-const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
-  `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.type}/${userInfo.contact_uuid}`
+if (userInfo.contact_id==0) {
+  state.query_carpass = `http://${backendIpAddress}:${backendPort}/carpasses/`
+}
+else if (['client', 'broker'].includes(userInfo.role_name)) {
+  state.query_carpass = `http://${backendIpAddress}:${backendPort}/carpasses_client/`
+}
+if (userInfo.role_name=='checkpoint') {
+  state.query_carpass = `http://${backendIpAddress}:${backendPort}/carpasses_posted/`
+}
 
+// const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
+//   `http://${backendIpAddress}:${backendPort}/entry_requests_client/${userInfo.type}/${userInfo.contact_uuid}`
+// const query_entry_requests = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/entry_requests/`:
+//   `http://${backendIpAddress}:${backendPort}/entry_requests_client/`
+
+if (userInfo.contact_id==0) {
+  state.query_entry_requests = `http://${backendIpAddress}:${backendPort}/entry_requests/`
+}
+else if (['client', 'broker'].includes(userInfo.role_name)) {
+  state.query_entry_requests = `http://${backendIpAddress}:${backendPort}/entry_requests_client/`
+}
+if (userInfo.role_name=='checkpoint') {
+  state.query_entry_requests = `http://${backendIpAddress}:${backendPort}/entry_requests_posted/`
+}
+
+const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
+
+if (userInfo.contact_id==0) {
+  state.query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
+}
+if (userInfo.role_name=='checkpoint') {
+  state.query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses_posted/`
+}
+
+
+
+// const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/document_records/`:
+//   `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
 const query_documents = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/document_records/`:
-  `http://${backendIpAddress}:${backendPort}/document_records_client/${userInfo.uuid}/${userInfo.contact_uuid}`
+  `http://${backendIpAddress}:${backendPort}/document_records_client/`
 
+// const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/batches/`:
+//   `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.type}/${userInfo.contact_uuid}`
 const query_batches = userInfo.contact_id==0 ? `http://${backendIpAddress}:${backendPort}/batches/`:
-  `http://${backendIpAddress}:${backendPort}/batches_client/${userInfo.type}/${userInfo.contact_uuid}`
+  `http://${backendIpAddress}:${backendPort}/batches_client/`
 
 const query_dtreg = `http://${backendIpAddress}:${backendPort}/dtreg/`
 const query_requests_batch_to_sklad = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad/`
 const query_cert_goods_accept = `http://${backendIpAddress}:${backendPort}/cert_goods_accept/`
-const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_terminal/`
-const query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 const query_contacts = `http://${backendIpAddress}:${backendPort}/contacts/`
 const query_brokers = `http://${backendIpAddress}:${backendPort}/brokers/`
 const query_users = `http://${backendIpAddress}:${backendPort}/users/`
@@ -150,7 +190,7 @@ const query_tcell = `http://${backendIpAddress}:${backendPort}/tcell/`
 const query_tzone = `http://${backendIpAddress}:${backendPort}/tzone/`
 
 if (props.view_type == 'enter') {
-  state.query = query_carpass;
+  state.query = state.query_carpass;
   state.listTableColumns = {
     'id_enter':'№','ncar':'№ ТС','contact_name':'Клиент','nseal':'Номер пломбы',
     'place':'Размещение', 'dateen':'Дата въезда', 'timeen':'Время въезда','dateex':'Дата выезда', 'timeex':'Время выезда'
@@ -167,7 +207,7 @@ else if (props.view_type == 'terminal') {
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 } 
 else if (props.view_type == 'exitCarpass') {
-  state.query = query_exitcarpass;
+  state.query = state.query_exitcarpass;
   state.listTableColumns = {
     'id_exit':'№', 'id_enter':'№ пропуска на въезд', 'ncar':'№ ТС', 'driver_fio':'ФИО водителя','driver_phone':'Телефон водителя для связи',
     'ndexit':'№ документа выпуска', 'dateex':'Дата выезда', 'timeex':'Время выезда'
@@ -175,7 +215,7 @@ else if (props.view_type == 'exitCarpass') {
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
 else if (props.view_type == 'entryRequest') {
-  state.query = query_entry_requests;
+  state.query = state.query_entry_requests;
   state.listTableColumns = {
     'dateen':'Дата въезда','timeen':'Время въезда с','plan_timeen_to':'Время въезда по','ncar':'№ ТС',
     'contact_name':'Клиент','entry_type':'Тип въезда'
@@ -642,6 +682,34 @@ const clickNotificationRow = async (item) => {
     <FormEntryRequest @close-modal="showUpdateEntryRequest=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
+
+  <!-- **********************   MODAL EXITCARPASS CARD   ************************** -->
+  <!-- <div v-if="showCardExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showCardExitCarpass=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
+  </div> -->
+  <div v-if="showCardExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showCardExitCarpass=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL EXITCARPASS ADD   ************************** -->
+  <!-- <div v-if="showCreateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showCreateExitCarpass=false" @doc-created="getData" :isCreate=true :itemData="selectedItem"/>
+  </div> -->
+  <div v-if="showCreateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showCreateExitCarpass=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :isCreate=true :itemData="selectedItem"/>
+  </div>
+  <!-- **********************   MODAL EXITCARPASS EDIT  ************************** -->
+  <!-- <div v-if="showUpdateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showUpdateExitCarpass=false" @doc-created="getData" :isCreate=false :itemData="selectedItem"/>
+  </div> -->
+  <div v-if="showUpdateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormAddExitCarpass @close-modal="showUpdateExitCarpass=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :isCreate=false :itemData="selectedItem"/>
+  </div>
+  <!-- **********************   MODAL INIT ADDING EXITCARPASS  ************************** -->
+  <div v-if="showAddExitcarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormInitAddExitcarpass @close-modal="showAddExitcarpass=false" @doc-created="createExitCarpass" />
+  </div>
+
+
   <!-- **********************   MODAL DELETE CARPASS   ************************** -->
   <div v-if="showDeleteItem" :class="[deletedItemName=='открепить_брокера' ? modalStyleSecond : modalStyle]">
     <FormDeleteCarpass @close-modal="showDeleteItem=false" @doc-created="getData" :itemName="deletedItemName" :itemData="deletedItem"/>
@@ -675,23 +743,6 @@ const clickNotificationRow = async (item) => {
    <!-- **********************   MODAL CONFIRM UPLOAD EXCEL   ************************** -->
   <div v-if="showConfirmUploadExcel" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormConfirmUploadExcel @close-modal="showConfirmUploadExcel=false" @doc-created="getData" :entity="entityUploadExcel" />
-  </div>
-
-  <!-- **********************   MODAL EXITCARPASS CARD   ************************** -->
-  <div v-if="showCardExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormAddExitCarpass @close-modal="showCardExitCarpass=false" @doc-created="getData" :itemData="selectedItem" :isCard="true"/>
-  </div>
-  <!-- **********************   MODAL EXITCARPASS ADD   ************************** -->
-  <div v-if="showCreateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormAddExitCarpass @close-modal="showCreateExitCarpass=false" @doc-created="getData" :isCreate=true :itemData="selectedItem"/>
-  </div>
-  <!-- **********************   MODAL EXITCARPASS EDIT  ************************** -->
-  <div v-if="showUpdateExitCarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormAddExitCarpass @close-modal="showUpdateExitCarpass=false" @doc-created="getData" :isCreate=false :itemData="selectedItem"/>
-  </div>
-  <!-- **********************   MODAL INIT ADDING EXITCARPASS  ************************** -->
-  <div v-if="showAddExitcarpass" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormInitAddExitcarpass @close-modal="showAddExitcarpass=false" @doc-created="createExitCarpass" />
   </div>
 
 

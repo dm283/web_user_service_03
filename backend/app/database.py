@@ -19,6 +19,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from urllib.parse import quote_plus
 
+DEV = config['main']['dev']
+
 DB2_USER = config['db2']['user']
 DB2_PWD = quote_plus(config['db2']['pwd'])
 DB2_SERVER = config['db2']['server']

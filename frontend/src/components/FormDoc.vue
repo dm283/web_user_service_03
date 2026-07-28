@@ -85,7 +85,6 @@ onMounted(async () => {
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/related_docs/${props.itemDataDoc.uuid}`,
         {headers: authHeader()}
       );
-      console.log('response2.data =', response2.data)
       state.related_objects = response2.data;
 
 
@@ -168,7 +167,7 @@ const postingItem = async () => {
   //
   try {
     if (props.itemDataDoc) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records_posting/${props.itemDataDoc.id}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records_posting/${props.itemDataDoc.uuid}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
     } else {
@@ -199,10 +198,10 @@ const handleSubmit = async () => {
     if (!props.itemDataDoc) {
       const response = await axios.post(`http://${backendIpAddress}:${backendPort}/document_records/`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
-      toast.success('Новая документ добавлен');
+      toast.success('Новый документ добавлен');
       state.responseItem = response.data;
     } else {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records/${props.itemDataDoc.id}`, 
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/document_records/${props.itemDataDoc.uuid}`, 
         formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
       toast.success('Запись обновлёна');      
       state.responseItem = response.data;

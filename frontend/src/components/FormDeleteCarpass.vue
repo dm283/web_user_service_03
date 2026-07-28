@@ -31,25 +31,25 @@ const authHeader = () => {
 
 
 if (props.itemName == 'Пропуска ТС на въезд') {
-  state.query = `http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.id}`; } 
+  state.query = `http://${backendIpAddress}:${backendPort}/carpasses/${props.itemData.uuid}`; } 
 else if (props.itemName == 'Пропуска ТС на выезд') {
-  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/exitcarpasses/${props.itemData.uuid}`; }
 else if (props.itemName == 'Заявки на въезд ТС') {
-  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.uuid}`; }
 else if (props.itemName == 'Партии товаров') {
-  state.query = `http://${backendIpAddress}:${backendPort}/batches/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/batches/${props.itemData.uuid}`; }
 else if (props.itemName == 'Таможенное оформление') {
-  state.query = `http://${backendIpAddress}:${backendPort}/dtreg/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/dtreg/${props.itemData.uuid}`; }
 else if (props.itemName == 'Заявки размещения партий на склад') {
-  state.query = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/requests_batch_to_sklad/${props.itemData.uuid}`; }
 else if (props.itemName == 'Принятые партии товара') {
-  state.query = `http://${backendIpAddress}:${backendPort}/cert_goods_accept/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/cert_goods_accept/${props.itemData.uuid}`; }
 else if (['Клиенты', 'Брокеры'].includes(props.itemName)) {
-  state.query = `http://${backendIpAddress}:${backendPort}/contacts/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/contacts/${props.itemData.uuid}`; }
 else if (props.itemName == 'Пользователи') {
-  state.query = `http://${backendIpAddress}:${backendPort}/users/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/users/${props.itemData.uuid}`; }
 else if (props.itemName == 'Электронный архив') {
-  state.query = `http://${backendIpAddress}:${backendPort}/document_records/${props.itemData.id}`; }
+  state.query = `http://${backendIpAddress}:${backendPort}/document_records/${props.itemData.uuid}`; }
 else if (props.itemName == 'открепить_брокера') {
   state.query = `http://${backendIpAddress}:${backendPort}/related_contact_broker/${props.itemData.id}`; }
 else if (props.itemName == 'открепить_документ') {
