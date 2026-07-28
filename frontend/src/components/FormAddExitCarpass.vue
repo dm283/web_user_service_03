@@ -35,6 +35,7 @@ const itemFields = [
   'comment',
   'dateex',
   'timeex',
+  'comment_checkpoint',
   ]
 
 const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard'])
@@ -101,6 +102,7 @@ const postedColor = props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-y
 const formInputStyleAct = 'border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer' + ' ' + postedColor
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
+const formInputStyle2 = props.itemData.status=='archival' ? formInputStyleDis : formInputStyleAct
 const formInputStyleErr = 'bg-red-100 border-b-2 border-red-300 text-base w-full py-1 px-1 mb-2 \
         hover:border-red-400 focus:outline-none focus:border-blue-500 cursor-pointer'
 const saveBtnStyle0 = 'text-slate-400 text-sm font-semibold border border-slate-400 rounded-lg \
@@ -326,6 +328,22 @@ const refreshCard = async () => {
   emit('closeModal'); emit('reopenCard', reopenType, item, 'Пропуска ТС на выезд')
 }
 
+const carExit = async () => {
+  // выпуск (выезд) ТС
+  let formData = new FormData();
+  formData.append('comment_checkpoint', form.comment_checkpoint)
+  try {
+    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/car_exit/${props.itemData.uuid}`, 
+      formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
+    toast.success('ТС выпущено');
+    state.responseItem = response.data;
+  } catch (error) {
+    console.error('Error exiting car', error);
+    toast.error(error.response.data.detail);
+  }
+  emit('closeModal'); emit('reopenCard', 'card', state.responseItem, 'Пропуска ТС на выезд')
+}
+
 </script>
 
 
@@ -410,6 +428,16 @@ const refreshCard = async () => {
         </div>
       </div>
       <div v-else class="mb-5"></div>
+
+
+      <div v-if="userInfo.role_name=='checkpoint'" class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
+        <div class="inline-block w-64 mb-2">   <label class=formLabelStyle>Комментарий охраны</label>
+          <input type="text" v-model="form.comment_checkpoint" :class=formInputStyle2 :required="false" :disabled="itemData.status=='archival'" />
+        </div>
+        <button v-if="userInfo.role_name=='checkpoint' && itemData.status!='archival'" class="float-right formBtn" 
+          type="button" @click="carExit()">ВЫЕЗД ТС</button>
+      </div>
+
 
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
         <div class="space-x-5 overflow-auto">

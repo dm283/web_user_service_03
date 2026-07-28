@@ -1819,6 +1819,14 @@ def exit_prohibited(current_user: Annotated[UserAuth, Depends(get_current_active
     return crud.exit_prohibited(db=db, carpass_id=carpass_id)
 
 
+@app.put('/car_exit/{exitcarpass_uuid}', response_model=schemas.Exitcarpass)
+def car_exit(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    exitcarpass_uuid: str, data: Annotated[schemas.CarExitData, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='car_exit', type='put', current_role_name=current_user.role_name)
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.CarExitData)
+    return crud.car_exit(db=db, exitcarpass_uuid=exitcarpass_uuid, exit_data=data_none_values_redefined, user_uuid=current_user.uuid)
+
 ### BATCHES
 @app.put('/set_batch_status/{batch_uuid}/{status}')
 def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],

@@ -216,6 +216,7 @@ class Exitcarpass(Base):
     driver_licence = Column(String)
     ndexit = Column(String(length=50))
     comment = Column(String(length=250))
+    comment_checkpoint = Column(String)
     dateex = Column(Date)
     timeex = Column(Time)
     status = Column(String())

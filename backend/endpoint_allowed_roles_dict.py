@@ -99,6 +99,7 @@ endpoint_allowed_roles_dict = {
     'post'+'exitcarpasses': ['admin', 'dispatcher',],
     'put'+'exitcarpasses': ['admin', 'dispatcher',],
     'get'+'exitcarpass_by_uuid': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker',],
+    'put'+'car_exit': ['admin', 'checkpoint',],
 
     # document_records
     'get'+'document_records': ['admin', 'dispatcher',],

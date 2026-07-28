@@ -1235,6 +1235,32 @@ def update_user(db: Session, item_uuid: str, item: schemas.UserUpdate, new_pwd: 
     logging_action(obj_type='user', schema=schemas.User, action='update', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
     return item_from_db
 
+
+def car_exit(db: Session, exitcarpass_uuid: str, exit_data: schemas.CarExitData, user_uuid: str):
+    #
+    item_from_db =  db.query(models.Exitcarpass).filter(models.Exitcarpass.uuid == exitcarpass_uuid).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+
+    dateex = datetime.date.today()
+    timeex = datetime.datetime.now().strftime("%H:%M:%S")
+
+    setattr(item_from_db, 'dateex', dateex)
+    setattr(item_from_db, 'timeex', timeex)
+    setattr(item_from_db, 'comment_checkpoint', exit_data.comment_checkpoint)
+    setattr(item_from_db, 'status', 'archival')
+
+    carpass_enter_from_db =  db.query(models.Carpass).filter(models.Carpass.id_enter == item_from_db.id_enter).first()
+    setattr(carpass_enter_from_db, 'dateex', dateex)
+    setattr(carpass_enter_from_db, 'timeex', timeex)
+    setattr(carpass_enter_from_db, 'status', 'archival')
+    
+    db.commit()
+
+    logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='car_exit', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+    return item_from_db
+
 #########################################################    DELETE FUNCTIONS
 
 def delete_item(model, schema, obj_type, db: Session, item_uuid: str, user_uuid: str):
