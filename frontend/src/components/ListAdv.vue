@@ -430,6 +430,9 @@ const dataRender = () => {
     if (props.name=='Пропуска ТС на въезд') {
       if (renderedData[i].status=='archival') { listRowStyle[i] = 'text-slate-400' }
     }
+    if (props.name=='Пропуска ТС на выезд') {
+      if (renderedData[i].status=='archival') { listRowStyle[i] = 'text-slate-400' }
+    }
     if (props.name=='Оповещения') {
       if (renderedData[i].status=='новое') { listRowStyle[i] = 'bg-red-50' }
     }

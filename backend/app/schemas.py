@@ -92,6 +92,7 @@ class ExitcarpassCreate(BaseModel):
     comment: str | None = None
     dateex: date | str | None = None
     timeex: time | str | None = None
+    comment_checkpoint: str | None = None
     status: str = 'default'
 
 class ExitcarpassValidation(BaseModel):
@@ -120,6 +121,14 @@ class Exitcarpass(ExitcarpassCreate):
 
     class Config:
         from_attributes = True
+
+
+class CarExitData(BaseModel):
+    comment_checkpoint: str | None = None
+
+# class CarExitDataUpdate(CarExitData):
+#     dateex: date
+#     timeex: time
 
 
 #############
