@@ -185,6 +185,25 @@ def get_log_records(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
+def get_batch_log_records(batch_uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.LogRecord)
+    table_2 = aliased(models.User)
+
+    response = db.query(main_table, table_2).\
+        filter(main_table.obj_uuid==batch_uuid).\
+        join(table_2, table_2.uuid == main_table.user_uuid, isouter=True).\
+        order_by(main_table.created_date.desc(), main_table.created_time.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        user_login=row[1].__dict__['login'] if row[1] else row[0].__dict__['user_uuid']
+        db_full_response.append(schemas.LogRecordJoined(**row[0].__dict__, user_login=user_login))
+
+    return db_full_response
+
+
+
 def get_tzone(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Tzone).order_by(models.Tzone.zone_id).all()
 

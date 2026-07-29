@@ -61,6 +61,7 @@ endpoint_allowed_roles_dict = {
     'post'+'batches': ['admin', 'dispatcher',],
     'put'+'batches': ['admin', 'dispatcher',],
     'get'+'batch_by_uuid': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'log_records_batch': ['admin', 'dispatcher', 'client', 'broker'],
 
     # carpasses
     'get'+'carpasses': ['admin', 'dispatcher'],
