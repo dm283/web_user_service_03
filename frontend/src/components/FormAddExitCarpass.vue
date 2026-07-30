@@ -430,13 +430,32 @@ const carExit = async () => {
       <div v-else class="mb-5"></div>
 
 
-      <div v-if="userInfo.role_name=='checkpoint'" class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
-        <div class="inline-block w-64 mb-2">   <label class=formLabelStyle>Комментарий охраны</label>
+      <div v-if="userInfo.role_name=='checkpoint' | itemData.status=='archival'" class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
+        <label class="mx-1 text-sm font-semibold text-blue-500">СЕКЦИЯ КПП</label>
+        <div class="flex -ml-6 mt-3">
+        <button v-if="userInfo.role_name=='checkpoint' && itemData.status!='archival'" class="ml-6 mr-3 formBtn" 
+          type="button" @click="carExit()">ВЫЕЗД ТС</button>
+
+        <div class=formInputDiv>   <label class=formLabelStyle>Комментарий охраны</label>
           <input type="text" v-model="form.comment_checkpoint" :class=formInputStyle2 :required="false" :disabled="itemData.status=='archival'" />
         </div>
-        <button v-if="userInfo.role_name=='checkpoint' && itemData.status!='archival'" class="float-right formBtn" 
-          type="button" @click="carExit()">ВЫЕЗД ТС</button>
+
+        <div v-if="isCard && itemData.status=='archival'" class=formInputDiv>   <label class=formLabelStyle>Дата выезда</label>
+          <input type="date" v-model="form.dateex" :class="[errField['dateex']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div>
+        <div v-if="isCard && itemData.status=='archival'" class=formInputDiv>   <label class=formLabelStyle>Время выезда</label>
+          <input type="time" v-model="form.timeex" :class="[errField['timeex']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="true" />
+        </div>
+
+
+
+        </div>
+
       </div>
+
+
 
 
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
