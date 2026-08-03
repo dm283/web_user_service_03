@@ -61,6 +61,7 @@ const state = reactive({
   contacts: [],
   brokers: [],
   choosenDocs: [],
+  history: [],
 })
 
 const showDropDownSelect = reactive({});
@@ -136,6 +137,16 @@ onMounted(async () => {
 });
 };
 
+// get history
+if (props.itemData) {
+onMounted(async () => {
+    try { const response = await axios.get(`http://${backendIpAddress}:${backendPort}/log_records_batch/${props.itemData.uuid}`,
+            {headers: authHeader()});
+      state.history = response.data; } 
+    catch (error) { console.error('Error fetching history', error); } 
+    finally { state.isLoading = false; } });
+};
+
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 
 const postedColor = props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white'
@@ -149,14 +160,6 @@ const saveBtnStyle0 = 'text-slate-400 text-sm font-semibold border border-slate-
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border border-slate-400 rounded-lg \
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
-
-
-// const setFilter = (fieldForm, entity, fieldEntity) => {
-//   // for dropdowns
-//   state.filteredList = [];
-//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-//   for (let rec of state[entity]) {
-//     if ( rec[fieldEntity].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); }; }; };
 
 const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
   // for dropdowns
@@ -412,7 +415,7 @@ const refreshCard = async () => {
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
 
-      <div class="flex">
+      <div class="flex relative">
         <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Номер машины</label>
             <div :class=formInputStyle class="flex">
               <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.carpass_ncar_input" 
@@ -471,7 +474,7 @@ const refreshCard = async () => {
         </div>
       </div>
 
-      <div class="flex">
+      <div class="flex relative">
         <div class=formInputDiv >   <label class=formLabelStyle>Дата въезда ТС</label>
           <input type="date"  v-model="form.carpass_ncar_dateen" :class="[errField['carpass_uuid']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="true" />
@@ -505,6 +508,7 @@ const refreshCard = async () => {
             :required="true" :disabled="true" />
         </div>
       </div>
+
       <div class="flex">
         <div class=formInputDiv>   <label class=formLabelStyle>Дата-время подачи ДТ</label>
           <input type="datetime-local" v-model="form.dt_submission_datetime" :class="[errField['dt_submission_datetime']==1 ? formInputStyleErr : formInputStyle]"
@@ -642,6 +646,36 @@ const refreshCard = async () => {
           <div class="max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет прикреплённых документов</div>
         </div>
       </div>
+
+      <!-- HISTORY BLOCK -->
+      <div v-if="props.itemData" class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
+        <label class="mx-1 text-sm font-semibold text-blue-500">ИСТОРИЯ</label>
+        
+        <div class="mb-5" v-if="!state.isLoading">
+          <div v-if="state.history.length>0" class="border rounded-md mt-2 overflow-x-hidden max-h-40">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 font-semibold text-xs">
+                <td class="text-center">Действие</td>
+                <td class="text-center">Пользователь</td>
+                <td class="text-center">Дата</td>
+                <td class="text-center">Время</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="bg-white border-t text-slate-500 text-xs" v-for="event in state.history">
+                <td class="text-center">{{ event.action }}</td>
+                <td class="text-center">{{ event.user_login }}</td>
+                <td class="text-center">{{ event.created_date }}</td>
+                <td class="text-center">{{ event.created_time }}</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+          <div class="max-w-max px-1 bg-slate-50 text-slate-500 font-semibold text-xs" v-else>нет истории</div>
+        </div>
+      </div>
+
     </form>
   </div>
   </div>

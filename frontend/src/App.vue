@@ -281,7 +281,7 @@ const chatNotificationDataChange = (pointState) => {
 
     <!-- <RouterLink to="/transport_section" v-if="[1,4].includes(state.userInfo.role_id)"> -->
     <RouterLink to="/transport_section" v-if="['admin','dispatcher'].includes(state.userInfo.role_name)">
-      <MenuSection :label="'Транспортный отдел'" :icon="'truck'" :description="'Оператор транспортного отдела'"
+      <MenuSection :label="'Транспорт'" :icon="'truck'" :description="'Операции с транспортом (пропуска)'"
       :selected="state.selectedMenu=='transport_section' ? '1' : '0'" @click="state.selectedMenu='transport_section'"
       />
     </RouterLink>
@@ -308,7 +308,7 @@ const chatNotificationDataChange = (pointState) => {
     </RouterLink>
 
     <RouterLink to="/svh_section" v-if="['admin','dispatcher'].includes(state.userInfo.role_name)">
-      <MenuSection :label="'Диспетчер СВХ'" :icon="'directions'" :description="'Раздел работы диспетчера СВХ'"
+      <MenuSection :label="'Партии товаров'" :icon="'directions'" :description="'Операции с партиями товаров'"
       :selected="state.selectedMenu=='svh_section' ? '1' : '0'" @click="state.selectedMenu='svh_section'" />
     </RouterLink>
 
@@ -326,7 +326,7 @@ const chatNotificationDataChange = (pointState) => {
     </RouterLink> -->
 
     <RouterLink to="/sklad_section" v-if="['admin','dispatcher'].includes(state.userInfo.role_name)">
-      <MenuSection :label="'Складская группа'" :icon="'box'" :description="'Раздел работы складской группы'"
+      <MenuSection :label="'Склад'" :icon="'box'" :description="'Складские операции'"
       :selected="state.selectedMenu=='sklad_section' ? '1' : '0'" @click="state.selectedMenu='sklad_section'" />
     </RouterLink>
 

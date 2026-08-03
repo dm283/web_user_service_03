@@ -854,6 +854,15 @@ def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_activ
     return log_records
 
 
+@app.get("/log_records_batch/{batch_uuid}", response_model=list[schemas.LogRecordJoined])
+def read_log_records(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                  batch_uuid:str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='log_records_batch', type='get', current_role_name=current_user.role_name)
+    log_records = crud.get_batch_log_records(batch_uuid, db, skip=skip, limit=limit)
+    return log_records
+
+
 @app.get("/tzone/", response_model=list[schemas.Tzone])
 def read_tzone(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
