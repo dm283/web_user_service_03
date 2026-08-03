@@ -2,7 +2,7 @@
   "transport_section":            ["admin", "dispatcher"],
   "carpasses":                    ["admin", "dispatcher", "checkpoint", "client", "broker"],
   "car_terminal":                 ["admin", "dispatcher", "checkpoint"],
-  "exitcarpasses":                ["admin", "dispatcher", "checkpoint"],
+  "exitcarpasses":                ["admin", "dispatcher", "checkpoint", "client", "broker"],
   "entry_requests":               ["admin", "dispatcher", "checkpoint", "client", "broker"],
   "parking_map":                  ["admin", "dispatcher", "checkpoint"],
   "catalogs":                     ["admin", "dispatcher"],

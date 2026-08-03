@@ -86,16 +86,16 @@ endpoint_allowed_roles_dict = {
     'get'+'entry_requests_client': ['admin','client','broker'],
     'get'+'entry_requests_posted': ['admin', 'dispatcher', 'checkpoint'],
     # entrty_request card
-    'put'+'entry_requests_posting': ['admin', 'dispatcher', 'client','broker'],
+    'put'+'entry_requests_posting': ['admin', 'dispatcher', 'client', 'broker'],
     'post'+'entry_requests': ['admin', 'dispatcher', 'client', 'broker'],
     'put'+'entry_requests': ['admin', 'dispatcher', 'client', 'broker'],
     'get'+'entry_request_by_uuid': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker',],
 
     # exitcarpasses
-    'get'+'exitcarpasses': ['admin', 'dispatcher', 'checkpoint'],
+    'get'+'exitcarpasses': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker'],
     'get'+'car_terminal_for_exit': ['admin', 'dispatcher', 'checkpoint'],
     # exitcarpasses card
-    'get'+'carpass_by_id_enter': ['admin', 'dispatcher', 'checkpoint'],
+    'get'+'carpass_by_id_enter': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker'],
     'put'+'exitcarpasses_posting': ['admin', 'dispatcher',],
     'post'+'exitcarpasses': ['admin', 'dispatcher',],
     'put'+'exitcarpasses': ['admin', 'dispatcher',],

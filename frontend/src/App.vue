@@ -301,7 +301,7 @@ const chatNotificationDataChange = (pointState) => {
       :selected="state.selectedMenu=='carTerminal' ? '1' : '0'" @click="state.selectedMenu='carTerminal'"
       />
     </RouterLink>
-    <RouterLink to="/exitcarpasses" v-if="['checkpoint'].includes(state.userInfo.role_name)">
+    <RouterLink to="/exitcarpasses" v-if="['checkpoint','client','broker'].includes(state.userInfo.role_name)">
       <MenuSection :label="'Пропуска ТС на выезд'" :icon="'sign-out'" :description="'Информация о пропусках ТС на выезд'"
       :selected="state.selectedMenu=='carExit' ? '1' : '0'" @click="state.selectedMenu='carExit'"
       />
