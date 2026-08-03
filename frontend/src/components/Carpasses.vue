@@ -161,7 +161,7 @@ const query_car_terminal = `http://${backendIpAddress}:${backendPort}/car_termin
 if (userInfo.contact_id==0) {
   state.query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses/`
 }
-if (userInfo.role_name=='checkpoint') {
+if (['checkpoint', 'client', 'broker'].includes(userInfo.role_name)) {
   state.query_exitcarpass = `http://${backendIpAddress}:${backendPort}/exitcarpasses_posted/`
 }
 
