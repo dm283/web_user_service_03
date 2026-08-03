@@ -7,7 +7,7 @@ endpoint_allowed_roles_dict = {
     'get'+'download_carpass': ['admin', 'dispatcher'],
     'get'+'download-file-by-filename': ['admin', 'dispatcher'],
     'post'+'create_related_docs_record': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker',],
-    'get'+'download-file': ['admin','client','broker'],
+    'get'+'download-file': ['admin', 'dispatcher', 'checkpoint', 'client','broker'],
     'get'+'obj_docs': ['admin', 'dispatcher', 'checkpoint', 'client', 'broker'],
 
     # users
