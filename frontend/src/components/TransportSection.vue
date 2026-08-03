@@ -39,7 +39,7 @@ const authHeader = () => {
 
 <template>
 <div class="bg-white">
-  <div class="h-12 pl-5 py-4 text-xl font-normal">Транспортный отдел</div>
+  <div class="h-12 pl-5 py-4 text-xl font-normal">Транспорт</div>
   <div class="">
     <div class="inline-block mt-5 ml-5">
       <RouterLink to="/entry_requests">
