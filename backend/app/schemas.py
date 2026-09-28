@@ -677,7 +677,7 @@ class ShipmentCreate(BaseModel):
     status: str = 'приехала'
     location: str
     places_cnt: int
-    arrival_datetime: datetime | str | None = None
+    arrival_datetime: datetime | str | None = datetime.now()
     # departure_datetime: datetime | str | None = None
     # doc_submit_datetime: datetime | str | None = None
     # doc_issue_datetime: datetime | str | None = None
@@ -692,8 +692,8 @@ class Shipment(ShipmentCreate):
     id: int
     uuid: str
 
-    status: str
-    arrival_datetime: datetime | str | None = datetime.now()
+    # status: str
+    # arrival_datetime: datetime | str | None = datetime.now()
     departure_datetime: datetime | str | None
     doc_submit_datetime: datetime | str | None
     doc_issue_datetime: datetime | str | None

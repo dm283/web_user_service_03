@@ -284,6 +284,12 @@ const chatNotificationDataChange = (pointState) => {
 <div v-if="showMenuBar" :class=sidebarColor class="w-60 h-full fixed text-white">
   <div class="">
 
+    <RouterLink to="/gruzovichok" v-if="['admin','dispatcher'].includes(state.userInfo.role_name)">
+      <MenuSection :label="'Грузовичок'" :icon="'truck'" :description="'Пилотный проект Грузовичок'"
+      :selected="state.selectedMenu=='gruzovichok' ? '1' : '0'" @click="state.selectedMenu='gruzovichok'"
+      />
+    </RouterLink>
+
     <!-- <RouterLink to="/transport_section" v-if="[1,4].includes(state.userInfo.role_id)"> -->
     <RouterLink to="/transport_section" v-if="['admin','dispatcher'].includes(state.userInfo.role_name)">
       <MenuSection :label="'Транспорт'" :icon="'truck'" :description="'Операции с транспортом (пропуска)'"

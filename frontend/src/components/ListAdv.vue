@@ -10,7 +10,7 @@ const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit',
   'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose', 'clickNotificationRow', 'btnSetBatchStatus',
-  'btnUploadExcel'
+  'btnSetShipmentStatus', 'btnUploadExcel'
 ]) // emit
 
 const props = defineProps({
@@ -669,7 +669,7 @@ const niceTime = (tm) => {
       @click="emit('btnAdd', props.name)" 
       v-if="((['Пропуска ТС на выезд','Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
         'Принятые партии товара'].includes(props.name) & userInfo.contact_id==0) 
-      | ['Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name))
+      | ['Грузовичок (пилот)','Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name))
       & userInfo.role_name!='checkpoint'"
     >
       <i class="pi pi-plus" style="font-size: 1rem"></i>
@@ -681,7 +681,7 @@ const niceTime = (tm) => {
       v-if="((['Пропуска ТС на выезд','Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
         'Принятые партии товара'
       ].includes(props.name) & userInfo.contact_id==0) 
-      | ['Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name))
+      | ['Грузовичок (пилот)','Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name))
       & userInfo.role_name!='checkpoint'"
     >
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
@@ -693,7 +693,7 @@ const niceTime = (tm) => {
       v-if="((['Пропуска ТС на выезд', 'Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
         'Принятые партии товара'
       ].includes(props.name) & userInfo.contact_id==0) 
-      | ['Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name))
+      | ['Грузовичок (пилот)','Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name))
       & userInfo.role_name!='checkpoint'"
     >
       <i class="pi pi-trash" style="font-size: 1rem"></i>
@@ -754,6 +754,44 @@ const niceTime = (tm) => {
         </ul>
       </div>
     </div>
+
+
+    <!-- ********    блок кнопок изменения статусов партий товаров    ********** -->
+    <div v-if="props.name=='Грузовичок (пилот)'" class="inline-block space-x-2">
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'на стоянке', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">стоянка</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'на СВХ', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">на СВХ</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'на ДО', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">на ДО</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'подано', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">подача</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'выпущено', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">выпуск</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'уехала', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">выезд</div>
+      </button>
+
+    </div>
+
+
 
     <!-- ********    блок кнопок изменения статусов партий товаров    ********** -->
     <div v-if="selectedItem.posted & props.name=='Партии товаров' & userInfo.contact_id==0" class="inline-block space-x-2">

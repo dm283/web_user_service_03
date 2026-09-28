@@ -22,6 +22,7 @@ import FormDtreg from './FormDtreg.vue';
 import FormRequestBatchToSklad from './FormRequestBatchToSklad.vue';
 import FormCertGoodsAccept from './FormCertGoodsAccept.vue';
 import FormSetBatchStatus from './FormSetBatchStatus.vue';
+import FormSetShipmentStatus from './FormSetShipmentStatus.vue';
 import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
 
 
@@ -65,6 +66,7 @@ const showCarExitPermit = ref(false)
 const showSetDefaultStatus = ref(false)
 const showExitProhibited = ref(false)
 
+const showSetShipmentStatus = ref(false)
 const showSetBatchStatus = ref(false)
 const showConfirmUploadExcel = ref(false)
 
@@ -120,6 +122,7 @@ const deletedItem = ref('')
 const deletedItemName = ref('')
 const file = ref(null)
 const batchStatus = ref('')
+const shipmentStatus = ref('')
 const entityUploadExcel = ref('')
 
 const modalStyle = "absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"
@@ -189,6 +192,8 @@ const query_notifications = `http://${backendIpAddress}:${backendPort}/messages/
 const query_tcell = `http://${backendIpAddress}:${backendPort}/tcell/`
 const query_tzone = `http://${backendIpAddress}:${backendPort}/tzone/`
 
+const query_gruzovichok = `http://${backendIpAddress}:${backendPort}/shipments/`
+
 if (props.view_type == 'enter') {
   state.query = state.query_carpass;
   state.listTableColumns = {
@@ -237,6 +242,19 @@ else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
   if (userInfo.type=='V') { delete state.listTableColumns.contact_name; }
   if (userInfo.type=='B') { delete state.listTableColumns.broker_name; }
 }
+
+
+else if (props.view_type == 'gruzovichok') {
+  state.query = query_gruzovichok;
+  state.listTableColumns = {
+    'shipment_id':'№ п/п','ncar':'№ машины','tir':'TIR', 'cmr':'CMR', 'status':'Статус','location':'Стоянка', 'places_cnt':'Кол-во мест',
+    'arrival_datetime':'Д/в приезда', 'departure_datetime':'Д/в уезда', 'doc_submit_datetime':'Д/в подачи документов',
+    'doc_issue_datetime':'Д/в выдачи документов', 'owner':'Владелец', 'goods':'Тип груза', 'comment':'Комментарий'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+
+
 else if (props.view_type == 'dtreg') {
   state.query = query_dtreg;
   state.listTableColumns = {
@@ -484,6 +502,8 @@ const statusExitProhibited = (item) => { showExitProhibited.value = true; select
 
 const setBatchStatus = (status, item) => { showSetBatchStatus.value = true; selectedItem.value = item; batchStatus.value = status; }
 
+const setShipmentStatus = (status, item) => { showSetShipmentStatus.value = true; selectedItem.value = item; shipmentStatus.value = status; }
+
 const confirmUploadExcel = (entity) => { showConfirmUploadExcel.value = true; entityUploadExcel.value = entity; }
 
 const createExitCarpass = (item) => { showCreateExitCarpass.value = true; selectedItem.value = item; };
@@ -566,6 +586,22 @@ const clickNotificationRow = async (item) => {
   <!-- **********************   MODAL BATCH EDIT  ************************** -->
   <div v-if="showUpdateBatch" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormBatch @close-modal="showUpdateBatch=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
+
+  <!-- **********************   MODAL SHIPMENT CARD   ************************** -->
+  <div v-if="showCardShipment" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormShipment @close-modal="showCardShipment=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem"
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL SHIPMENT ADD   ************************** -->
+  <div v-if="showAddShipment" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormShipment @close-modal="showAddShipment=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL SHIPMENT EDIT  ************************** -->
+  <div v-if="showUpdateShipment" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormShipment @close-modal="showUpdateShipment=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 
@@ -740,6 +776,11 @@ const clickNotificationRow = async (item) => {
     <FormSetBatchStatus @close-modal="showSetBatchStatus=false" @doc-created="getData" :status="batchStatus" :itemData="selectedItem"/>
   </div>
 
+  <!-- **********************   MODAL SET SHIPMENT STATUS   ************************** -->
+  <div v-if="showSetShipmentStatus" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormSetShipmentStatus @close-modal="showSetShipmentStatus=false" @doc-created="getData" :status="shipmentStatus" :itemData="selectedItem"/>
+  </div>
+
    <!-- **********************   MODAL CONFIRM UPLOAD EXCEL   ************************** -->
   <div v-if="showConfirmUploadExcel" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormConfirmUploadExcel @close-modal="showConfirmUploadExcel=false" @doc-created="getData" :entity="entityUploadExcel" />
@@ -767,6 +808,7 @@ const clickNotificationRow = async (item) => {
           @btn-refresh="getData" @btn-itemcard="openItem" @btn-rollback="rollbackItem" @btn-print="printItem" 
           @btn-setstatusexit="setStatusExit" @btn-cancelstatusexit="setDefaultStatus" @btn-exitprohibited="statusExitProhibited"
           @btn-set-batch-status="setBatchStatus"
+          @btn-set-shipment-status="setShipmentStatus"
           @click-notification-row="clickNotificationRow"
           @btn-upload-excel="confirmUploadExcel"
           :name="props.list_title" :data="state.records" :listTableColumns="state.listTableColumns" :listItemFileds="state.listItemFileds"/>
