@@ -10,11 +10,6 @@ class Batch(Base):
     carpass_uuid = Column(String)
     exitcarpass_uuid = Column(String, nullable=True, default=None)
 
-    # delivery_close_date = Column(Date)  # 04.03.26
-    # delivery_close_time = Column(Time)  # 04.03.26
-    # dt_submission_date = Column(Date)   # 04.03.26
-    # dt_submission_time = Column(Time)   # 04.03.26
-
     delivery_close_datetime = Column(DateTime, nullable=True)  # 05.03.26
     dt_submission_datetime = Column(DateTime, nullable=True)   # 05.03.26
 
