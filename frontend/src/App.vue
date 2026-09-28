@@ -119,6 +119,10 @@ const signOut = async () => {
   await getData();
 };
 
+const setMenuValue = async() => {
+  console.log('sidemenu =', showMenuBar.value)
+  localStorage.setItem('showMenuBar', showMenuBar.value)
+}
 
 const chatNotificationDataChange = (pointState) => {
   console.log('pointState =', pointState)
@@ -248,7 +252,8 @@ const chatNotificationDataChange = (pointState) => {
   <div class="text-center md:flex md:float-left text-xl">
     <div class="inline-block w-10 h-10 rounded-full pt-1.5 mt-2 mr-5 cursor-pointer 
       text-cyan-300 hover:bg-sky-700 active:text-cyan-100">
-      <i class="pi pi-bars" style="font-size: 1.3rem" @click="showMenuBar=(showMenuBar) ? false:true"></i>
+      <i class="pi pi-bars" style="font-size: 1.3rem" 
+      @click="showMenuBar=(showMenuBar) ? false:true; setMenuValue()"></i>
     </div>
     <div class="inline-block mt-3 px-4 border-r-2">{{ companyName }}</div>
     <div v-if="state.userInfo.contact_id != 0" class="inline-block mt-3 px-4 border-r-2">{{ state.userInfo.contact_name }}</div>

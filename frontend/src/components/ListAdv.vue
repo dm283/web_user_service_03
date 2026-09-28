@@ -31,6 +31,9 @@ const state = reactive({
 })
 
 const isDropDownloadShow = ref(false);
+const isRClickmenuShow = ref(false);
+const rclickMenuX = ref();
+const rclickMenuY = ref();
 
 // const isListFilterShow = ref(true);
 const isDropSearchShow = ref(false);
@@ -366,9 +369,7 @@ const checkState = () => {
   if (isDropSearchShow.value == true & !mouseOverSearchDropdown.value) {
     isDropSearchShow.value = false;
   }
-  // else if (isDropSortShow.value == true & !mouseOverSortDropdown.value) {
-  //   isDropSortShow.value = false;
-  // };
+  isRClickmenuShow.value = false;
 };
 
 
@@ -498,6 +499,44 @@ const rowClick = (index, item) => {
 
   //26.02.2026
   if (props.name=='Оповещения' && item.status=='новое') { emit('clickNotificationRow', selectedItem) }
+}
+
+const rowRightClick = (event, index, item) => {
+  selectedItem.value = item;
+  event.preventDefault();
+  let showMenuBar = JSON.parse(localStorage.getItem('showMenuBar'));
+  let xcorrection = showMenuBar ? -210 : 30
+  rclickMenuX.value = `${event.clientX + xcorrection}px`
+  rclickMenuY.value = `${event.clientY - 70}px`
+  isRClickmenuShow.value = false; isRClickmenuShow.value = true
+}
+
+const rclickMenuAction = (entity, action, active) => {
+  //
+  if (active == false) { return }
+
+  if (action == 'открыть') { emit('btnItemcard', selectedItem.value, props.name) }
+  else if (action == 'удалить') { emit('btnDelete', selectedItem.value, props.name) }
+  else if (action == 'печать') { emit('btnPrint', selectedItem.value, props.name) }
+  else if (action == 'откатить') { emit('btnRollback', selectedItem.value, props.name) }
+}
+
+const createContextMenuOptions = () => {
+  //
+  let activeStyle = [true, 'cursor-pointer text-black hover:bg-gray-100']
+  let notactiveStyle = [false, 'cursor-auto text-gray-300 hover:white']
+  let optionsList = {}
+
+  if (props.name == 'Партии товаров') {
+    optionsList['открыть'] = activeStyle
+    optionsList['удалить'] = !selectedItem.value.posted ? activeStyle : notactiveStyle
+    optionsList['печать'] = selectedItem.value.posted ? activeStyle : notactiveStyle
+    if (!selectedItem.value.posted || ['Там.офор.','Ч.офор.','Выпуск'].includes(selectedItem.value.status)) {
+      optionsList['откатить'] = notactiveStyle }
+    else { optionsList['откатить'] = activeStyle }
+  }
+  
+  return optionsList
 }
 
 const sds = (e) => {
@@ -794,8 +833,21 @@ const niceTime = (tm) => {
 
 </nav>
 
+
+
 <!-- table area ************************* --> 
 <section class="mt-2 border rounded-lg overflow-auto">
+
+  <!-- right click context menu div -->
+  <div v-if="isRClickmenuShow & props.name=='Партии товаров'" 
+      class="mt-1 -ml-11 w-24 border rounded-md border-gray-300 bg-white text-xs font-semibold absolute z-10 overflow-hidden" 
+      :style="{top: rclickMenuY, left: rclickMenuX}">
+    <ul @click="">
+      <li class="h-8 pl-3 py-1.5 uppercase" :class=value[1] @click="rclickMenuAction(entity=props.name, action=key, active=value[0])" 
+          v-for="(value, key) in createContextMenuOptions()">{{ key }}</li>
+    </ul>
+  </div>
+
 <table class="w-full">
 
   <thead>
@@ -829,6 +881,7 @@ const niceTime = (tm) => {
     <tr v-if="dataLengthRender()==0"><td><div class="h-11"></div></td></tr>
     <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-lime-50"
       :class=listRowStyle[index]
+      oncontextmenu="return false;"  v-on:click.right="rowRightClick($event, index, item)"
       @dblclick="emit('btnChoose', selectedItem)"
       @click="rowClick(index, item)" v-for="(item, index) in dataRender()">
     <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
