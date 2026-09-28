@@ -856,6 +856,8 @@ def create_shipment(db: Session, item: schemas.ShipmentCreate, user_uuid: str):
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    # set_shipment_status(db=db, shipment_uuid=db_item.uuid, status_name='приехала', user_uuid=user_uuid)
     
     logging_action(obj_type='shipment', schema=schemas.Shipment, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
 
@@ -2131,6 +2133,7 @@ def set_shipment_status(db: Session, shipment_uuid: str, status_name: str, user_
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="wrong status")
 
     status_time_field = {
+        'приехала': 'arrival_datetime',
         'подано': 'doc_submit_datetime',
         'выпущено': 'doc_issue_datetime',
         'уехала': 'departure_datetime',
@@ -2138,7 +2141,7 @@ def set_shipment_status(db: Session, shipment_uuid: str, status_name: str, user_
     current_time = datetime.datetime.now()
 
     setattr(item_from_db, 'status', status_name)
-    if status_name in ['подано', 'выпущено', 'уехала']:
+    if status_name in ['приехала', 'подано', 'выпущено', 'уехала']:
         setattr(item_from_db, status_time_field[status_name], current_time)
     db.commit()
 

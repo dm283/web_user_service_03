@@ -692,6 +692,8 @@ class Shipment(ShipmentCreate):
     id: int
     uuid: str
 
+    status: str
+    arrival_datetime: datetime | str | None = datetime.now()
     departure_datetime: datetime | str | None
     doc_submit_datetime: datetime | str | None
     doc_issue_datetime: datetime | str | None
