@@ -23,6 +23,7 @@ endpoint_allowed_roles_dict = {
     # user backend (auth)
 
     # delete items
+    'delete'+'shipment': ['admin', 'dispatcher'],
     'delete'+'carpasses': ['admin', 'dispatcher'],
     'delete'+'exitcarpasses': ['admin', 'dispatcher'],
     'delete'+'entry_requests': ['admin', 'dispatcher', 'client', 'broker'],
@@ -47,6 +48,16 @@ endpoint_allowed_roles_dict = {
     'put'+'contacts_rollback': ['admin', 'dispatcher',],
     'put'+'users_rollback': ['admin',],
     'put'+'document_records_rollback': ['',],  # operation is not using
+
+    # shipments
+    'get'+'shipments': ['admin', 'dispatcher',],
+    'get'+'shipments_client': ['admin','client','broker'],
+    'put'+'set_shipment_status': ['admin', 'dispatcher'],
+    # shipment card
+    'post'+'shipment': ['admin', 'dispatcher',],
+    'put'+'shipment': ['admin', 'dispatcher',],
+    'get'+'shipment_by_uuid': ['admin', 'dispatcher', 'client', 'broker'],
+    'get'+'log_record_shipment': ['admin', 'dispatcher', 'client', 'broker'],
 
     # batches
     'get'+'batches': ['admin', 'dispatcher',],

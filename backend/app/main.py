@@ -732,6 +732,18 @@ def read_entry_request_by_uuid(current_user: Annotated[UserAuth, Depends(get_cur
     return item
 
 
+
+@app.get('/shipment_by_uuid/{uuid}', response_model=schemas.Shipment)
+def read_shipmenth_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='shipment_by_uuid', type='get', current_role_name=current_user.role_name)
+    item = crud.get_shipment_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
+
 @app.get('/batch_by_uuid/{uuid}', response_model=schemas.Batch)
 def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
@@ -1034,6 +1046,14 @@ def read_requests_batch_to_sklad_for_cert(current_user: Annotated[UserAuth, Depe
     return items
 
 
+@app.get('/shipments/', response_model=list[schemas.Shipment])
+def read_shipments(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='shipments', type='get', current_role_name=current_user.role_name)
+    items = crud.get_shipments(db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/batches/', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -1313,6 +1333,15 @@ def create_requests_batch_to_sklad(current_user: Annotated[UserAuth, Depends(get
     return crud.create_requests_batch_to_sklad(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
+@app.post("/shipment/", response_model=schemas.Shipment)
+def create_shipment(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                data: Annotated[schemas.ShipmentCreate, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='shipment', type='post', current_role_name=current_user.role_name)
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ShipmentCreate) 
+    return crud.create_shipment(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
+
+
 @app.post("/batches/", response_model=schemas.Batch)
 def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
@@ -1370,6 +1399,18 @@ def update_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_
     return crud.update_item(item=item, model=models.Carpass, schema=schemas.Carpass, obj_type='carpass_enter', 
                             db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
     # return crud.update_carpass(db=db, item_uuid=item_uuid, item=item, user_uuid=current_user.uuid)
+
+
+@app.put('/shipment/{item_uuid}', response_model=schemas.Shipment)
+def update_shipment(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, data: Annotated[schemas.ShipmentCreate, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='shipment', type='put', current_role_name=current_user.role_name)
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ShipmentCreate)
+    item = schemas.ShipmentUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_item(item=item, model=models.Shipment, schema=schemas.Shipment, obj_type='shipment', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
 @app.put('/batches/{item_uuid}', response_model=schemas.Batch)
@@ -1548,6 +1589,15 @@ def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
     #return crud.delete_entry_request(db=db, item_id=item_id, user_uuid=current_user.uuid)
     check_endpoint_role_access(url='entry_requests', type='delete', current_role_name=current_user.role_name)
     return crud.delete_item(model=models.EntryRequest, schema=schemas.EntryRequest, obj_type='entry_request', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+
+
+@app.delete('/shipment/{item_uuid}')
+def delete_shipment(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='shipment', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.Shipment, schema=schemas.Shipment, obj_type='shipment', 
                             db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
@@ -1842,7 +1892,15 @@ def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_activ
                     batch_uuid: str, status: str, db: Session = Depends(get_db)):
     #
     check_endpoint_role_access(url='set_batch_status', type='put', current_role_name=current_user.role_name)
-    return crud.set_batch_status(db=db, batch_uuid=batch_uuid, status=status, user_uuid=current_user.uuid)
+    return crud.set_batch_status(db=db, batch_uuid=batch_uuid, status_name=status, user_uuid=current_user.uuid)
+
+### SHIPMENT
+@app.put('/set_shipment_status/{shipment_uuid}/{status}', response_model=schemas.Shipment)
+def set_shipment_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                    shipment_uuid: str, status: str, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='set_shipment_status', type='put', current_role_name=current_user.role_name)
+    return crud.set_shipment_status(db=db, shipment_uuid=shipment_uuid, status_name=status, user_uuid=current_user.uuid)
 
 #########################################################    USERS ENDPOINTS
 @app.get("/users/", response_model=list[schemas.UserJoined])
