@@ -19,7 +19,16 @@ const props = defineProps({
   itemData: Object,
 });
 
+function toLocalISOString(date) {
+  const localDate = new Date(date - date.getTimezoneOffset() * 60000);
+  localDate.setSeconds(null);
+  localDate.setMilliseconds(null);
+  return localDate.toISOString().slice(0, -1);
+}
+
 const toast = useToast();
+const form = reactive({});
+form['status_time'] = toLocalISOString(new Date());
 
 const authHeader = () => {
   let user = JSON.parse(localStorage.getItem('user')); 
@@ -28,10 +37,16 @@ const authHeader = () => {
 
 
 const handleSubmit = async () => {
-
+  //
+  let formData = new FormData();
+  formData.append('status', props.status);
+  formData.append('status_time', form.status_time);
   try {
-    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/set_shipment_status/${props.itemData.uuid}/${props.status}`, 
-      '', {headers: authHeader()});
+    // const response = await axios.put(`http://${backendIpAddress}:${backendPort}/set_shipment_status/${props.itemData.uuid}/${props.status}`, 
+    //   '', {headers: authHeader()});
+    const response = await axios.put(`http://${backendIpAddress}:${backendPort}/set_shipment_status/${props.itemData.uuid}`, 
+      formData, {headers: authHeader()});
+    
     toast.success(`Установлен статус ${props.status}`);      
     emit('docCreated'); // emit
     emit('closeModal')
@@ -53,10 +68,19 @@ const handleSubmit = async () => {
       </div>
     </header>
 
-    <div class="mt-5 mx-5">Установить статус [ '{{ props.status }}' ] ?</div>
+    <div v-if="['на стоянке', 'на СВХ', 'на ДО'].includes(props.status)" class="mt-5 mx-5">Вы точно уверены что необходимо изменить состояние?</div>
+    <!-- <div v-else class="mt-5 mx-5">Установить статус {{ props.status }} ?</div> -->
+    
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mt-5">
       
+      <div v-if="['подано', 'выпущено', 'уехала'].includes(props.status)" class="mt-5 mx-5">
+        <div>Уточните дату и время</div>
+        <input type="datetime-local" v-model="form.status_time" :required="true" 
+          class="border-b-2 border-blue-300 text-base w-full py-1 px-1 mb-2 hover:border-blue-400 
+            focus:outline-none focus:border-blue-500 cursor-pointer"/>
+      </div>
+
       <div class="my-3 flex justify-left space-x-5 py-3 px-5 text-center">
         <button
           class="formBtn"

@@ -411,10 +411,30 @@ def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
 
 
 
-def get_shipments(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Shipment).filter(models.Shipment.is_active==True).\
-        order_by(models.Shipment.created_datetime.desc()).all()
+# def get_shipments(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.Shipment).filter(models.Shipment.is_active==True).\
+#         order_by(models.Shipment.created_datetime.desc()).all()
 
+
+def get_shipments(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Shipment)
+    contact = aliased(models.Contact)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact, related_docs).\
+        join(contact, contact.uuid == main_table.contact_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+    
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        docs_exist=1 if row[2] else 0
+        db_full_response.append(schemas.ShipmentJoined(**row[0].__dict__, contact_name=contact_name, docs_exist=docs_exist))
+
+    return db_full_response
 
 
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
@@ -2120,7 +2140,7 @@ def set_batch_status(db: Session, batch_uuid: str, status_name: str, user_uuid: 
     return item_from_db
 
 
-def set_shipment_status(db: Session, shipment_uuid: str, status_name: str, user_uuid: str):
+def set_shipment_status(db: Session, shipment_uuid: str, data: schemas.ShipmentSetStatus, user_uuid: str):
     #
     status_list = ['приехала', 'на стоянке', 'на СВХ', 'на ДО', 'подано', 'выпущено', 'уехала']
 
@@ -2129,7 +2149,7 @@ def set_shipment_status(db: Session, shipment_uuid: str, status_name: str, user_
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     # if not item_from_db.posted:
     #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    if status_name not in status_list:
+    if data.status not in status_list:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="wrong status")
 
     status_time_field = {
@@ -2138,11 +2158,12 @@ def set_shipment_status(db: Session, shipment_uuid: str, status_name: str, user_
         'выпущено': 'doc_issue_datetime',
         'уехала': 'departure_datetime',
     }
-    current_time = datetime.datetime.now()
+    # current_time = datetime.datetime.now()
+    current_time = data.status_time
 
-    setattr(item_from_db, 'status', status_name)
-    if status_name in ['приехала', 'подано', 'выпущено', 'уехала']:
-        setattr(item_from_db, status_time_field[status_name], current_time)
+    setattr(item_from_db, 'status', data.status)
+    if data.status in ['приехала', 'подано', 'выпущено', 'уехала']:
+        setattr(item_from_db, status_time_field[data.status], current_time)
     db.commit()
 
     logging_action(obj_type='shipment', schema=schemas.Shipment, action='set_status', item_from_db=item_from_db, 

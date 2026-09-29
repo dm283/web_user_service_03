@@ -1046,7 +1046,7 @@ def read_requests_batch_to_sklad_for_cert(current_user: Annotated[UserAuth, Depe
     return items
 
 
-@app.get('/shipments/', response_model=list[schemas.Shipment])
+@app.get('/shipments/', response_model=list[schemas.ShipmentJoined])
 def read_shipments(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     check_endpoint_role_access(url='shipments', type='get', current_role_name=current_user.role_name)
@@ -1895,12 +1895,20 @@ def set_batch_status(current_user: Annotated[UserAuth, Depends(get_current_activ
     return crud.set_batch_status(db=db, batch_uuid=batch_uuid, status_name=status, user_uuid=current_user.uuid)
 
 ### SHIPMENT
-@app.put('/set_shipment_status/{shipment_uuid}/{status}', response_model=schemas.Shipment)
+# @app.put('/set_shipment_status/{shipment_uuid}/{status}', response_model=schemas.Shipment)
+# def set_shipment_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+#                     shipment_uuid: str, status: str, db: Session = Depends(get_db)):
+#     #
+#     check_endpoint_role_access(url='set_shipment_status', type='put', current_role_name=current_user.role_name)
+#     return crud.set_shipment_status(db=db, shipment_uuid=shipment_uuid, status_name=status, user_uuid=current_user.uuid)
+
+@app.put('/set_shipment_status/{shipment_uuid}', response_model=schemas.Shipment)
 def set_shipment_status(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
-                    shipment_uuid: str, status: str, db: Session = Depends(get_db)):
+                    shipment_uuid: str, data: Annotated[schemas.ShipmentSetStatus, Form()], db: Session = Depends(get_db)):
     #
     check_endpoint_role_access(url='set_shipment_status', type='put', current_role_name=current_user.role_name)
-    return crud.set_shipment_status(db=db, shipment_uuid=shipment_uuid, status_name=status, user_uuid=current_user.uuid)
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ShipmentSetStatus)
+    return crud.set_shipment_status(db=db, shipment_uuid=shipment_uuid, data=data_none_values_redefined, user_uuid=current_user.uuid)
 
 #########################################################    USERS ENDPOINTS
 @app.get("/users/", response_model=list[schemas.UserJoined])

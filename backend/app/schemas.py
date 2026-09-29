@@ -708,4 +708,11 @@ class Shipment(ShipmentCreate):
 
     class Config:
         from_attributes = True
-        
+
+class ShipmentJoined(Shipment):   
+    contact_name: str | None
+    docs_exist: int | None
+
+class ShipmentSetStatus(BaseModel):
+    status: str
+    status_time: datetime

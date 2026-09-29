@@ -434,7 +434,7 @@ class Shipment(Base):
     created_datetime = Column(DateTime)
     updated_datetime = Column(DateTime, nullable=True, default=None)
     post_date = Column(DateTime, nullable=True, default=None)
-    post_user_id = Column(String(length=36), nullable=True, default='1')
-    posted = Column(Boolean, default=True)      ######
-    was_posted = Column(Boolean, default=True)  ######
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)      ######
+    was_posted = Column(Boolean, default=False)  ######
     is_active = Column(Boolean, default=True) 

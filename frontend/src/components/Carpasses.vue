@@ -24,6 +24,7 @@ import FormCertGoodsAccept from './FormCertGoodsAccept.vue';
 import FormSetBatchStatus from './FormSetBatchStatus.vue';
 import FormSetShipmentStatus from './FormSetShipmentStatus.vue';
 import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
+import FormShipment from './FormShipment.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -98,6 +99,10 @@ const showUpdateCertGoodsAccept = ref(false)
 const showCardBatch = ref(false)
 const showAddBatch = ref(false)
 const showUpdateBatch = ref(false)
+
+const showCardShipment = ref(false)
+const showAddShipment = ref(false)
+const showUpdateShipment = ref(false)
 
 const showCardContact = ref(false)
 const showAddContact = ref(false)
@@ -247,9 +252,11 @@ else if (props.view_type == 'batches' || props.view_type == 'add_batch') {
 else if (props.view_type == 'gruzovichok') {
   state.query = query_gruzovichok;
   state.listTableColumns = {
-    'shipment_id':'№ п/п','ncar':'№ машины','tir':'TIR', 'cmr':'CMR', 'status':'Статус','location':'Стоянка', 'places_cnt':'Кол-во мест',
-    'arrival_datetime':'Д/в приезда', 'departure_datetime':'Д/в уезда', 'doc_submit_datetime':'Д/в подачи документов',
-    'doc_issue_datetime':'Д/в выдачи документов', 'owner':'Владелец', 'goods':'Тип груза', 'comment':'Комментарий'
+    'shipment_id':'№','ncar':'№ ТС','tir':'TIR', 'cmr':'CMR', 'status':'Статус','location':'Стоянка', 
+    'places_cnt':'Места',
+    'arrival_datetime':'Д/в приезда', 'departure_datetime':'Д/в уезда', 'doc_submit_datetime':'Д/в подачи док-ов',
+    'doc_issue_datetime':'Д/в выдачи док-ов', 'contact_name':'Владелец', 'goods':'Тип груза', 'comment':'Комментарий',
+    'docs_exist':'Док-ты'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
@@ -444,6 +451,7 @@ const itemCard = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
   else if (name == 'Партии товаров') { showCardBatch.value = true }
+  else if (name == 'Грузовичок (пилот)') { showCardShipment.value = true }
   else if (name == 'Таможенное оформление') { showCardDtreg.value = true }
   else if (name == 'Заявки размещения партий на склад') { showCardRequestBatchToSklad.value = true }
   else if (name == 'Принятые партии товара') { showCardCertGoodsAccept.value = true }
@@ -459,6 +467,7 @@ const addItem = (section) => {
   else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
   else if (section == 'Партии товаров') { showAddBatch.value = true; }
+  else if (section == 'Грузовичок (пилот)') { showAddShipment.value = true; }
   else if (section == 'Таможенное оформление') { showAddDtreg.value = true; }
   else if (section == 'Заявки размещения партий на склад') { showAddRequestBatchToSklad.value = true; }
   else if (section == 'Принятые партии товара') { showAddCertGoodsAccept.value = true; }
@@ -475,6 +484,7 @@ const editItem = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showUpdateExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
   else if (name == 'Партии товаров') { showUpdateBatch.value = true }
+  else if (name == 'Грузовичок (пилот)') { showUpdateShipment.value = true }
   else if (name == 'Таможенное оформление') { showUpdateDtreg.value = true }
   else if (name == 'Заявки размещения партий на склад') { showUpdateRequestBatchToSklad.value = true }
   else if (name == 'Принятые партии товара') { showUpdateCertGoodsAccept.value = true }

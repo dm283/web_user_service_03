@@ -38,7 +38,7 @@ const login = ref('');
 const password = ref('');
 const authFormMessage = ref('')
 const showMessengerBar = ref(false);
-const showMenuBar = ref(true);
+const showMenuBar = ref(false);
 const headerColor = ref('')
 const sidebarColor = ref('')
 

@@ -38,6 +38,8 @@ else if (props.itemName == 'Заявки на въезд ТС') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.uuid}`; }
 else if (props.itemName == 'Партии товаров') {
   state.query = `http://${backendIpAddress}:${backendPort}/batches/${props.itemData.uuid}`; }
+else if (props.itemName == 'Грузовичок (пилот)') {
+  state.query = `http://${backendIpAddress}:${backendPort}/shipment/${props.itemData.uuid}`; }
 else if (props.itemName == 'Таможенное оформление') {
   state.query = `http://${backendIpAddress}:${backendPort}/dtreg/${props.itemData.uuid}`; }
 else if (props.itemName == 'Заявки размещения партий на склад') {
@@ -82,7 +84,8 @@ const handleSubmit = async () => {
       </div>
     </header>
 
-    <div class="mt-5 ml-5">Удалить запись #{{ itemData.id }} ?</div>
+    <div v-if="props.itemName != 'Грузовичок (пилот)'" class="mt-5 ml-5">Удалить запись #{{ itemData.id }} ?</div>
+    <div v-else class="mt-5 ml-5">Удалить запись № {{ itemData.shipment_id }} ?</div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
       
