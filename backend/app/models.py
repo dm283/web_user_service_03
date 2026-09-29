@@ -424,7 +424,8 @@ class Shipment(Base):
     departure_datetime = Column(DateTime, nullable=True, default=None)
     doc_submit_datetime = Column(DateTime, nullable=True, default=None)
     doc_issue_datetime = Column(DateTime, nullable=True, default=None)
-    owner = Column(String)
+    # owner = Column(String)
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
     goods = Column(String)
 
     id = Column(Integer, primary_key=True)

@@ -681,7 +681,8 @@ class ShipmentCreate(BaseModel):
     # departure_datetime: datetime | str | None = None
     # doc_submit_datetime: datetime | str | None = None
     # doc_issue_datetime: datetime | str | None = None
-    owner: str
+    # owner: str
+    contact_uuid: str
     goods: str
     comment: str | None = None
 
