@@ -770,7 +770,7 @@ const niceTime = (tm) => {
     </div>
 
 
-    <!-- ********    блок кнопок изменения статусов партий товаров    ********** -->
+    <!-- ********    блок кнопок изменения статусов shipments    ********** -->
     <div v-if="props.name=='Грузовичок (пилот)'" class="inline-block space-x-2">
       <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
         @click="emit('btnSetShipmentStatus', 'на стоянке', selectedItem)" :disabled="!selectedItem"
@@ -787,17 +787,17 @@ const niceTime = (tm) => {
         >
         <div class="text-xs font-semibold">на ДО</div>
       </button>
-      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-amber-200 disabled:text-slate-400 disabled:hover:bg-amber-100" 
         @click="emit('btnSetShipmentStatus', 'подано', selectedItem)" :disabled="!selectedItem"
         >
         <div class="text-xs font-semibold">подача</div>
       </button>
-      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-amber-200 disabled:text-slate-400 disabled:hover:bg-amber-100" 
         @click="emit('btnSetShipmentStatus', 'выпущено', selectedItem)" :disabled="!selectedItem"
         >
         <div class="text-xs font-semibold">выпуск</div>
       </button>
-      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-amber-200 disabled:text-slate-400 disabled:hover:bg-amber-100" 
         @click="emit('btnSetShipmentStatus', 'уехала', selectedItem)" :disabled="!selectedItem"
         >
         <div class="text-xs font-semibold">выезд</div>
