@@ -407,3 +407,34 @@ class CertGoodsAccept(Base):
     posted = Column(Boolean, default=False)
     was_posted = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+
+
+
+class Shipment(Base):
+    __tablename__ = 'shipments'
+
+    shipment_id = Column(Integer)
+    ncar = Column(String)
+    tir = Column(String)
+    cmr = Column(String)
+    status = Column(String)
+    location = Column(String)
+    places_cnt = Column(Integer)
+    arrival_datetime = Column(DateTime)
+    departure_datetime = Column(DateTime, nullable=True, default=None)
+    doc_submit_datetime = Column(DateTime, nullable=True, default=None)
+    doc_issue_datetime = Column(DateTime, nullable=True, default=None)
+    # owner = Column(String)
+    contact_uuid = Column(String, ForeignKey('contacts.uuid'))
+    goods = Column(String)
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    comment = Column(String)
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)      ######
+    was_posted = Column(Boolean, default=False)  ######
+    is_active = Column(Boolean, default=True) 

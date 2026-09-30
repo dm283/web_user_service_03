@@ -10,7 +10,7 @@ const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
 const emit = defineEmits(['btnItemcard', 'btnAdd', 'btnEdit', 'btnPrint', 'btnDelete', 'btnRefresh', 'btnRollback', 'btnSetstatusexit',
   'btnCreateexitcarpass', 'btnCancelstatusexit', 'btnExitprohibited', 'btnChoose', 'clickNotificationRow', 'btnSetBatchStatus',
-  'btnUploadExcel'
+  'btnSetShipmentStatus', 'btnUploadExcel'
 ]) // emit
 
 const props = defineProps({
@@ -406,7 +406,7 @@ const dataRender = () => {
   let renderedData = state.localData.slice(state.limitRecords*(state.currentPage-1), state.limitRecords*state.currentPage) 
 
   for (let i = 0; i < renderedData.length; i++) {
-    if (['Электронный архив','Выбор документов','Журнал действий','Оповещения',
+    if (['Грузовичок (пилот)','Электронный архив','Выбор документов','Журнал действий','Оповещения',
         'Территории терминала','Места территорий'].includes(props.name)) { listRowStyle[i] = '' }
     else {
       listRowStyle[i] = renderedData[i].posted ? '' : 'bg-slate-200';
@@ -421,6 +421,15 @@ const dataRender = () => {
       else if (renderedData[i].status=='Там.офор.') { listRowStyle[i] = 'bg-amber-100' }
       else if (renderedData[i].status=='Ч.офор.') { listRowStyle[i] = 'bg-amber-50' }
       else if (renderedData[i].status=='Выпуск') { listRowStyle[i] = 'bg-green-100' }
+    };
+    if (props.name=='Грузовичок (пилот)') {
+      if (renderedData[i].status=='приехала') { listRowStyle[i] = renderedData[i].posted ? '' : 'bg-white'; }
+      else if (renderedData[i].status=='на стоянке') { listRowStyle[i] = 'bg-orange-200' }
+      else if (renderedData[i].status=='на СВХ') { listRowStyle[i] = 'bg-yellow-200' }
+      else if (renderedData[i].status=='на ДО') { listRowStyle[i] = 'bg-rose-100' }
+      else if (renderedData[i].status=='подано') { listRowStyle[i] = 'bg-blue-100' }
+      else if (renderedData[i].status=='выпущено') { listRowStyle[i] = 'bg-green-200' }
+      else if (renderedData[i].status=='уехала') { listRowStyle[i] = 'bg-emerald-50' }
     };
     if (props.name=='Заявки размещения партий на склад') {
       if (renderedData[i].is_completed==true) { listRowStyle[i] = 'text-slate-400' }
@@ -437,7 +446,7 @@ const dataRender = () => {
     if (props.name=='Оповещения') {
       if (renderedData[i].status=='новое') { listRowStyle[i] = 'bg-red-50' }
     }
-    listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'border border-blue-400 bg-lime-100 hover:bg-lime-200': listRowStyle[i];
+    listRowStyle[i] = selectedItem.value.id==renderedData[i].id ? 'border border-white font-semibold text-white bg-blue-600 hover:bg-blue-200': listRowStyle[i];
   };
 
   return renderedData
@@ -535,6 +544,10 @@ const createContextMenuOptions = () => {
       optionsList['откатить'] = notactiveStyle }
     else { optionsList['откатить'] = activeStyle }
   }
+  if (props.name == 'Грузовичок (пилот)') {
+    optionsList['открыть'] = activeStyle
+    optionsList['удалить'] = activeStyle
+  }
   
   return optionsList
 }
@@ -626,7 +639,8 @@ const niceTime = (tm) => {
 <!-- *******************************  NAV AREA  ************************* --> 
 <nav class="overflow-auto">
 
-  <div id="listTitle" class="" v-if="props.name!='Выбор документов'">
+  <!-- <div id="listTitle" class="" v-if="props.name!='Выбор документов'"> -->
+  <div id="listTitle" class="" v-if="!['Грузовичок (пилот)', 'Выбор документов'].includes(props.name)">
     <div class="text-xl font-normal">{{ props.name }}</div>
   </div>
 
@@ -669,7 +683,7 @@ const niceTime = (tm) => {
       @click="emit('btnAdd', props.name)" 
       v-if="((['Пропуска ТС на выезд','Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
         'Принятые партии товара'].includes(props.name) & userInfo.contact_id==0) 
-      | ['Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name))
+      | ['Грузовичок (пилот)','Заявки на въезд ТС','Клиенты','Брокеры','Пользователи','Электронный архив'].includes(props.name))
       & userInfo.role_name!='checkpoint'"
     >
       <i class="pi pi-plus" style="font-size: 1rem"></i>
@@ -681,7 +695,7 @@ const niceTime = (tm) => {
       v-if="((['Пропуска ТС на выезд','Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
         'Принятые партии товара'
       ].includes(props.name) & userInfo.contact_id==0) 
-      | ['Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name))
+      | ['Грузовичок (пилот)','Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name))
       & userInfo.role_name!='checkpoint'"
     >
       <i class="pi pi-file-edit" style="font-size: 1rem"></i>
@@ -693,7 +707,7 @@ const niceTime = (tm) => {
       v-if="((['Пропуска ТС на выезд', 'Пропуска ТС на въезд','Партии товаров','Таможенное оформление','Заявки размещения партий на склад',
         'Принятые партии товара'
       ].includes(props.name) & userInfo.contact_id==0) 
-      | ['Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name))
+      | ['Грузовичок (пилот)','Заявки на въезд ТС', 'Клиенты', 'Брокеры', 'Пользователи','Электронный архив'].includes(props.name))
       & userInfo.role_name!='checkpoint'"
     >
       <i class="pi pi-trash" style="font-size: 1rem"></i>
@@ -754,6 +768,44 @@ const niceTime = (tm) => {
         </ul>
       </div>
     </div>
+
+
+    <!-- ********    блок кнопок изменения статусов shipments    ********** -->
+    <div v-if="props.name=='Грузовичок (пилот)'" class="inline-block space-x-2">
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'на стоянке', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">стоянка</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'на СВХ', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">на СВХ</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-teal-100 text-slate-600 hover:bg-teal-200 disabled:text-slate-400 disabled:hover:bg-teal-100" 
+        @click="emit('btnSetShipmentStatus', 'на ДО', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">на ДО</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-amber-200 disabled:text-slate-400 disabled:hover:bg-amber-100" 
+        @click="emit('btnSetShipmentStatus', 'подано', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">подача</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-amber-200 disabled:text-slate-400 disabled:hover:bg-amber-100" 
+        @click="emit('btnSetShipmentStatus', 'выпущено', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">выпуск</div>
+      </button>
+      <button class="w-16 h-8 rounded-lg bg-amber-100 text-slate-600 hover:bg-amber-200 disabled:text-slate-400 disabled:hover:bg-amber-100" 
+        @click="emit('btnSetShipmentStatus', 'уехала', selectedItem)" :disabled="!selectedItem"
+        >
+        <div class="text-xs font-semibold">выезд</div>
+      </button>
+
+    </div>
+
+
 
     <!-- ********    блок кнопок изменения статусов партий товаров    ********** -->
     <div v-if="selectedItem.posted & props.name=='Партии товаров' & userInfo.contact_id==0" class="inline-block space-x-2">
@@ -839,7 +891,7 @@ const niceTime = (tm) => {
 <section class="mt-2 border rounded-lg overflow-auto">
 
   <!-- right click context menu div -->
-  <div v-if="isRClickmenuShow & props.name=='Партии товаров'" 
+  <div v-if="isRClickmenuShow & ['Грузовичок (пилот)', 'Партии товаров'].includes(props.name)" 
       class="mt-1 -ml-11 w-24 border rounded-md border-gray-300 bg-white text-xs font-semibold absolute z-10 overflow-hidden" 
       :style="{top: rclickMenuY, left: rclickMenuX}">
     <ul @click="">
@@ -851,8 +903,9 @@ const niceTime = (tm) => {
 <table class="w-full">
 
   <thead>
-    <tr class="h-8 bg-blue-400 text-sm font-semibold text-white text-center">
-      <td class="border min-w-6"><div class="">#</div></td>
+    <!-- <tr class="h-8 bg-blue-400 text-sm font-semibold text-white text-center"> -->
+    <tr class="h-8 bg-blue-400 text-[12px] font-semibold text-white text-center">
+      <td v-if="props.name!='Грузовичок (пилот)'" class="border min-w-6"><div class="">#</div></td>
 
       <td class="border" v-for="(field, index) in Object.keys(props.listTableColumns)">
       
@@ -879,7 +932,9 @@ const niceTime = (tm) => {
 
   <tbody>
     <tr v-if="dataLengthRender()==0"><td><div class="h-11"></div></td></tr>
-    <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-lime-50"
+    <!-- class="border-t text-xs font-normal text-center cursor-pointer hover:bg-blue-300 hover:text-white" -->
+    <tr 
+      class="border-t text-[11px] font-normal text-center cursor-pointer hover:bg-blue-300 hover:text-white"
       :class=listRowStyle[index]
       oncontextmenu="return false;"  v-on:click.right="rowRightClick($event, index, item)"
       @dblclick="emit('btnChoose', selectedItem)"
@@ -887,7 +942,7 @@ const niceTime = (tm) => {
     <!-- <tr class="border-t text-xs font-normal text-center cursor-pointer hover:bg-gray-100" 
         @click="selectedItem=item; showItemCard=true" v-for="item in dataRender()"> -->
         
-      <td class="" @click="selectedItem=item; emit('btnItemcard', selectedItem, props.name)">
+      <td v-if="props.name!='Грузовичок (пилот)'" class="" @click="selectedItem=item; emit('btnItemcard', selectedItem, props.name)">
       <!-- <td :class="[item.posted ? 'text-green-600': 'text-blue-500']" @click="selectedItem=item; emit('btnItemcard', selectedItem)"> -->
       <!-- <td class="text-blue-500" @click="selectedItem=item; showItemCard=true"> -->
         <div class="inline-block text-blue-500 border-b-2 border-blue-400 hover:text-cyan-300 hover:border-cyan-300 max-w-min">

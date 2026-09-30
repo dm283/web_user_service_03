@@ -27,6 +27,7 @@ import AddRequestBatchToSkladView from "@/views/AddRequestBatchToSkladView.vue";
 import SkladSectionView from "@/views/SkladSectionView.vue";
 import AddCertGoodsAcceptView from "@/views/AddCertGoodsAcceptView.vue";
 import CertGoodsAcceptView from "@/views/CertGoodsAcceptView.vue";
+import GruzovichokView from "@/views/GruzovichokView.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
 // import EditItemView from "@/views/EditItemView.vue";
@@ -35,6 +36,9 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     // { path: '/', name: 'initial', component: CarpassesView, },
+
+    { path: '/gruzovichok', name: 'gruzovichok', component: GruzovichokView, },
+
     { path: '/', name: 'initial', component: InitView, },
     { path: '/transport_section', name: 'transport_section', component: TransportSectionView, },
     { path: '/carpasses', name: 'carpasses', component: CarpassesView, },

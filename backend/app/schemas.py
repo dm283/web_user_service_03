@@ -665,3 +665,54 @@ class CertGoodsAcceptJoined(CertGoodsAccept):
     batch_identity: str | None
     place: str | None
     request_batch_to_sklad_id: int | None
+
+
+
+#############
+class ShipmentCreate(BaseModel):
+    shipment_id: int
+    ncar: str
+    tir: str
+    cmr: str
+    status: str = 'приехала'
+    location: str
+    places_cnt: int
+    arrival_datetime: datetime | str | None = datetime.now()
+    # departure_datetime: datetime | str | None = None
+    # doc_submit_datetime: datetime | str | None = None
+    # doc_issue_datetime: datetime | str | None = None
+    # owner: str
+    contact_uuid: str
+    goods: str
+    comment: str | None = None
+
+class ShipmentUpdate(ShipmentCreate):
+    updated_datetime: datetime
+
+class Shipment(ShipmentCreate):
+    id: int
+    uuid: str
+
+    # status: str
+    # arrival_datetime: datetime | str | None = datetime.now()
+    departure_datetime: datetime | str | None
+    doc_submit_datetime: datetime | str | None
+    doc_issue_datetime: datetime | str | None
+
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
+
+class ShipmentJoined(Shipment):   
+    contact_name: str | None
+    docs_exist: int | None
+
+class ShipmentSetStatus(BaseModel):
+    status: str
+    status_time: datetime

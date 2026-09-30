@@ -410,6 +410,33 @@ def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
+
+# def get_shipments(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.Shipment).filter(models.Shipment.is_active==True).\
+#         order_by(models.Shipment.created_datetime.desc()).all()
+
+
+def get_shipments(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.Shipment)
+    contact = aliased(models.Contact)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact, related_docs).\
+        join(contact, contact.uuid == main_table.contact_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+    
+    db_full_response = []
+    for row in response:
+        contact_name=row[1].__dict__['name'] if row[1] else None
+        docs_exist=1 if row[2] else 0
+        db_full_response.append(schemas.ShipmentJoined(**row[0].__dict__, contact_name=contact_name, docs_exist=docs_exist))
+
+    return db_full_response
+
+
 def get_batches(db: Session, skip: int = 0, limit: int = 100):
     #
     main_table = aliased(models.Batch)
@@ -833,6 +860,26 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate, user_uuid: 
     db.commit()
     
     logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
+    return db_item
+
+
+def create_shipment(db: Session, item: schemas.ShipmentCreate, user_uuid: str):
+    #
+    created_datetime = datetime.datetime.now()
+    post_date = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.Shipment(**item.model_dump(), uuid=uuid, created_datetime=created_datetime, post_date=post_date)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    # set_shipment_status(db=db, shipment_uuid=db_item.uuid, status_name='приехала', user_uuid=user_uuid)
+    
+    logging_action(obj_type='shipment', schema=schemas.Shipment, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
 
     return db_item
 
@@ -2077,17 +2124,49 @@ def exit_prohibited(db: Session, carpass_id: int):
     return carpass_from_db.id
 
 
-def set_batch_status(db: Session, batch_uuid: str, status: str, user_uuid: str):
+def set_batch_status(db: Session, batch_uuid: str, status_name: str, user_uuid: str):
     #
     item_from_db = db.query(models.Batch).filter(models.Batch.uuid == batch_uuid).first()
     if item_from_db is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     if not item_from_db.posted:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
-    setattr(item_from_db, 'status', status)
+    setattr(item_from_db, 'status', status_name)
     db.commit()
 
     logging_action(obj_type='batch', schema=schemas.Batch, action='set_status', item_from_db=item_from_db, 
+                   user_uuid=user_uuid, db=db)
+
+    return item_from_db
+
+
+def set_shipment_status(db: Session, shipment_uuid: str, data: schemas.ShipmentSetStatus, user_uuid: str):
+    #
+    status_list = ['приехала', 'на стоянке', 'на СВХ', 'на ДО', 'подано', 'выпущено', 'уехала']
+
+    item_from_db = db.query(models.Shipment).filter(models.Shipment.uuid == shipment_uuid).first()
+    if item_from_db is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    # if not item_from_db.posted:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Item was not posted")
+    if data.status not in status_list:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="wrong status")
+
+    status_time_field = {
+        'приехала': 'arrival_datetime',
+        'подано': 'doc_submit_datetime',
+        'выпущено': 'doc_issue_datetime',
+        'уехала': 'departure_datetime',
+    }
+    # current_time = datetime.datetime.now()
+    current_time = data.status_time
+
+    setattr(item_from_db, 'status', data.status)
+    if data.status in ['приехала', 'подано', 'выпущено', 'уехала']:
+        setattr(item_from_db, status_time_field[data.status], current_time)
+    db.commit()
+
+    logging_action(obj_type='shipment', schema=schemas.Shipment, action='set_status', item_from_db=item_from_db, 
                    user_uuid=user_uuid, db=db)
 
     return item_from_db
@@ -2156,6 +2235,11 @@ def get_carpass_by_uuid(db: Session, uuid: str):
 def get_exitcarpass_by_uuid(db: Session, uuid: str):
     # get single exit carpass from db
     return db.query(models.Exitcarpass).filter(models.Exitcarpass.uuid == uuid).first()
+
+
+def get_shipment_by_uuid(db: Session, uuid: str):
+    # get single shipment from db
+    return db.query(models.Shipment).filter(models.Shipment.uuid == uuid).first()
 
 
 def get_batch_by_uuid(db: Session, uuid: str):
