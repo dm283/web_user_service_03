@@ -29,6 +29,7 @@ const itemFields = [
   'ncar',
   'tir',
   'cmr',
+  'status',
   'location',
   'places_cnt',
   'arrival_datetime',
@@ -192,6 +193,7 @@ const setInitialForm = () => {
       form[field] = null
       form['contact_name_input'] = null  // for dropdowns
       form['arrival_datetime'] = toLocalISOString(new Date());
+      form['status'] = 'приехала'
       // form['arrival_datetime'] = '2018-06-12T19:30'
       // form['broker_name_input'] = null    // for dropdowns
       // form['carpass_ncar_input'] = null          // for dropdowns

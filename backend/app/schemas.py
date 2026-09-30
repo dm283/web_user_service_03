@@ -674,7 +674,7 @@ class ShipmentCreate(BaseModel):
     ncar: str
     tir: str
     cmr: str
-    status: str = 'приехала'
+    status: str
     location: str
     places_cnt: int
     arrival_datetime: datetime | str | None = datetime.now()
