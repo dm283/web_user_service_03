@@ -410,6 +410,10 @@ def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
     return db_full_response
 
 
+def get_testen1(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.TestEntity1).filter(models.TestEntity1.is_active==True).\
+        order_by(models.TestEntity1.created_datetime.desc()).all()
+
 
 # def get_shipments(db: Session, skip: int = 0, limit: int = 100):
 #     return db.query(models.Shipment).filter(models.Shipment.is_active==True).\
@@ -860,6 +864,24 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate, user_uuid: 
     db.commit()
     
     logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
+    return db_item
+
+
+def create_testen1(db: Session, item: schemas.TestEntity1Create, user_uuid: str):
+    #
+    created_datetime = datetime.datetime.now()
+    post_date = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.TestEntity1(**item.model_dump(), uuid=uuid, created_datetime=created_datetime, post_date=post_date)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    logging_action(obj_type='testen1', schema=schemas.TestEntity1, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
 
     return db_item
 
@@ -1809,6 +1831,29 @@ def posting_batch(db: Session, item_uuid: str, user_uuid: str):
     return item_from_db
 
 
+def posting_testen1(db: Session, item_uuid: str, user_uuid: str):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        ###
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
+                               db_model=models.TestEntity1, 
+                               schema_obj=schemas.TestEntity1Validation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    logging_action(obj_type='testen1', schema=schemas.TestEntity1, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+    return item_from_db
+
+
 def posting_dtreg(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
@@ -2240,6 +2285,11 @@ def get_exitcarpass_by_uuid(db: Session, uuid: str):
 def get_shipment_by_uuid(db: Session, uuid: str):
     # get single shipment from db
     return db.query(models.Shipment).filter(models.Shipment.uuid == uuid).first()
+
+
+def get_testen1_by_uuid(db: Session, uuid: str):
+    # get single testen1 from db
+    return db.query(models.TestEntity1).filter(models.TestEntity1.uuid == uuid).first()
 
 
 def get_batch_by_uuid(db: Session, uuid: str):

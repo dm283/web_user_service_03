@@ -28,6 +28,7 @@ import SkladSectionView from "@/views/SkladSectionView.vue";
 import AddCertGoodsAcceptView from "@/views/AddCertGoodsAcceptView.vue";
 import CertGoodsAcceptView from "@/views/CertGoodsAcceptView.vue";
 import GruzovichokView from "@/views/GruzovichokView.vue";
+import Testen1View from "@/views/Testen1View.vue";
 // import ItemView from "@/views/ItemView.vue";
 // import AddItemView from "@/views/AddItemView.vue";
 // import EditItemView from "@/views/EditItemView.vue";
@@ -38,6 +39,7 @@ const router = createRouter({
     // { path: '/', name: 'initial', component: CarpassesView, },
 
     { path: '/gruzovichok', name: 'gruzovichok', component: GruzovichokView, },
+    { path: '/testen1', name: 'testen1', component: Testen1View, },
 
     { path: '/', name: 'initial', component: InitView, },
     { path: '/transport_section', name: 'transport_section', component: TransportSectionView, },

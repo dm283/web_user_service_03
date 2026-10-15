@@ -743,6 +743,16 @@ def read_shipmenth_by_uuid(current_user: Annotated[UserAuth, Depends(get_current
     return item
 
 
+@app.get('/testen1_by_uuid/{uuid}', response_model=schemas.TestEntity1)
+def read_testen1_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                        uuid: str, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='testen1_by_uuid', type='get', current_role_name=current_user.role_name)
+    item = crud.get_testen1_by_uuid(db, uuid=uuid)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
 
 @app.get('/batch_by_uuid/{uuid}', response_model=schemas.Batch)
 def read_batch_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -1054,6 +1064,14 @@ def read_shipments(current_user: Annotated[UserAuth, Depends(get_current_active_
     return items
 
 
+@app.get('/testen1/', response_model=list[schemas.TestEntity1])
+def read_testen1(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                   skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    check_endpoint_role_access(url='testen1', type='get', current_role_name=current_user.role_name)
+    items = crud.get_testen1(db, skip=skip, limit=limit)
+    return items
+
+
 @app.get('/batches/', response_model=list[schemas.BatchJoined])
 def read_batches(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -1342,6 +1360,15 @@ def create_shipment(current_user: Annotated[UserAuth, Depends(get_current_active
     return crud.create_shipment(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
 
 
+@app.post("/testen1/", response_model=schemas.TestEntity1)
+def create_testen1(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                data: Annotated[schemas.TestEntity1Create, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='testen1', type='post', current_role_name=current_user.role_name)
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.TestEntity1Create) 
+    return crud.create_testen1(db=db, item=data_none_values_redefined, user_uuid=current_user.uuid)
+
+
 @app.post("/batches/", response_model=schemas.Batch)
 def create_batch(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                 data: Annotated[schemas.BatchCreate, Form()], db: Session = Depends(get_db)):
@@ -1410,6 +1437,17 @@ def update_shipment(current_user: Annotated[UserAuth, Depends(get_current_active
     data_none_values_redefined = redefine_schema_values_to_none(data, schemas.ShipmentCreate)
     item = schemas.ShipmentUpdate(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
     return crud.update_item(item=item, model=models.Shipment, schema=schemas.Shipment, obj_type='shipment', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+
+@app.put('/testen1/{item_uuid}', response_model=schemas.TestEntity1)
+def update_testen1(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, data: Annotated[schemas.TestEntity1Create, Form()], db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='testen1', type='put', current_role_name=current_user.role_name)
+    updated_datetime = datetime.now()
+    data_none_values_redefined = redefine_schema_values_to_none(data, schemas.TestEntity1Create)
+    item = schemas.TestEntity1Update(**data_none_values_redefined.model_dump(), updated_datetime=updated_datetime)
+    return crud.update_item(item=item, model=models.TestEntity1, schema=schemas.TestEntity1, obj_type='testen1', 
                             db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
@@ -1592,6 +1630,15 @@ def delete_entry_request(current_user: Annotated[UserAuth, Depends(get_current_a
                             db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
+@app.delete('/testen1/{item_uuid}')
+def delete_testen1(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                         item_uuid: str, db: Session = Depends(get_db)):
+    
+    check_endpoint_role_access(url='testen1', type='delete', current_role_name=current_user.role_name)
+    return crud.delete_item(model=models.TestEntity1, schema=schemas.TestEntity1, obj_type='testen1', 
+                            db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+
+
 @app.delete('/shipment/{item_uuid}')
 def delete_shipment(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                          item_uuid: str, db: Session = Depends(get_db)):
@@ -1709,6 +1756,14 @@ def posting_batch(current_user: Annotated[UserAuth, Depends(get_current_active_u
     return crud.posting_batch(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
+@app.put('/testen1_posting/{item_uuid}', response_model=schemas.TestEntity1)
+def posting_testen1(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                          item_uuid: str, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='testen1_posting', type='put', current_role_name=current_user.role_name)
+    return crud.posting_testen1(db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
+
+
 @app.put('/dtreg_posting/{item_uuid}', response_model=schemas.Dtreg)
 def posting_dtreg(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                           item_uuid: str, db: Session = Depends(get_db)):
@@ -1796,6 +1851,15 @@ def rollback_batches(current_user: Annotated[UserAuth, Depends(get_current_activ
     return crud.rollback_item(model=models.Batch, schema=schemas.Batch, obj_type='batch', 
                               db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
     # return crud.rollback_batches(db=db, item_id=item_id, user_uuid=current_user.uuid)
+
+
+@app.put('/testen1_rollback/{item_uuid}')
+def rollback_testen1(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                            item_uuid: str, db: Session = Depends(get_db)):
+    #
+    check_endpoint_role_access(url='testen1_rollback', type='put', current_role_name=current_user.role_name)
+    return crud.rollback_item(model=models.TestEntity1, schema=schemas.TestEntity1, obj_type='testen1', 
+                              db=db, item_uuid=item_uuid, user_uuid=current_user.uuid)
 
 
 @app.put('/dtreg_rollback/{item_uuid}')

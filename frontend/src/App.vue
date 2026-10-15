@@ -361,6 +361,11 @@ const chatNotificationDataChange = (pointState) => {
       :selected="state.selectedMenu=='parkingMap' ? '1' : '0'" @click="state.selectedMenu='parkingMap'"
       />
     </RouterLink>
+    <RouterLink to="/testen1" v-if="['admin'].includes(state.userInfo.role_name)">
+      <MenuSection :label="'Тестовый раздел 1'" :icon="'asterisk'" :description="'в работе'"
+      :selected="state.selectedMenu=='testen1' ? '1' : '0'" @click="state.selectedMenu='testen1'"
+      />
+    </RouterLink>
   </div>
 </div>
 

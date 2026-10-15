@@ -438,3 +438,26 @@ class Shipment(Base):
     posted = Column(Boolean, default=False)      ######
     was_posted = Column(Boolean, default=False)  ######
     is_active = Column(Boolean, default=True) 
+
+
+class TestEntity1(Base):
+    __tablename__ = 'test_entity_1'
+
+    str_field = Column(String, nullable=True, default=None)
+    int_field = Column(Integer, nullable=True, default=None)
+    float_field = Column(Float, nullable=True, default=None)
+    dt_field = Column(DateTime, nullable=True, default=None)
+    date_field = Column(Date, nullable=True, default=None)
+    time_field = Column(Time, nullable=True, default=None)
+    bool_field = Column(Boolean, default=False)
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
+    comment = Column(String)
+    created_datetime = Column(DateTime)
+    updated_datetime = Column(DateTime, nullable=True, default=None)
+    post_date = Column(DateTime, nullable=True, default=None)
+    post_user_id = Column(String(length=36), nullable=True, default=None)
+    posted = Column(Boolean, default=False)
+    was_posted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)

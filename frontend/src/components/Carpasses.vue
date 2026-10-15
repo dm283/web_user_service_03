@@ -25,6 +25,7 @@ import FormSetBatchStatus from './FormSetBatchStatus.vue';
 import FormSetShipmentStatus from './FormSetShipmentStatus.vue';
 import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
 import FormShipment from './FormShipment.vue';
+import FormTesten1 from './FormTesten1.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -99,6 +100,10 @@ const showUpdateCertGoodsAccept = ref(false)
 const showCardBatch = ref(false)
 const showAddBatch = ref(false)
 const showUpdateBatch = ref(false)
+
+const showCardTesten1 = ref(false)
+const showAddTesten1 = ref(false)
+const showUpdateTesten1 = ref(false)
 
 const showCardShipment = ref(false)
 const showAddShipment = ref(false)
@@ -199,6 +204,8 @@ const query_tzone = `http://${backendIpAddress}:${backendPort}/tzone/`
 
 const query_gruzovichok = `http://${backendIpAddress}:${backendPort}/shipments/`
 
+const query_testen1 = `http://${backendIpAddress}:${backendPort}/testen1/`
+
 if (props.view_type == 'enter') {
   state.query = state.query_carpass;
   state.listTableColumns = {
@@ -257,6 +264,16 @@ else if (props.view_type == 'gruzovichok') {
     'arrival_datetime':'Д/в приезда', 'departure_datetime':'Д/в уезда', 'doc_submit_datetime':'Д/в подачи док-ов',
     'doc_issue_datetime':'Д/в выдачи док-ов', 'contact_name':'Владелец', 'goods':'Тип груза', 'comment':'Комментарий',
     'docs_exist':'Док-ты'
+  };
+  state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
+}
+
+
+else if (props.view_type == 'testen1') {
+  state.query = query_testen1;
+  state.listTableColumns = {
+    'str_field':'str_field','int_field':'int_field','float_field':'float_field','dt_field':'dt_field',
+    'date_field':'date_field','time_field':'time_field','bool_field':'bool_field'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
@@ -451,6 +468,7 @@ const itemCard = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
   else if (name == 'Партии товаров') { showCardBatch.value = true }
+  else if (name == 'Тестовый раздел 1') { showCardTesten1.value = true }
   else if (name == 'Грузовичок (пилот)') { showCardShipment.value = true }
   else if (name == 'Таможенное оформление') { showCardDtreg.value = true }
   else if (name == 'Заявки размещения партий на склад') { showCardRequestBatchToSklad.value = true }
@@ -467,6 +485,7 @@ const addItem = (section) => {
   else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
   else if (section == 'Партии товаров') { showAddBatch.value = true; }
+  else if (section == 'Тестовый раздел 1') { showAddTesten1.value = true; }
   else if (section == 'Грузовичок (пилот)') { showAddShipment.value = true; }
   else if (section == 'Таможенное оформление') { showAddDtreg.value = true; }
   else if (section == 'Заявки размещения партий на склад') { showAddRequestBatchToSklad.value = true; }
@@ -484,6 +503,7 @@ const editItem = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showUpdateExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
   else if (name == 'Партии товаров') { showUpdateBatch.value = true }
+  else if (name == 'Тестовый раздел 1') { showUpdateTesten1.value = true }
   else if (name == 'Грузовичок (пилот)') { showUpdateShipment.value = true }
   else if (name == 'Таможенное оформление') { showUpdateDtreg.value = true }
   else if (name == 'Заявки размещения партий на склад') { showUpdateRequestBatchToSklad.value = true }
@@ -583,6 +603,23 @@ const clickNotificationRow = async (item) => {
   <div v-if="showUpdateItem" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
     <FormAddCarpass @close-modal="showUpdateItem=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
+
+
+  <!-- **********************   MODAL TESTEN1 CARD   ************************** -->
+  <div v-if="showCardTesten1" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormTesten1 @close-modal="showCardTesten1=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem"
+      :itemData="selectedItem" :isCard="true"/>
+  </div>
+  <!-- **********************   MODAL TESTEN1 ADD   ************************** -->
+  <div v-if="showAddTesten1" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormTesten1 @close-modal="showAddTesten1=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  </div>
+  <!-- **********************   MODAL TESTEN1 EDIT  ************************** -->
+  <div v-if="showUpdateTesten1" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormTesten1 @close-modal="showUpdateTesten1=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  </div>
+
 
   <!-- **********************   MODAL BATCH CARD   ************************** -->
   <div v-if="showCardBatch" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
