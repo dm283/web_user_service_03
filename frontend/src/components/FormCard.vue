@@ -359,6 +359,66 @@ const refreshCard = async () => {
   emit('closeModal'); emit('reopenCard', reopenType, item, sectionName)
 }
 
+//
+// var field_label = 'str_field'
+// var field_type = 'text'
+// var form_field = 'str_field'
+// var field_required = false
+// var field_disabled = props.isCard
+
+
+var formFields = [
+  {
+    'field_label': 'str_field',
+    'field_type':'text',
+    'form_field': 'str_field',
+    'field_required': false,
+    'field_disabled': props.isCard
+  },
+  {
+    'field_label': 'int_field',
+    'field_type':'number',
+    'form_field': 'int_field',
+    'field_required': false,
+    'field_disabled': props.isCard
+  },
+  {
+    'field_label': 'float_field',
+    'field_type':'number',
+    'form_field': 'float_field',
+    'field_required': false,
+    'field_disabled': props.isCard
+  },
+  {
+    'field_label': 'dt_field',
+    'field_type':'datetime-local',
+    'form_field': 'dt_field',
+    'field_required': false,
+    'field_disabled': props.isCard
+  },
+  {
+    'field_label': 'date_field',
+    'field_type':'date',
+    'form_field': 'date_field',
+    'field_required': false,
+    'field_disabled': props.isCard
+  },
+  {
+    'field_label': 'time_field',
+    'field_type':'time',
+    'form_field': 'time_field',
+    'field_required': false,
+    'field_disabled': props.isCard
+  },
+  {
+    'field_type': 'checkbox',
+    'form_field': 'bool_field',
+    'field_disabled': props.isCard,
+    'field_label': 'str_field'
+  }
+]
+
+
 </script>
 
 
@@ -398,24 +458,78 @@ const refreshCard = async () => {
 
       <div class="flex relative">
 
-        <div class=formInputDiv>   <label class=formLabelStyle>str_field</label>
-          <input type="text" v-model="form.str_field" :class="[errField['str_field']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>int_field</label>
-          <input type="number" v-model="form.int_field" :class="[errField['int_field']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>float_field</label>
-          <input type="number" v-model="form.float_field" :class="[errField['float_field']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
+        <div v-for="i in [0, 1, 2]">
+          <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[i]['field_label'] }}</label>
+            <input :type="formFields[i]['field_type']" v-model="form[formFields[i]['form_field']]" 
+              :class="[errField[formFields[i]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
+              :required="formFields[i]['field_required']" :disabled="formFields[i]['field_disabled']" />
+          </div>
         </div>
 
       </div>
 
+      <div class="flex relative">
+
+        <div v-for="i in [3, 4, 5]">
+          <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[i]['field_label'] }}</label>
+            <input :type="formFields[i]['field_type']" v-model="form[formFields[i]['form_field']]" 
+              :class="[errField[formFields[i]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
+              :required="formFields[i]['field_required']" :disabled="formFields[i]['field_disabled']" />
+          </div>
+        </div>
+
+      </div>
+
+
       <div class="flex">
 
-\       <div class=formInputDiv>   <label class=formLabelStyle>dt_field</label>
+        <div v-for="i in [6]">
+          <div class=formInputDiv>
+            <input :type="formFields[i]['field_type']" v-model="form[formFields[i]['form_field']]"
+              id="form[formFields[i]['form_field']]" name="form[formFields[i]['form_field']]"
+              class=formInputCheckboxStyle :disabled="formFields[i]['field_disabled']" />
+            <label class=formLabelCheckboxStyle for="form[formFields[i]['form_field']]">{{ formFields[i]['field_label'] }}</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- <div class="flex relative"> -->
+
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[0]['field_label'] }}</label>
+          <input :type="formFields[0]['field_type']" v-model="form[formFields[0]['form_field']]" 
+            :class="[errField[formFields[0]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
+            :required="formFields[0]['field_required']" :disabled="formFields[0]['field_disabled']" />
+        </div> -->
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>str_field</label>
+          <input type="text" v-model="form.str_field" :class="[errField['str_field']==1 ? formInputStyleErr : formInputStyle]"
+            :required="false" :disabled="isCard" />
+        </div> -->
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[1]['field_label'] }}</label>
+          <input :type="formFields[1]['field_type']" v-model="form[formFields[1]['form_field']]" 
+            :class="[errField[formFields[1]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
+            :required="formFields[1]['field_required']" :disabled="formFields[1]['field_disabled']" />
+        </div> -->
+
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>int_field</label>
+          <input type="number" v-model="form.int_field" :class="[errField['int_field']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
+        </div> -->
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[2]['field_label'] }}</label>
+          <input :type="formFields[2]['field_type']" v-model="form[formFields[2]['form_field']]" 
+            :class="[errField[formFields[2]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
+            :required="formFields[2]['field_required']" :disabled="formFields[2]['field_disabled']" />
+        </div> -->
+
+        <!-- <div class=formInputDiv>   <label class=formLabelStyle>float_field</label>
+          <input type="number" v-model="form.float_field" :class="[errField['float_field']==1 ? formInputStyleErr : formInputStyle]"
+          :required="false" :disabled="isCard" />
+        </div> -->
+
+      <!-- </div> -->
+
+      <!-- <div class="flex">
+
+        <div class=formInputDiv>   <label class=formLabelStyle>dt_field</label>
           <input type="datetime-local" v-model="form.dt_field" :class="[errField['dt_field']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
         </div>
@@ -428,15 +542,14 @@ const refreshCard = async () => {
             :required="false" :disabled="isCard" />
         </div>
 
-      </div>
-
+      </div> -->
       
-      <div class="flex">
+      <!-- <div class="flex">
         <div class=formInputDiv>
           <input type="checkbox" v-model='form.bool_field' id="bool_field" name="bool_field" class=formInputCheckboxStyle :disabled="isCard"/>
           <label class=formLabelCheckboxStyle for="bool_field">bool_field</label>
         </div>
-      </div>
+      </div> -->
 
 
 
