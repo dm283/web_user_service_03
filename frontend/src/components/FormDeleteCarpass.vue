@@ -38,7 +38,9 @@ else if (props.itemName == 'Заявки на въезд ТС') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests/${props.itemData.uuid}`; }
 else if (props.itemName == 'Партии товаров') {
   state.query = `http://${backendIpAddress}:${backendPort}/batches/${props.itemData.uuid}`; }
-else if (props.itemName == 'Грузовичок (пилот)') {
+else if (props.itemName == 'Тестовый раздел 1') {
+  state.query = `http://${backendIpAddress}:${backendPort}/testen1/${props.itemData.uuid}`; }
+  else if (props.itemName == 'Грузовичок (пилот)') {
   state.query = `http://${backendIpAddress}:${backendPort}/shipment/${props.itemData.uuid}`; }
 else if (props.itemName == 'Таможенное оформление') {
   state.query = `http://${backendIpAddress}:${backendPort}/dtreg/${props.itemData.uuid}`; }

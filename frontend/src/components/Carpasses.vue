@@ -447,6 +447,9 @@ async function openItemCard(obj) {
   else if (obj.obj_type_name == 'Партии товаров') { 
     state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/batch_by_uuid/${obj.obj_uuid}`
   }
+  else if (obj.obj_type_name == 'Тестовый раздел 1') { 
+    state.query_item_for_card = `http://${backendIpAddress}:${backendPort}/testen1_by_uuid/${obj.obj_uuid}`
+  }
   state.item_for_card = await axios.get(state.query_item_for_card, {headers: authHeader()})
   itemCard(state.item_for_card.data, obj.obj_type_name)
 }

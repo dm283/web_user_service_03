@@ -41,6 +41,8 @@ if (props.itemName == 'Пропуска ТС на въезд') {
   state.query = `http://${backendIpAddress}:${backendPort}/entry_requests_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Партии товаров') {
   state.query = `http://${backendIpAddress}:${backendPort}/batches_rollback/${props.itemData.uuid}`;
+} else if (props.itemName == 'Тестовый раздел 1') {
+  state.query = `http://${backendIpAddress}:${backendPort}/testen1_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Таможенное оформление') {
   state.query = `http://${backendIpAddress}:${backendPort}/dtreg_rollback/${props.itemData.uuid}`;
 } else if (props.itemName == 'Заявки размещения партий на склад') {
