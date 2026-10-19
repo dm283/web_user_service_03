@@ -27,40 +27,44 @@ const userAccessToken = () => {
 const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard', 'notification'])  
 
 const props = defineProps({
+  itemType: String,
   itemData: Object,  // card or edit - exists; create - empty
   isCard: Boolean,   // card - true
 });
-
-
-const itemFields = [
-  'str_field',
-  'int_field',
-  'float_field',
-  'dt_field',
-  'date_field',
-  'time_field',
-  'bool_field',
-  'comment'
-  ]
-
-
 
 const state = reactive({
   documents: [],
   isLoading: true,
   filteredList: [],
   choosenDocs: [],
-  // contacts: [],
-  // brokers: [],
-  // history: [],
+  // contacts: [],  // batch
+  // brokers: [],   // batch
+  // history: [],   // batch
 })
 
-const showDropDownSelect = reactive({});
-const showEAList = ref(false)
-const showAddDoc = ref(false)
-const errField = reactive({});
-const form = reactive({});
-const showAskCloseWithoutSave = ref(false)
+var itemFields = []; var postingUrl = ''; var postPutUrl = ''; var getObjUrl = ''; var docObjType = ''; var sectionName = ''
+
+if (props.itemType=='testen1') {
+  itemFields = [
+    'str_field',
+    'int_field',
+    'float_field',
+    'dt_field',
+    'date_field',
+    'time_field',
+    'bool_field',
+    'comment'
+  ]
+  postingUrl = 'testen1_posting'
+  postPutUrl = 'testen1'
+  getObjUrl = 'testen1_by_uuid'
+  sectionName = 'Тестовый раздел 1'
+  docObjType = 'Тестовая сущность 1'
+}
+
+
+const showDropDownSelect = reactive({}); const showEAList = ref(false); const showAddDoc = ref(false)
+const errField = reactive({}); const form = reactive({}); const showAskCloseWithoutSave = ref(false)
 
 // read list of linked objects (for dropdown)  --  for batch
 const getBrokers = async (client_uuid) => {
@@ -75,6 +79,7 @@ onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
       state.contacts = response.data;
+    
       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses_posted_not_archival/`, {headers: authHeader()});
       state.carpasses = response2.data;
     } catch (error) {
@@ -113,16 +118,6 @@ onMounted(async () => {
     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };
 
-
-// get documents  -  generic
-if (props.itemData) {
-onMounted(async () => {
-  try {
-    const response = await axios.get(`http://${backendIpAddress}:${backendPort}/obj_docs/${props.itemData.uuid}`, {headers: authHeader()});
-    state.documents = response.data;
-  } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; } }); };
-
-
 // get history  -  for batch
 if (props.itemData) {
 onMounted(async () => {
@@ -131,6 +126,14 @@ onMounted(async () => {
       state.history = response.data; } 
     catch (error) { console.error('Error fetching history', error); } finally { state.isLoading = false; } }); };
 
+
+// get documents  -  generic
+if (props.itemData) {
+onMounted(async () => {
+  try {
+    const response = await axios.get(`http://${backendIpAddress}:${backendPort}/obj_docs/${props.itemData.uuid}`, {headers: authHeader()});
+    state.documents = response.data;
+  } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; } }); };
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 const postedColor = props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white'
@@ -156,11 +159,13 @@ const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
         if ( !state.filteredList.includes(rec) ) {state.filteredList.push(rec)} }; }
   }; };
 
+
 const setVars = (inputField, reserveField) => {
   // for dropdowns
   if (!form[reserveField]) { form[reserveField] = form[inputField] }
   if (showDropDownSelect[inputField]) { showDropDownSelect[inputField]=false; form[inputField]=form[reserveField] }
   else { showDropDownSelect[inputField]=true; form[inputField]=null }; };
+
 
 const setInitialForm = () => {
   //
@@ -170,10 +175,12 @@ const setInitialForm = () => {
     for (let field of itemFields) { form[field] = props.itemData[field] }
     
     // custom for batch
-    form['contact_name_input'] = state.initial_contact_name
-    form['broker_name_input'] = state.initial_broker_name
-    form['carpass_ncar_input'] = state.initial_ncar
-    form['carpass_ncar_dateen'] = state.initial_ncar_dateen
+    if (props.itemType=='batch') {
+      form['contact_name_input'] = state.initial_contact_name
+      form['broker_name_input'] = state.initial_broker_name
+      form['carpass_ncar_input'] = state.initial_ncar
+      form['carpass_ncar_dateen'] = state.initial_ncar_dateen
+    }
 
   } else {  // create
 
@@ -181,15 +188,19 @@ const setInitialForm = () => {
     for (let field of itemFields) { form[field] = null }
     
     // custom for batch
-    form['contact_name_input'] = null
-    form['broker_name_input'] = null
-    form['carpass_ncar_input'] = null
-    form['carpass_ncar_dateen'] = null
-    form.fito_control = false
-    form.vet_control = false
+    if (props.itemType=='batch') {
+      form['contact_name_input'] = null
+      form['broker_name_input'] = null
+      form['carpass_ncar_input'] = null
+      form['carpass_ncar_dateen'] = null
+      form.fito_control = false
+      form.vet_control = false
+    }
 
     // custom for testen1
-    form.bool_field = false
+    if (props.itemType=='testen1') {
+      form.bool_field = false
+    }
   };
 
   // if (userInfo.contact_id!=0) {  // for the client service
@@ -227,16 +238,13 @@ watch(form, (nV, oV) => {
 const postingItem = async () => {
   //
   if (isNeedSave.value) { toast.warning('Сохраните данные перед проводкой'); return  }
-
   try {
     if (props.itemData) {
-      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/testen1_posting/${props.itemData.uuid}`,
+      const response = await axios.put(`http://${backendIpAddress}:${backendPort}/${postingUrl}/${props.itemData.uuid}`,
         '', {headers: authHeader()});
       toast.success('Запись проведёна');
       //emit('notification', 'проводка', 'партия_товаров', response.data.id, response.data.contact_uuid)
-    } else {
-      return;
-    }
+    } else { return; }
     emit('docCreated'); emit('closeModal');
   } catch (error) {
     let err = error.response.data.detail;
@@ -259,12 +267,12 @@ const handleSubmit = async () => {
   try {
     if (!props.isCard) {
       if (!props.itemData) {
-        const response = await axios.post(`http://${backendIpAddress}:${backendPort}/testen1/`, 
+        const response = await axios.post(`http://${backendIpAddress}:${backendPort}/${postPutUrl}/`, 
           formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
         toast.success('Новая запись добавлена');
         state.responseItem = response.data;
       } else {
-        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/testen1/${props.itemData.uuid}`, 
+        const response = await axios.put(`http://${backendIpAddress}:${backendPort}/${postPutUrl}/${props.itemData.uuid}`, 
           formData, {headers: {'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+userAccessToken()}});
         toast.success('Запись обновлёна');      
         state.responseItem = response.data;
@@ -276,10 +284,10 @@ const handleSubmit = async () => {
     if (state.choosenDocs) {
       for (let doc of state.choosenDocs){
         let formData2 = new FormData();
-        formData2.append('obj_type_name', 'Тестовый раздел 1');
-        formData2.append('obj_type', 'Тестовая сущность 1');
+        formData2.append('obj_type_name', sectionName);
+        formData2.append('obj_type', docObjType);
         formData2.append('contact_uuid', form.contact_uuid);
-        formData2.append('broker_uuid', form.broker_uuid);  // check is it exist?
+        // formData2.append('broker_uuid', form.broker_uuid);  // check is it exist?
         formData2.append('obj_uuid', state.obj_uuid);
         formData2.append('user_uuid', userInfo.uuid);
         formData2.append('doc_uuid', doc.uuid);
@@ -299,7 +307,7 @@ const handleSubmit = async () => {
     }
     isNeedSave.value = false;
     
-    emit('closeModal'); emit('openEditAfterCreate', state.responseItem, 'Тестовый раздел 1')
+    emit('closeModal'); emit('openEditAfterCreate', state.responseItem, sectionName)
   } catch (error) {
     console.error('Error adding item', error);
     toast.error('Ошибка записи');
@@ -312,7 +320,6 @@ async function downloadFile(document_record_uuid) {
   let query = `http://${backendIpAddress}:${backendPort}/download-file/${document_record_uuid}`
   const response = await axios.get(query, {responseType: "blob", headers: authHeader()});
   const filename = decodeURI(response.headers["file-name"])
-
   var url = window.URL.createObjectURL(new Blob([response.data]));
   var link = document.createElement('a');
   link.href = url;
@@ -345,11 +352,11 @@ const reattachFile = async (doc_uuid, obj_uuid) => {
 }
 
 const refreshCard = async () => {
-  let query = `http://${backendIpAddress}:${backendPort}/testen1_by_uuid/${props.itemData.uuid}`
+  let query = `http://${backendIpAddress}:${backendPort}/${getObjUrl}/${props.itemData.uuid}`
   let response = await axios.get(query, {headers: authHeader()});
   let item = response.data;
   let reopenType = props.isCard ? 'card' : 'edit'
-  emit('closeModal'); emit('reopenCard', reopenType, item, 'Тестовый раздел 1')
+  emit('closeModal'); emit('reopenCard', reopenType, item, sectionName)
 }
 
 </script>
@@ -360,7 +367,7 @@ const refreshCard = async () => {
     :class="[props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white']">
     
     <header class="py-2 pl-6 bg-slate-200 text-black text-lg font-normal">
-      Тестовая сущность 1 <span v-if="props.itemData">#{{ props.itemData.id }}</span>
+      {{ docObjType }} <span v-if="props.itemData">#{{ props.itemData.id }}</span>
       <div class="absolute top-2 right-4 cursor-pointer hover:text-gray-500">
         <i class="pi pi-times" style="font-size: 1rem" @click="closeIt()"></i>
       </div>

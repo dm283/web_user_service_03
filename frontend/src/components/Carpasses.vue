@@ -25,7 +25,7 @@ import FormSetBatchStatus from './FormSetBatchStatus.vue';
 import FormSetShipmentStatus from './FormSetShipmentStatus.vue';
 import FormConfirmUploadExcel from './FormConfirmUploadExcel.vue';
 import FormShipment from './FormShipment.vue';
-import FormTesten1 from './FormTesten1.vue';
+import FormCard from './FormCard.vue';
 
 
 import data from "../../../backend/config.ini?raw";
@@ -101,9 +101,9 @@ const showCardBatch = ref(false)
 const showAddBatch = ref(false)
 const showUpdateBatch = ref(false)
 
-const showCardTesten1 = ref(false)
-const showAddTesten1 = ref(false)
-const showUpdateTesten1 = ref(false)
+const showModalCard = ref(false)
+const showModalAdd = ref(false)
+const showModalUpdate = ref(false)
 
 const showCardShipment = ref(false)
 const showAddShipment = ref(false)
@@ -471,7 +471,7 @@ const itemCard = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showCardExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showCardEntryRequest.value = true }
   else if (name == 'Партии товаров') { showCardBatch.value = true }
-  else if (name == 'Тестовый раздел 1') { showCardTesten1.value = true }
+  else if (name == 'Тестовый раздел 1') { showModalCard.value = true }
   else if (name == 'Грузовичок (пилот)') { showCardShipment.value = true }
   else if (name == 'Таможенное оформление') { showCardDtreg.value = true }
   else if (name == 'Заявки размещения партий на склад') { showCardRequestBatchToSklad.value = true }
@@ -488,7 +488,7 @@ const addItem = (section) => {
   else if (section == 'Пропуска ТС на выезд') { showAddExitcarpass.value = true; }
   else if (section == 'Заявки на въезд ТС') { showAddEntryRequest.value = true; }
   else if (section == 'Партии товаров') { showAddBatch.value = true; }
-  else if (section == 'Тестовый раздел 1') { showAddTesten1.value = true; }
+  else if (section == 'Тестовый раздел 1') { showModalAdd.value = true; }
   else if (section == 'Грузовичок (пилот)') { showAddShipment.value = true; }
   else if (section == 'Таможенное оформление') { showAddDtreg.value = true; }
   else if (section == 'Заявки размещения партий на склад') { showAddRequestBatchToSklad.value = true; }
@@ -506,7 +506,7 @@ const editItem = (item, name) => {
   else if (name == 'Пропуска ТС на выезд') { showUpdateExitCarpass.value = true }
   else if (name == 'Заявки на въезд ТС') { showUpdateEntryRequest.value = true }
   else if (name == 'Партии товаров') { showUpdateBatch.value = true }
-  else if (name == 'Тестовый раздел 1') { showUpdateTesten1.value = true }
+  else if (name == 'Тестовый раздел 1') { showModalUpdate.value = true }
   else if (name == 'Грузовичок (пилот)') { showUpdateShipment.value = true }
   else if (name == 'Таможенное оформление') { showUpdateDtreg.value = true }
   else if (name == 'Заявки размещения партий на склад') { showUpdateRequestBatchToSklad.value = true }
@@ -608,19 +608,20 @@ const clickNotificationRow = async (item) => {
   </div>
 
 
-  <!-- **********************   MODAL TESTEN1 CARD   ************************** -->
-  <div v-if="showCardTesten1" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
-    <FormTesten1 @close-modal="showCardTesten1=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem"
-      :itemData="selectedItem" :isCard="true"/>
+  <!-- **********************   MODAL CARD   ************************** -->
+  <div v-if="showModalCard" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
+    <FormCard @close-modal="showModalCard=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem"
+      :itemType="'testen1'" :itemData="selectedItem" :isCard="true"/>
   </div>
-  <!-- **********************   MODAL TESTEN1 ADD   ************************** -->
-  <div v-if="showAddTesten1" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormTesten1 @close-modal="showAddTesten1=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+  <!-- **********************   MODAL CARD ADD   ************************** -->
+  <div v-if="showModalAdd" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormCard @close-modal="showModalAdd=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"
+      :itemType="'testen1'"/>
   </div>
-  <!-- **********************   MODAL TESTEN1 EDIT  ************************** -->
-  <div v-if="showUpdateTesten1" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormTesten1 @close-modal="showUpdateTesten1=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
-      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
+  <!-- **********************   MODAL CARD EDIT  ************************** -->
+  <div v-if="showModalUpdate" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+    <FormCard @close-modal="showModalUpdate=false" @notification="notification" @doc-created="getData" @reopen-card="reopenCard" 
+      @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemType="'testen1'" :itemData="selectedItem"/>
   </div>
 
 

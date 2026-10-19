@@ -56,6 +56,7 @@ def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: S
         'Пользователь': 'user',
         'Таможенное оформление': 'dtreg',
         'Заявки размещения партий на склад': 'requests_batch_to_sklad',
+        'Тестовая сущность 1': 'testen1',
     }
 
     if obj_type == 'related_docs_record':
