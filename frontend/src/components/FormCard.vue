@@ -8,6 +8,7 @@ import FormDoc from './FormDoc.vue';
 import FormAskCloseWithoutSave from './FormAskCloseWithoutSave.vue';
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
+import DropdownCustom from './DropdownCustom.vue';
 let parser = new ConfigIniParser(); //Use default delimiter
 parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
@@ -33,15 +34,16 @@ const state = reactive({
   isLoading: true,
   filteredList: [],
   choosenDocs: [],
-  // contacts: [],  // batch
-  // brokers: [],   // batch
+  contacts: [],  // batch
+  brokers: [],   // batch
   // history: [],   // batch
 })
 var itemFields = []; var formFields = []; var postingUrl = ''; var postPutUrl = ''; var getObjUrl = ''; var docObjType = ''; var sectionName = ''
 
 /////////////
 if (props.itemType=='testen1') {
-  itemFields = ['str_field', 'int_field', 'float_field', 'dt_field', 'date_field', 'time_field', 'bool_field', 'comment']
+  itemFields = ['str_field', 'int_field', 'float_field', 'dt_field', 'date_field', 'time_field', 'bool_field', 'comment', 
+    'contact_uuid', 'broker_uuid',]
   postingUrl = 'testen1_posting'
   postPutUrl = 'testen1'
   getObjUrl = 'testen1_by_uuid'
@@ -79,8 +81,8 @@ onMounted(async () => {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
       state.contacts = response.data;
     
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses_posted_not_archival/`, {headers: authHeader()});
-      state.carpasses = response2.data;
+      // const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses_posted_not_archival/`, {headers: authHeader()});
+      // state.carpasses = response2.data;
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -104,26 +106,26 @@ onMounted(async () => {
       form['broker_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
       state.initial_broker_name = response2.data.name + ' (' + response2.data.inn + ')'
       }
-      if (props.itemData.carpass_uuid) {
-      const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
-        {headers: authHeader()} );
-      form['carpass_ncar_input'] = response3.data.ncar
-      form['carpass_ncar_dateen'] = response3.data.dateen
-      state.initial_ncar = response3.data.ncar
-      state.initial_ncar_dateen = response3.data.dateen
-      }
+      // if (props.itemData.carpass_uuid) {
+      // const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
+      //   {headers: authHeader()} );
+      // form['carpass_ncar_input'] = response3.data.ncar
+      // form['carpass_ncar_dateen'] = response3.data.dateen
+      // state.initial_ncar = response3.data.ncar
+      // state.initial_ncar_dateen = response3.data.dateen
+      // }
 
       getBrokers(props.itemData.contact_uuid)
     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };
 
 // get history  -  for batch
-if (props.itemData) {
-onMounted(async () => {
-    try { const response = await axios.get(`http://${backendIpAddress}:${backendPort}/log_records_batch/${props.itemData.uuid}`,
-            {headers: authHeader()});
-      state.history = response.data; } 
-    catch (error) { console.error('Error fetching history', error); } finally { state.isLoading = false; } }); };
+// if (props.itemData) {
+// onMounted(async () => {
+//     try { const response = await axios.get(`http://${backendIpAddress}:${backendPort}/log_records_batch/${props.itemData.uuid}`,
+//             {headers: authHeader()});
+//       state.history = response.data; } 
+//     catch (error) { console.error('Error fetching history', error); } finally { state.isLoading = false; } }); };
 
 
 // get documents  -  generic
@@ -184,6 +186,12 @@ const setInitialForm = () => {
       form['carpass_ncar_dateen'] = state.initial_ncar_dateen
     }
 
+    // custom for testen1
+    if (props.itemType=='testen1') {
+      form['contact_name_input'] = state.initial_contact_name
+      form['broker_name_input'] = state.initial_broker_name
+    }
+
   } else {  // create
 
     // generic
@@ -202,6 +210,8 @@ const setInitialForm = () => {
     // custom for testen1
     if (props.itemType=='testen1') {
       form.bool_field = false
+      form['contact_name_input'] = null
+      form['broker_name_input'] = null
     }
   };
 
@@ -361,7 +371,16 @@ const refreshCard = async () => {
   emit('closeModal'); emit('reopenCard', reopenType, item, sectionName)
 }
 
+const clickDropdown = async (v) => {
+  //
+  form['contact_uuid'] = v
+}
 
+const clickDropdownErase = async (v) => {
+  //
+  form['contact_name_input'] = null
+  form['contact_uuid'] = null
+}
 
 </script>
 
@@ -400,6 +419,51 @@ const refreshCard = async () => {
     </div>
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
+
+
+      <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
+        <div :class=formInputStyle class="flex">
+          <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" 
+            v-model="form['contact_name_input']" 
+            @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');"
+            @keyup="setFilter('contact_name_input', 'contacts', 'name', 'inn')" 
+            :required="true"
+          />
+          <span @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
+            <i class="pi pi-angle-down" style="font-size: 0.8rem"></i>
+          </span>
+          <span class="ml-1 text-red-400 active:text-black" 
+            @click="showDropDownSelect['contact_name_input']=false; 
+                form['reserve_1']=null;form['contact_name_input']=null;form['contact_uuid']=null;
+                getBrokers(null);form['reserve_2']=null;form['broker_name_input']=null;form['broker_uuid']=null">
+            <i class="pi pi-times" style="font-size: 0.7rem"></i>
+          </span>
+        </div>
+        <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+          <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+            @click="showDropDownSelect['contact_name_input']=false; 
+                form['reserve_1']=item.name;form['contact_name_input']=(item.name+' ('+item.inn+')');
+                form['contact_uuid']=item.uuid 
+                getBrokers(item.uuid);form['broker_name_input']=null;form['broker_uuid']=null" >
+            {{ item.name }} ({{ item.inn }})
+          </div>
+        </div>
+      </div> -->
+      <div class="formInputDiv" v-if="(!props.isCard)">
+        <DropdownCustom v-model="form['contact_name_input']" :label="'Клиент'" :field_form="'contact_name_input'"
+        :modelValue="form['contact_name_input']" @update:modelValue="$event => (foo = $event)"
+        @click-dropdown="clickDropdown"
+        @click-erase="clickDropdownErase"
+        
+        />
+
+      </div>
+      <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
+        <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
+          :required="true" :disabled="true" />
+      </div>
+
+
 
       <!-- FIELDS BLOCK -->
       <div class="flex relative" v-for="div of formFields">

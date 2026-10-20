@@ -728,6 +728,8 @@ class TestEntity1Create(BaseModel):
     time_field: time | str | None = None
     comment: str | None = None
     bool_field: bool = False
+    contact_uuid: str | None = None
+    broker_uuid: str | None = None
 
 class TestEntity1Validation(BaseModel):
     str_field: str

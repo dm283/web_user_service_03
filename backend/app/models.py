@@ -450,6 +450,8 @@ class TestEntity1(Base):
     date_field = Column(Date, nullable=True, default=None)
     time_field = Column(Time, nullable=True, default=None)
     bool_field = Column(Boolean, default=False)
+    contact_uuid = Column(String, nullable=True, default=None)
+    broker_uuid = Column(String, nullable=True, default=None)
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
