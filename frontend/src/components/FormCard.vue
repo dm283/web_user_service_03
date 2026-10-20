@@ -22,16 +22,12 @@ const authHeader = () => {
 const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
-
-///////////
 const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard', 'notification'])  
-
 const props = defineProps({
   itemType: String,
   itemData: Object,  // card or edit - exists; create - empty
   isCard: Boolean,   // card - true
 });
-
 const state = reactive({
   documents: [],
   isLoading: true,
@@ -41,30 +37,33 @@ const state = reactive({
   // brokers: [],   // batch
   // history: [],   // batch
 })
+var itemFields = []; var formFields = []; var postingUrl = ''; var postPutUrl = ''; var getObjUrl = ''; var docObjType = ''; var sectionName = ''
 
-var itemFields = []; var postingUrl = ''; var postPutUrl = ''; var getObjUrl = ''; var docObjType = ''; var sectionName = ''
-
+/////////////
 if (props.itemType=='testen1') {
-  itemFields = [
-    'str_field',
-    'int_field',
-    'float_field',
-    'dt_field',
-    'date_field',
-    'time_field',
-    'bool_field',
-    'comment'
-  ]
+  itemFields = ['str_field', 'int_field', 'float_field', 'dt_field', 'date_field', 'time_field', 'bool_field', 'comment']
   postingUrl = 'testen1_posting'
   postPutUrl = 'testen1'
   getObjUrl = 'testen1_by_uuid'
   sectionName = 'Тестовый раздел 1'
   docObjType = 'Тестовая сущность 1'
+  formFields = [
+  [
+  {'field_label': 'str_field', 'field_type':'text', 'form_field': 'str_field', 'field_required': false, 'field_disabled': props.isCard},
+  {'field_label': 'int_field', 'field_type':'number', 'form_field': 'int_field', 'field_required': false, 'field_disabled': props.isCard},
+  {'field_label': 'float_field', 'field_type':'number', 'form_field': 'float_field', 'field_required': false, 'field_disabled': props.isCard}
+  ],
+  [
+  {'field_label': 'dt_field', 'field_type':'datetime-local', 'form_field': 'dt_field', 'field_required': false, 'field_disabled': props.isCard},
+  {'field_label': 'date_field', 'field_type':'date', 'form_field': 'date_field', 'field_required': false, 'field_disabled': props.isCard},
+  {'field_label': 'time_field', 'field_type':'time', 'form_field': 'time_field', 'field_required': false, 'field_disabled': props.isCard}
+  ],
+  [
+  {'field_label': 'comment', 'field_type':'text', 'form_field': 'comment', 'field_required': false, 'field_disabled': props.isCard},
+  {'field_label': 'bool_field', 'field_type': 'checkbox', 'form_field': 'bool_field', 'field_disabled': props.isCard}
+  ]
+  ]
 }
-
-
-const showDropDownSelect = reactive({}); const showEAList = ref(false); const showAddDoc = ref(false)
-const errField = reactive({}); const form = reactive({}); const showAskCloseWithoutSave = ref(false)
 
 // read list of linked objects (for dropdown)  --  for batch
 const getBrokers = async (client_uuid) => {
@@ -134,6 +133,9 @@ onMounted(async () => {
     const response = await axios.get(`http://${backendIpAddress}:${backendPort}/obj_docs/${props.itemData.uuid}`, {headers: authHeader()});
     state.documents = response.data;
   } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; } }); };
+
+const showDropDownSelect = reactive({}); const showEAList = ref(false); const showAddDoc = ref(false)
+const errField = reactive({}); const form = reactive({}); const showAskCloseWithoutSave = ref(false)
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
 const postedColor = props.itemData ? (props.itemData.posted ? 'bg-white' : 'bg-yellow-50') : 'bg-white'
@@ -359,64 +361,6 @@ const refreshCard = async () => {
   emit('closeModal'); emit('reopenCard', reopenType, item, sectionName)
 }
 
-//
-// var field_label = 'str_field'
-// var field_type = 'text'
-// var form_field = 'str_field'
-// var field_required = false
-// var field_disabled = props.isCard
-
-
-var formFields = [
-  {
-    'field_label': 'str_field',
-    'field_type':'text',
-    'form_field': 'str_field',
-    'field_required': false,
-    'field_disabled': props.isCard
-  },
-  {
-    'field_label': 'int_field',
-    'field_type':'number',
-    'form_field': 'int_field',
-    'field_required': false,
-    'field_disabled': props.isCard
-  },
-  {
-    'field_label': 'float_field',
-    'field_type':'number',
-    'form_field': 'float_field',
-    'field_required': false,
-    'field_disabled': props.isCard
-  },
-  {
-    'field_label': 'dt_field',
-    'field_type':'datetime-local',
-    'form_field': 'dt_field',
-    'field_required': false,
-    'field_disabled': props.isCard
-  },
-  {
-    'field_label': 'date_field',
-    'field_type':'date',
-    'form_field': 'date_field',
-    'field_required': false,
-    'field_disabled': props.isCard
-  },
-  {
-    'field_label': 'time_field',
-    'field_type':'time',
-    'form_field': 'time_field',
-    'field_required': false,
-    'field_disabled': props.isCard
-  },
-  {
-    'field_type': 'checkbox',
-    'form_field': 'bool_field',
-    'field_disabled': props.isCard,
-    'field_label': 'str_field'
-  }
-]
 
 
 </script>
@@ -440,7 +384,8 @@ var formFields = [
     <div class=contStyle>
 
     <div class="ml-6 mt-3" v-if="props.itemData">
-      <div class="inline-block mr-3 text-sm font-semibold text-white rounded-md px-1 bg-red-400" v-if="!props.itemData.posted">ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
+      <div class="inline-block mr-3 text-sm font-semibold text-white rounded-md px-1 bg-red-400" v-if="!props.itemData.posted">
+        ЗАПИСЬ НЕ ПРОВЕДЕНА</div>
     
       <!-- <div class="inline-block mr-3 text-xs font-bold text-slate-500">Статус:</div>
       <div class="inline-block text-sm font-semibold text-white rounded-md px-1 bg-blue-500" v-if="props.itemData.status=='на СВХ'">
@@ -456,102 +401,23 @@ var formFields = [
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
 
-      <div class="flex relative">
-
-        <div v-for="i in [0, 1, 2]">
-          <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[i]['field_label'] }}</label>
-            <input :type="formFields[i]['field_type']" v-model="form[formFields[i]['form_field']]" 
-              :class="[errField[formFields[i]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
-              :required="formFields[i]['field_required']" :disabled="formFields[i]['field_disabled']" />
+      <!-- FIELDS BLOCK -->
+      <div class="flex relative" v-for="div of formFields">
+        <div class=formInputDiv v-for="field of div">
+          <div v-if="field['field_type']=='checkbox'">
+            <input :type="field['field_type']" v-model="form[field['form_field']]"
+              id="form[field['form_field']]" name="form[field['form_field']]"
+              class=formInputCheckboxStyle :disabled="field['field_disabled']" />
+            <label class=formLabelCheckboxStyle for="form[field['form_field']]">{{ field['field_label'] }}</label>
           </div>
-        </div>
-
-      </div>
-
-      <div class="flex relative">
-
-        <div v-for="i in [3, 4, 5]">
-          <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[i]['field_label'] }}</label>
-            <input :type="formFields[i]['field_type']" v-model="form[formFields[i]['form_field']]" 
-              :class="[errField[formFields[i]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
-              :required="formFields[i]['field_required']" :disabled="formFields[i]['field_disabled']" />
-          </div>
-        </div>
-
-      </div>
-
-
-      <div class="flex">
-
-        <div v-for="i in [6]">
-          <div class=formInputDiv>
-            <input :type="formFields[i]['field_type']" v-model="form[formFields[i]['form_field']]"
-              id="form[formFields[i]['form_field']]" name="form[formFields[i]['form_field']]"
-              class=formInputCheckboxStyle :disabled="formFields[i]['field_disabled']" />
-            <label class=formLabelCheckboxStyle for="form[formFields[i]['form_field']]">{{ formFields[i]['field_label'] }}</label>
+          <div v-else>   
+            <label class=formLabelStyle>{{ field['field_label'] }}</label>
+            <input :type="field['field_type']" v-model="form[field['form_field']]" 
+              :class="[errField[field['form_field']]==1 ? formInputStyleErr : formInputStyle]"
+              :required="field['field_required']" :disabled="field['field_disabled']" />
           </div>
         </div>
       </div>
-
-      <!-- <div class="flex relative"> -->
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[0]['field_label'] }}</label>
-          <input :type="formFields[0]['field_type']" v-model="form[formFields[0]['form_field']]" 
-            :class="[errField[formFields[0]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
-            :required="formFields[0]['field_required']" :disabled="formFields[0]['field_disabled']" />
-        </div> -->
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>str_field</label>
-          <input type="text" v-model="form.str_field" :class="[errField['str_field']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div> -->
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[1]['field_label'] }}</label>
-          <input :type="formFields[1]['field_type']" v-model="form[formFields[1]['form_field']]" 
-            :class="[errField[formFields[1]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
-            :required="formFields[1]['field_required']" :disabled="formFields[1]['field_disabled']" />
-        </div> -->
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>int_field</label>
-          <input type="number" v-model="form.int_field" :class="[errField['int_field']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div> -->
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>{{ formFields[2]['field_label'] }}</label>
-          <input :type="formFields[2]['field_type']" v-model="form[formFields[2]['form_field']]" 
-            :class="[errField[formFields[2]['form_field']]==1 ? formInputStyleErr : formInputStyle]"
-            :required="formFields[2]['field_required']" :disabled="formFields[2]['field_disabled']" />
-        </div> -->
-
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>float_field</label>
-          <input type="number" v-model="form.float_field" :class="[errField['float_field']==1 ? formInputStyleErr : formInputStyle]"
-          :required="false" :disabled="isCard" />
-        </div> -->
-
-      <!-- </div> -->
-
-      <!-- <div class="flex">
-
-        <div class=formInputDiv>   <label class=formLabelStyle>dt_field</label>
-          <input type="datetime-local" v-model="form.dt_field" :class="[errField['dt_field']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv >   <label class=formLabelStyle>date_field</label>
-          <input type="date"  v-model="form.date_field" :class="[errField['date_field']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-        <div class=formInputDiv>   <label class=formLabelStyle>time_field</label>
-          <input type="time" v-model="form.time_field" :class="[errField['time_field']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div>
-
-      </div> -->
-      
-      <!-- <div class="flex">
-        <div class=formInputDiv>
-          <input type="checkbox" v-model='form.bool_field' id="bool_field" name="bool_field" class=formInputCheckboxStyle :disabled="isCard"/>
-          <label class=formLabelCheckboxStyle for="bool_field">bool_field</label>
-        </div>
-      </div> -->
-
-
 
       <!-- HANDLING BLOCK -->
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">

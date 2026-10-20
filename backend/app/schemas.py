@@ -726,6 +726,7 @@ class TestEntity1Create(BaseModel):
     dt_field: datetime | str | None = None
     date_field: date | str | None = None
     time_field: time | str | None = None
+    comment: str | None = None
     bool_field: bool = False
 
 class TestEntity1Validation(BaseModel):
