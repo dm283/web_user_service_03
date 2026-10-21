@@ -63,6 +63,9 @@ const createFieldValue = (item) => {
   if (['testen1_broker_uuid'].includes(props.name)) {
     var val = item['broker_name']+' ('+item['broker_inn']+')'
   }
+  if (['testen1_carpass_uuid'].includes(props.name)) {
+    var val = item['ncar']
+  }
   return val
 }
 

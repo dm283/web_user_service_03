@@ -452,6 +452,7 @@ class TestEntity1(Base):
     bool_field = Column(Boolean, default=False)
     contact_uuid = Column(String, nullable=True, default=None)
     broker_uuid = Column(String, nullable=True, default=None)
+    carpass_uuid = Column(String, nullable=True, default=None)
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)

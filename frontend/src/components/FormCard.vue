@@ -35,8 +35,10 @@ const state = reactive({
   isLoading: false,
   filteredList: [],
   choosenDocs: [],
-  // contacts: [],  // batch
+
+  contacts: [],  // batch
   brokers: [],   // batch
+  carpasses: [],   // batch
   // history: [],   // batch
   test: 2
 })
@@ -45,7 +47,7 @@ var itemFields = []; var formFields = []; var postingUrl = ''; var postPutUrl = 
 /////////////
 if (props.itemType=='testen1') {
   itemFields = ['str_field', 'int_field', 'float_field', 'dt_field', 'date_field', 'time_field', 'bool_field', 'comment', 
-    'contact_uuid', 'broker_uuid',]
+    'contact_uuid', 'broker_uuid','carpass_uuid']
   postingUrl = 'testen1_posting'
   postPutUrl = 'testen1'
   getObjUrl = 'testen1_by_uuid'
@@ -84,9 +86,8 @@ onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
       state.contacts = response.data;
-    
-      // const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses_posted_not_archival/`, {headers: authHeader()});
-      // state.carpasses = response2.data;
+      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses_posted_not_archival/`, {headers: authHeader()});
+      state.carpasses = response2.data;
     } catch (error) {
       console.error('Error fetching docs', error);
     } finally {
@@ -110,17 +111,15 @@ onMounted(async () => {
       form['broker_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
       state.initial_broker_name = response2.data.name + ' (' + response2.data.inn + ')'
       }
-      // if (props.itemData.carpass_uuid) {
-      // const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
-      //   {headers: authHeader()} );
-      // form['carpass_ncar_input'] = response3.data.ncar
-      // form['carpass_ncar_dateen'] = response3.data.dateen
-      // state.initial_ncar = response3.data.ncar
-      // state.initial_ncar_dateen = response3.data.dateen
-      // }
+      if (props.itemData.carpass_uuid) {
+      const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
+        {headers: authHeader()} );
+      form['carpass_ncar_input'] = response3.data.ncar
+      state.initial_ncar = response3.data.ncar
+      }
 
       getBrokers(props.itemData.contact_uuid)
-      console.log('getbroOutsideFoo=', state.brokers)
+
     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };
 
@@ -157,23 +156,23 @@ const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border bo
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 
 
-const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
-  // for dropdowns
-  state.filteredList = [];
-  if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-  for (let rec of state[entity]) {
-    if ( rec[fieldEntity1].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); };
-    if (fieldEntity2) {
-      if ( rec[fieldEntity2].toString().toUpperCase().indexOf(state.formValue) > -1 ) { 
-        if ( !state.filteredList.includes(rec) ) {state.filteredList.push(rec)} }; }
-  }; };
+// const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
+//   // for dropdowns
+//   state.filteredList = [];
+//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
+//   for (let rec of state[entity]) {
+//     if ( rec[fieldEntity1].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); };
+//     if (fieldEntity2) {
+//       if ( rec[fieldEntity2].toString().toUpperCase().indexOf(state.formValue) > -1 ) { 
+//         if ( !state.filteredList.includes(rec) ) {state.filteredList.push(rec)} }; }
+//   }; };
 
 
-const setVars = (inputField, reserveField) => {
-  // for dropdowns
-  if (!form[reserveField]) { form[reserveField] = form[inputField] }
-  if (showDropDownSelect[inputField]) { showDropDownSelect[inputField]=false; form[inputField]=form[reserveField] }
-  else { showDropDownSelect[inputField]=true; form[inputField]=null }; };
+// const setVars = (inputField, reserveField) => {
+//   // for dropdowns
+//   if (!form[reserveField]) { form[reserveField] = form[inputField] }
+//   if (showDropDownSelect[inputField]) { showDropDownSelect[inputField]=false; form[inputField]=form[reserveField] }
+//   else { showDropDownSelect[inputField]=true; form[inputField]=null }; };
 
 
 const setInitialForm = () => {
@@ -195,6 +194,7 @@ const setInitialForm = () => {
     if (props.itemType=='testen1') {
       form['contact_name_input'] = state.initial_contact_name
       form['broker_name_input'] = state.initial_broker_name
+      form['carpass_ncar_input'] = state.initial_ncar
     }
 
   } else {  // create
@@ -217,6 +217,7 @@ const setInitialForm = () => {
       form.bool_field = false
       form['contact_name_input'] = null
       form['broker_name_input'] = null
+      form['carpass_ncar_input'] = null
     }
   };
 
@@ -397,6 +398,24 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
   }
 }
 
+
+formDrops = [[
+  {'field': 'contact_name_input', 'name':'testen1_contact_uuid', 'label': 'Клиент', 
+    'data': state.contacts, 'searchField1': 'name', 'searchField2': 'inn', 'searchValue': 'uuid',
+    'setValue': 'contact_uuid', 'isRequired': true
+
+    
+  },
+  {'field': 'broker_name_input', 'name':'testen1_broker_uuid', 'label': 'Брокер', 
+    'data': state.brokers, 'searchField1': 'broker_name', 'searchField2': 'broker_inn', 'searchValue': 'broker_uuid',
+    'setValue': 'broker_uuid', 'isRequired': false
+  },
+  {'field': 'carpass_ncar_input', 'name':'testen1_carpass_uuid', 'label': 'Номер машины', 
+    'data': state.carpasses, 'searchField1': 'ncar', 'searchField2': null, 'searchValue': 'uuid',
+    'setValue': 'carpass_uuid', 'isRequired': false
+  },
+]]
+
 </script>
 
 
@@ -449,9 +468,10 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
           :searchField2="'inn'"
           :searchValue="'uuid'"
           :setValue="'contact_uuid'"
+          :isRequired="true"
+
           :itemData="props.itemData"
           :isCard="props.isCard"
-          :isRequired="true"
           @click-dropdown="clickDropdown"
           @click-erase="clickDropdownErase"        
         />
@@ -460,7 +480,6 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
         <input type="text" v-model="form['contact_name_input']" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
           :required="true" :disabled="true" />
       </div>
-
 
       <div class="formInputDiv" v-if="(!props.isCard)">
         <DropdownCustom2
@@ -474,9 +493,10 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
           :searchField2="'broker_inn'"
           :searchValue="'broker_uuid'"
           :setValue="'broker_uuid'"
+          :isRequired="false"
+
           :itemData="props.itemData"
           :isCard="props.isCard"
-          :isRequired="false"
           @click-dropdown="clickDropdown"
           @click-erase="clickDropdownErase"        
         />
@@ -486,8 +506,32 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
           :required="true" :disabled="true" />
       </div>
 
+      <div class="formInputDiv" v-if="(!props.isCard)">
+        <DropdownCustom2
+          v-model="form['carpass_ncar_input']"
+          :modelValue="form['carpass_ncar_input']" @update:modelValue="$event => (foo = $event)"
+          :parentFormName="'carpass_ncar_input'"
+          :name="'testen1_carpass_uuid'"
+          :label="'Номер машины'"
+          :data="state.carpasses"
+          :searchField1="'ncar'"
+          :searchField2=null
+          :searchValue="'uuid'"
+          :setValue="'carpass_uuid'"
+          :isRequired="false"
+
+          :itemData="props.itemData"
+          :isCard="props.isCard"
+          @click-dropdown="clickDropdown"
+          @click-erase="clickDropdownErase"        
+        />
+      </div>
+      <div class=formInputDiv v-else>   <label class=formLabelStyle>Номер машины</label>
+        <input type="text" v-model="form.carpass_ncar_input" :class="[errField['carpass_uuid']==1 ? formInputStyleErr : formInputStyle]"
+          :required="true" :disabled="true" />
       </div>
 
+      </div>
 
 
       <!-- FIELDS BLOCK -->

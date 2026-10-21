@@ -730,6 +730,7 @@ class TestEntity1Create(BaseModel):
     bool_field: bool = False
     contact_uuid: str | None = None
     broker_uuid: str | None = None
+    carpass_uuid: str | None = None
 
 class TestEntity1Validation(BaseModel):
     str_field: str
