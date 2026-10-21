@@ -9,6 +9,7 @@ import FormAskCloseWithoutSave from './FormAskCloseWithoutSave.vue';
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
 import DropdownCustom from './DropdownCustom.vue';
+import DropdownCustom2 from './DropdownCustom2.vue';
 let parser = new ConfigIniParser(); //Use default delimiter
 parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
@@ -31,12 +32,13 @@ const props = defineProps({
 });
 const state = reactive({
   documents: [],
-  isLoading: true,
+  isLoading: false,
   filteredList: [],
   choosenDocs: [],
-  contacts: [],  // batch
+  // contacts: [],  // batch
   brokers: [],   // batch
   // history: [],   // batch
+  test: 2
 })
 var itemFields = []; var formFields = []; var postingUrl = ''; var postPutUrl = ''; var getObjUrl = ''; var docObjType = ''; var sectionName = ''
 
@@ -73,9 +75,11 @@ const getBrokers = async (client_uuid) => {
   let response = await axios.get(`http://${backendIpAddress}:${backendPort}/related_contact_broker/${client_uuid}`,
         {headers: authHeader()} );
   state.brokers = response.data;
+  state.test = state.brokers
+  console.log('getBrokersInsideFoo =', state.brokers)
 } 
 
-// for dropdowns  -  for batch
+// for dropdowns  -  for batch and testen1 - this section moved to DropdowmCustom component
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
@@ -116,6 +120,7 @@ onMounted(async () => {
       // }
 
       getBrokers(props.itemData.contact_uuid)
+      console.log('getbroOutsideFoo=', state.brokers)
     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
 }); };
 
@@ -371,15 +376,25 @@ const refreshCard = async () => {
   emit('closeModal'); emit('reopenCard', reopenType, item, sectionName)
 }
 
-const clickDropdown = async (v) => {
+const clickDropdown = async (dropdownName, setValue, searchValue, data=null) => {
   //
-  form['contact_uuid'] = v
+  form[setValue] = searchValue
+
+  // additional actions for concrete dropdown
+  if (dropdownName == 'testen1_contact_uuid') {
+    getBrokers(form['contact_uuid']);form['broker_name_input']=null;form['broker_uuid']=null
+  }
 }
 
-const clickDropdownErase = async (v) => {
+const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=null) => {
   //
-  form['contact_name_input'] = null
-  form['contact_uuid'] = null
+  form[parentFormName] = null
+  form[setValue] = null
+
+  // additional actions for concrete dropdown
+  if (dropdownName == 'testen1_contact_uuid') {
+    getBrokers(null);form['broker_name_input']=null;form['broker_uuid']=null
+  }
 }
 
 </script>
@@ -420,47 +435,57 @@ const clickDropdownErase = async (v) => {
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
 
+      <div class="flex relative">
 
-      <!-- <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Клиент</label>
-        <div :class=formInputStyle class="flex">
-          <input :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" 
-            v-model="form['contact_name_input']" 
-            @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');"
-            @keyup="setFilter('contact_name_input', 'contacts', 'name', 'inn')" 
-            :required="true"
-          />
-          <span @click="setFilter('null', 'contacts', 'name'); setVars('contact_name_input', 'reserve_1');">
-            <i class="pi pi-angle-down" style="font-size: 0.8rem"></i>
-          </span>
-          <span class="ml-1 text-red-400 active:text-black" 
-            @click="showDropDownSelect['contact_name_input']=false; 
-                form['reserve_1']=null;form['contact_name_input']=null;form['contact_uuid']=null;
-                getBrokers(null);form['reserve_2']=null;form['broker_name_input']=null;form['broker_uuid']=null">
-            <i class="pi pi-times" style="font-size: 0.7rem"></i>
-          </span>
-        </div>
-        <div v-if="showDropDownSelect['contact_name_input']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-          <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-            @click="showDropDownSelect['contact_name_input']=false; 
-                form['reserve_1']=item.name;form['contact_name_input']=(item.name+' ('+item.inn+')');
-                form['contact_uuid']=item.uuid 
-                getBrokers(item.uuid);form['broker_name_input']=null;form['broker_uuid']=null" >
-            {{ item.name }} ({{ item.inn }})
-          </div>
-        </div>
-      </div> -->
       <div class="formInputDiv" v-if="(!props.isCard)">
-        <DropdownCustom v-model="form['contact_name_input']" :label="'Клиент'" :field_form="'contact_name_input'"
-        :modelValue="form['contact_name_input']" @update:modelValue="$event => (foo = $event)"
-        @click-dropdown="clickDropdown"
-        @click-erase="clickDropdownErase"
-        
+        <DropdownCustom2
+          v-model="form['contact_name_input']"
+          :modelValue="form['contact_name_input']" @update:modelValue="$event => (foo = $event)"
+          :parentFormName="'contact_name_input'"
+          :name="'testen1_contact_uuid'"
+          :label="'Клиент'"
+          :data="state.contacts"
+          :searchField1="'name'"
+          :searchField2="'inn'"
+          :searchValue="'uuid'"
+          :setValue="'contact_uuid'"
+          :itemData="props.itemData"
+          :isCard="props.isCard"
+          :isRequired="true"
+          @click-dropdown="clickDropdown"
+          @click-erase="clickDropdownErase"        
         />
-
       </div>
       <div class=formInputDiv v-else>   <label class=formLabelStyle>Клиент</label>
-        <input type="text" v-model="form.contact_name_input" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
+        <input type="text" v-model="form['contact_name_input']" :class="[errField['contact_uuid']==1 ? formInputStyleErr : formInputStyle]"
           :required="true" :disabled="true" />
+      </div>
+
+
+      <div class="formInputDiv" v-if="(!props.isCard)">
+        <DropdownCustom2
+          v-model="form['broker_name_input']"
+          :modelValue="form['broker_name_input']" @update:modelValue="$event => (foo = $event)"
+          :parentFormName="'broker_name_input'"
+          :name="'testen1_broker_uuid'"
+          :label="'Брокер'"
+          :data="state.brokers"
+          :searchField1="'broker_name'"
+          :searchField2="'broker_inn'"
+          :searchValue="'broker_uuid'"
+          :setValue="'broker_uuid'"
+          :itemData="props.itemData"
+          :isCard="props.isCard"
+          :isRequired="false"
+          @click-dropdown="clickDropdown"
+          @click-erase="clickDropdownErase"        
+        />
+      </div>
+      <div class=formInputDiv v-else>   <label class=formLabelStyle>Брокер</label>
+        <input type="text" v-model="form.broker_name_input" :class="[errField['broker_uuid']==1 ? formInputStyleErr : formInputStyle]"
+          :required="true" :disabled="true" />
+      </div>
+
       </div>
 
 
