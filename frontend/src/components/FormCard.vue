@@ -1,5 +1,5 @@
 <script setup>
-import {ref, reactive, computed, onMounted, watch} from 'vue';
+import {ref, reactive, computed, onMounted, watch, useTemplateRef} from 'vue';
 import { useToast } from 'vue-toastification';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 import axios from 'axios';
@@ -8,12 +8,12 @@ import FormDoc from './FormDoc.vue';
 import FormAskCloseWithoutSave from './FormAskCloseWithoutSave.vue';
 import data from "../../../backend/config.ini?raw";
 import { ConfigIniParser } from "config-ini-parser";
-import DropdownCustom from './DropdownCustom.vue';
-import DropdownCustom2 from './DropdownCustom2.vue';
+import DropdownGeneric from './DropdownGeneric.vue';
 let parser = new ConfigIniParser(); //Use default delimiter
 parser.parse(data);
 var backendIpAddress = parser.get("main", "backend_ip_address");
 var backendPort = parser.get("main", "backend_port");
+import forms_data from './a_forms_data.json';
 
 const toast = useToast();
 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -24,6 +24,7 @@ const authHeader = () => {
 const userAccessToken = () => {
   let user = JSON.parse(localStorage.getItem('user')); if (user && user.access_token) {return user.access_token} else {return ''}
 }
+/////
 const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard', 'notification'])  
 const props = defineProps({
   itemType: String,
@@ -31,45 +32,26 @@ const props = defineProps({
   isCard: Boolean,   // card - true
 });
 const state = reactive({
+  // generic refs
   documents: [],
   isLoading: false,
   filteredList: [],
   choosenDocs: [],
 
-  contacts: [],  // batch
-  brokers: [],   // batch
-  carpasses: [],   // batch
+  // special refs for entities
+  contacts: [],  // batch, testen1
+  brokers: [],   // batch, testen1
+  carpasses: [],   // batch, testen1
   // history: [],   // batch
-  test: 2
 })
-var itemFields = []; var formFields = []; var postingUrl = ''; var postPutUrl = ''; var getObjUrl = ''; var docObjType = ''; var sectionName = ''
 
-/////////////
-if (props.itemType=='testen1') {
-  itemFields = ['str_field', 'int_field', 'float_field', 'dt_field', 'date_field', 'time_field', 'bool_field', 'comment', 
-    'contact_uuid', 'broker_uuid','carpass_uuid']
-  postingUrl = 'testen1_posting'
-  postPutUrl = 'testen1'
-  getObjUrl = 'testen1_by_uuid'
-  sectionName = 'Тестовый раздел 1'
-  docObjType = 'Тестовая сущность 1'
-  formFields = [
-  [
-  {'field_label': 'str_field', 'field_type':'text', 'form_field': 'str_field', 'field_required': false, 'field_disabled': props.isCard},
-  {'field_label': 'int_field', 'field_type':'number', 'form_field': 'int_field', 'field_required': false, 'field_disabled': props.isCard},
-  {'field_label': 'float_field', 'field_type':'number', 'form_field': 'float_field', 'field_required': false, 'field_disabled': props.isCard}
-  ],
-  [
-  {'field_label': 'dt_field', 'field_type':'datetime-local', 'form_field': 'dt_field', 'field_required': false, 'field_disabled': props.isCard},
-  {'field_label': 'date_field', 'field_type':'date', 'form_field': 'date_field', 'field_required': false, 'field_disabled': props.isCard},
-  {'field_label': 'time_field', 'field_type':'time', 'form_field': 'time_field', 'field_required': false, 'field_disabled': props.isCard}
-  ],
-  [
-  {'field_label': 'comment', 'field_type':'text', 'form_field': 'comment', 'field_required': false, 'field_disabled': props.isCard},
-  {'field_label': 'bool_field', 'field_type': 'checkbox', 'form_field': 'bool_field', 'field_disabled': props.isCard}
-  ]
-  ]
-}
+var itemFields = forms_data[props.itemType]['itemFields']
+var postingUrl = forms_data[props.itemType]['postingUrl']
+var postPutUrl = forms_data[props.itemType]['postPutUrl']
+var getObjUrl = forms_data[props.itemType]['getObjUrl']
+var sectionName = forms_data[props.itemType]['sectionName']
+var docObjType = forms_data[props.itemType]['docObjType']
+var formFields = forms_data[props.itemType]['formFields']
 
 // read list of linked objects (for dropdown)  --  for batch
 const getBrokers = async (client_uuid) => {
@@ -77,11 +59,9 @@ const getBrokers = async (client_uuid) => {
   let response = await axios.get(`http://${backendIpAddress}:${backendPort}/related_contact_broker/${client_uuid}`,
         {headers: authHeader()} );
   state.brokers = response.data;
-  state.test = state.brokers
-  console.log('getBrokersInsideFoo =', state.brokers)
 } 
 
-// for dropdowns  -  for batch and testen1 - this section moved to DropdowmCustom component
+// load data for dropdowns
 onMounted(async () => {
     try {
       const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
@@ -95,7 +75,7 @@ onMounted(async () => {
     }
 });
 
-// for dropdowns  -  for batch
+// for dropdowns  -  for batch and testen1  -  !!! MOVE IT TO BACKEND (MAKE THIS FIELDS WITH JOIN) !!!
 if (props.itemData) {
 onMounted(async () => {
     try {
@@ -140,7 +120,8 @@ onMounted(async () => {
     state.documents = response.data;
   } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; } }); };
 
-const showDropDownSelect = reactive({}); const showEAList = ref(false); const showAddDoc = ref(false)
+
+const showEAList = ref(false); const showAddDoc = ref(false)
 const errField = reactive({}); const form = reactive({}); const showAskCloseWithoutSave = ref(false)
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
@@ -154,25 +135,6 @@ const saveBtnStyle0 = 'text-slate-400 text-sm font-semibold border border-slate-
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
 const saveBtnStyle1 = 'bg-red-100 text-slate-500 text-sm font-semibold border border-slate-400 rounded-lg \
         w-32 h-9 hover:text-slate-500 hover:border-slate-500'
-
-
-// const setFilter = (fieldForm, entity, fieldEntity1, fieldEntity2=null) => {
-//   // for dropdowns
-//   state.filteredList = [];
-//   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-//   for (let rec of state[entity]) {
-//     if ( rec[fieldEntity1].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); };
-//     if (fieldEntity2) {
-//       if ( rec[fieldEntity2].toString().toUpperCase().indexOf(state.formValue) > -1 ) { 
-//         if ( !state.filteredList.includes(rec) ) {state.filteredList.push(rec)} }; }
-//   }; };
-
-
-// const setVars = (inputField, reserveField) => {
-//   // for dropdowns
-//   if (!form[reserveField]) { form[reserveField] = form[inputField] }
-//   if (showDropDownSelect[inputField]) { showDropDownSelect[inputField]=false; form[inputField]=form[reserveField] }
-//   else { showDropDownSelect[inputField]=true; form[inputField]=null }; };
 
 
 const setInitialForm = () => {
@@ -398,24 +360,6 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
   }
 }
 
-
-formDrops = [[
-  {'field': 'contact_name_input', 'name':'testen1_contact_uuid', 'label': 'Клиент', 
-    'data': state.contacts, 'searchField1': 'name', 'searchField2': 'inn', 'searchValue': 'uuid',
-    'setValue': 'contact_uuid', 'isRequired': true
-
-    
-  },
-  {'field': 'broker_name_input', 'name':'testen1_broker_uuid', 'label': 'Брокер', 
-    'data': state.brokers, 'searchField1': 'broker_name', 'searchField2': 'broker_inn', 'searchValue': 'broker_uuid',
-    'setValue': 'broker_uuid', 'isRequired': false
-  },
-  {'field': 'carpass_ncar_input', 'name':'testen1_carpass_uuid', 'label': 'Номер машины', 
-    'data': state.carpasses, 'searchField1': 'ncar', 'searchField2': null, 'searchValue': 'uuid',
-    'setValue': 'carpass_uuid', 'isRequired': false
-  },
-]]
-
 </script>
 
 
@@ -454,7 +398,7 @@ formDrops = [[
     
     <form @submit.prevent="handleSubmit" enctype="multipart/form-data" class="mx-0 mt-5">
 
-      <div class="flex relative">
+      <!-- <div class="flex relative">
 
       <div class="formInputDiv" v-if="(!props.isCard)">
         <DropdownCustom2
@@ -531,23 +475,89 @@ formDrops = [[
           :required="true" :disabled="true" />
       </div>
 
-      </div>
+      </div> -->
+
+
+      <!-- <div class="flex relative" v-for="div of formDrops">
+        <div class=formInputDiv v-for="field of div">
+
+          <div v-if="field['field_type']=='dropdown' && !props.isCard">
+            <DropdownCustom2
+              v-model="form[field['field']]"
+              :modelValue="form[field['field']]" @update:modelValue="$event => (foo = $event)"
+              :parentFormName="field['field']"
+              :name="field['name']"
+              :label="field['label']"
+              :data="state[field['data_state']]"
+              :searchField1="field['searchField1']"
+              :searchField2="field['searchField2']"
+              :searchValue="field['searchValue']"
+              :setValue="field['setValue']""
+              :isRequired="field['isRequired']"
+
+              :itemData="props.itemData"
+              :isCard="props.isCard"
+              @click-dropdown="clickDropdown"
+              @click-erase="clickDropdownErase"        
+            />
+          </div>
+          <div v-if="field['field_type']=='dropdown' && props.isCard">   
+            <label class=formLabelStyle>{{ field['label'] }}</label>
+            <input :type="field['input_type']" v-model="form[field['field']]" 
+              :class="[errField[field['searchValue']]==1 ? formInputStyleErr : formInputStyle]"
+              :required="field['isRequired']" :disabled="true" />
+          </div>
+        </div>
+      </div> -->
 
 
       <!-- FIELDS BLOCK -->
       <div class="flex relative" v-for="div of formFields">
         <div class=formInputDiv v-for="field of div">
-          <div v-if="field['field_type']=='checkbox'">
+          
+          <div v-if="field['field_type']=='dropdown' && !props.isCard">
+            <DropdownGeneric
+              v-model="form[field['field']]"
+              :modelValue="form[field['field']]" @update:modelValue="$event => (foo = $event)"
+              :parentFormName="field['field']"
+              :name="field['name']"
+              :label="field['label']"
+              :data="state[field['data_state']]"
+              :searchField1="field['searchField1']"
+              :searchField2="field['searchField2']"
+              :searchValue="field['searchValue']"
+              :setValue="field['setValue']""
+              :isRequired="field['isRequired']"
+              :itemData="props.itemData"
+              :isCard="props.isCard"
+              @click-dropdown="clickDropdown"
+              @click-erase="clickDropdownErase"        
+            />
+          </div>
+          <div v-else-if="field['field_type']=='dropdown' && props.isCard">   
+            <label class=formLabelStyle>{{ field['label'] }}</label>
+            <input :type="field['input_type']" v-model="form[field['field']]" 
+              :class="[errField[field['searchValue']]==1 ? formInputStyleErr : formInputStyle]"
+              :required="field['isRequired']" :disabled="true" />
+          </div>
+
+          <div v-else-if="field['field_type']=='checkbox'">
             <input :type="field['field_type']" v-model="form[field['form_field']]"
               id="form[field['form_field']]" name="form[field['form_field']]"
-              class=formInputCheckboxStyle :disabled="field['field_disabled']" />
+              class=formInputCheckboxStyle :disabled="field['field_disabled']=='isCard'?props.isCard:field['field_disabled']" />
             <label class=formLabelCheckboxStyle for="form[field['form_field']]">{{ field['field_label'] }}</label>
+          </div>
+          <div v-else-if="'float_step' in field">   <!-- float field -->
+            <label class=formLabelStyle>{{ field['field_label'] }}</label>
+            <input :type="field['field_type']" :step="field['float_step']" v-model="form[field['form_field']]" 
+              :class="[errField[field['form_field']]==1 ? formInputStyleErr : formInputStyle]"
+              :required="field['field_required']" :disabled="field['field_disabled']=='isCard'?props.isCard:field['field_disabled']" />
           </div>
           <div v-else>   
             <label class=formLabelStyle>{{ field['field_label'] }}</label>
             <input :type="field['field_type']" v-model="form[field['form_field']]" 
               :class="[errField[field['form_field']]==1 ? formInputStyleErr : formInputStyle]"
-              :required="field['field_required']" :disabled="field['field_disabled']" />
+              :required="field['field_required']" :disabled="field['field_disabled']=='isCard'?props.isCard:field['field_disabled']" />
           </div>
         </div>
       </div>

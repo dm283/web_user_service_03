@@ -1,31 +1,20 @@
 <script setup>
 
-import { defineProps, computed, ref, reactive, onMounted } from 'vue';
-import axios from 'axios';
-import data from "../../../backend/config.ini?raw";
-import { ConfigIniParser } from "config-ini-parser";
-let parser = new ConfigIniParser(); //Use default delimiter
-parser.parse(data);
-var backendIpAddress = parser.get("main", "backend_ip_address");
-var backendPort = parser.get("main", "backend_port");
-
-const authHeader = () => {
-  let user = JSON.parse(localStorage.getItem('user')); 
-  if (user && user.access_token) {return { Authorization: 'Bearer ' + user.access_token };} else {return {};}
-}
+import { defineProps, ref, reactive } from 'vue';
   
 const props = defineProps({
     name: String,
     parentFormName: String,
     label: String,
     modelValue: String,
-    getDataUrl: String,
+    data: Object,         // set of data (contacts/brokers)
     searchField1: String, // name
     searchField2: String, // inn
     searchValue: String,  // uuid
     setValue: String,     // contact_uuid
     itemData: Object,
     isCard: Boolean,
+    isRequired: Boolean,
 });
 
 const emit = defineEmits(['update:modelValue', 'clickErase', 'clickDropdown'])
@@ -35,11 +24,6 @@ const state = reactive({
   data: []
 })
 
-// load data for dropdown list
-onMounted(async () => {
-try {const response = await axios.get(`http://${backendIpAddress}:${backendPort}/${props.getDataUrl}/`, {headers: authHeader()});
-state.data = response.data} catch (error) {console.error('Error fetching docs', error)} finally {state.isLoading = false} })
-
 const showDropDown = ref(false); const form = reactive({});
 
 const formInputStyleDis = 'text-base w-full py-1 px-1 mb-2'
@@ -48,11 +32,11 @@ const formInputStyleAct = 'border-b-2 border-blue-300 text-base w-full py-1 px-1
         hover:border-blue-400 focus:outline-none focus:border-blue-500 cursor-pointer' + ' ' + postedColor
 const formInputStyle = props.isCard ? formInputStyleDis : formInputStyleAct
 
-const setFilter = (fieldForm, searchField1, searchField2=null) => {
+const setFilter = (fieldForm, data, searchField1, searchField2=null) => {
   //
   state.filteredList = [];
   if (form[fieldForm]) { state.formValue = form[fieldForm].toUpperCase() } else { state.formValue = '' };
-  for (let rec of state['data']) {
+  for (let rec of data) {
     if ( rec[searchField1].toString().toUpperCase().indexOf(state.formValue) > -1 ) { state.filteredList.push(rec); };
     if (searchField2) {
       if ( rec[searchField2].toString().toUpperCase().indexOf(state.formValue) > -1 ) { 
@@ -60,7 +44,7 @@ const setFilter = (fieldForm, searchField1, searchField2=null) => {
   }; };
 
 const setVars = () => {
-  // check if it is needed
+  // check if it is needed ??
   if (!form['reserve_1']) { form['reserve_1'] = form['input_field'] }
   if (showDropDown.value) { showDropDown.value=false; form['input_field']=form['reserve_1'] }
   else { showDropDown.value=true; form['input_field']=null }; };
@@ -68,8 +52,14 @@ const setVars = () => {
 
 const createFieldValue = (item) => {
   // create custom field for distinct entity
-  if (['testen1_contact_uuid', 'testen1_broker_uuid'].includes(props.name)) {
+  if (['testen1_contact_uuid'].includes(props.name)) {
     var val = item['name']+' ('+item['inn']+')'
+  }
+  if (['testen1_broker_uuid'].includes(props.name)) {
+    var val = item['broker_name']+' ('+item['broker_inn']+')'
+  }
+  if (['testen1_carpass_uuid'].includes(props.name)) {
+    var val = item['ncar']
   }
   return val
 }
@@ -88,13 +78,13 @@ const createFieldValue = (item) => {
           <input v-model="form['input_field']"
             :class=postedColor class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" 
             :value="props.modelValue"
-            @input="emit('update:modelValue', $event.target.value); setFilter('input_field', props.searchField1, props.searchField2);"
-            @click="setFilter('null', props.searchField1); setVars();"
-            :required="true"
+            @input="emit('update:modelValue', $event.target.value); setFilter('input_field', props.data, props.searchField1, props.searchField2);"
+            @click="setFilter('null', props.data, props.searchField1); setVars();"
+            :required="props.isRequired"
           />
 
           <!-- down-arrow span -->
-          <span @click="setFilter('null', props.searchField1); setVars();">
+          <span @click="setFilter('null', props.data, props.searchField1); setVars();">
             <i class="pi pi-angle-down" style="font-size: 0.8rem"></i>
           </span>
 
@@ -111,11 +101,9 @@ const createFieldValue = (item) => {
           <div class=dropDownItemStyle v-for="item in state.filteredList" 
             @click="showDropDown=false; 
                 form['reserve_1']=item[props.searchField1];
-                // emit('update:modelValue', (item['name']+' ('+item['inn']+')'))
                 emit('update:modelValue', createFieldValue(item))
                 emit('clickDropdown', props.name, props.setValue, item[props.searchValue])"
                 >
-            <!-- {{ item['name'] }} ({{ item['inn'] }}) -->
               {{ createFieldValue(item) }}
           </div>
         </div>
