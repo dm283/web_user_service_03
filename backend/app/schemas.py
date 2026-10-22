@@ -752,5 +752,9 @@ class TestEntity1(TestEntity1Create):
     class Config:
         from_attributes = True
 
-
-
+class TestEntity1Joined(TestEntity1):
+    contact: str | None = None
+    broker: str | None = None
+    ncar: str | None = None
+    docs_exist: int | None
+    

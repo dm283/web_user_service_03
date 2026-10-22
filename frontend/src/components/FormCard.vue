@@ -31,6 +31,9 @@ const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
   isCard: Boolean,   // card - true
 });
+
+console.log('itemdata =', props.itemData)
+
 const state = reactive({
   // generic refs
   documents: [],
@@ -63,45 +66,42 @@ const getBrokers = async (client_uuid) => {
 
 // load data for dropdowns
 onMounted(async () => {
-    try {
-      const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
-      state.contacts = response.data;
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses_posted_not_archival/`, {headers: authHeader()});
-      state.carpasses = response2.data;
-    } catch (error) {
-      console.error('Error fetching docs', error);
-    } finally {
-      state.isLoading = false;
-    }
-});
+try {
+  if (props.itemType=='testen1') {
+    const response = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_posted/`, {headers: authHeader()});
+    state.contacts = response.data;
+    const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpasses_posted_not_archival/`, {headers: authHeader()});
+    state.carpasses = response2.data;
+  }
+} catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }});
 
 // for dropdowns  -  for batch and testen1  -  !!! MOVE IT TO BACKEND (MAKE THIS FIELDS WITH JOIN) !!!
-if (props.itemData) {
-onMounted(async () => {
-    try {
-      if (props.itemData.contact_uuid) {
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
-        {headers: authHeader()} );
-      form['contact_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
-      state.initial_contact_name = response2.data.name + ' (' + response2.data.inn + ')'
-      }
-      if (props.itemData.broker_uuid) {
-      const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.broker_uuid}`,
-        {headers: authHeader()} );
-      form['broker_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
-      state.initial_broker_name = response2.data.name + ' (' + response2.data.inn + ')'
-      }
-      if (props.itemData.carpass_uuid) {
-      const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
-        {headers: authHeader()} );
-      form['carpass_ncar_input'] = response3.data.ncar
-      state.initial_ncar = response3.data.ncar
-      }
+// if (props.itemData) {
+// onMounted(async () => {
+//     try {
+//       if (props.itemData.contact_uuid) {
+//       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.contact_uuid}`,
+//         {headers: authHeader()} );
+//       form['contact_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
+//       state.initial_contact_name = response2.data.name + ' (' + response2.data.inn + ')'
+//       }
+//       if (props.itemData.broker_uuid) {
+//       const response2 = await axios.get(`http://${backendIpAddress}:${backendPort}/contacts_by_uuid/${props.itemData.broker_uuid}`,
+//         {headers: authHeader()} );
+//       form['broker_name_input'] = response2.data.name + ' (' + response2.data.inn + ')'
+//       state.initial_broker_name = response2.data.name + ' (' + response2.data.inn + ')'
+//       }
+//       if (props.itemData.carpass_uuid) {
+//       const response3 = await axios.get(`http://${backendIpAddress}:${backendPort}/carpass_by_uuid/${props.itemData.carpass_uuid}`,
+//         {headers: authHeader()} );
+//       form['carpass_ncar_input'] = response3.data.ncar
+//       state.initial_ncar = response3.data.ncar
+//       }
 
-      getBrokers(props.itemData.contact_uuid)
+//       getBrokers(props.itemData.contact_uuid)
 
-    } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
-}); };
+//     } catch (error) { console.error('Error fetching docs', error); } finally { state.isLoading = false; }
+// }); };
 
 // get history  -  for batch
 // if (props.itemData) {
@@ -154,9 +154,13 @@ const setInitialForm = () => {
 
     // custom for testen1
     if (props.itemType=='testen1') {
-      form['contact_name_input'] = state.initial_contact_name
-      form['broker_name_input'] = state.initial_broker_name
-      form['carpass_ncar_input'] = state.initial_ncar
+      form['contact_name_input'] = props.itemData.contact  //new
+      form['broker_name_input'] = props.itemData.broker    //new
+      form['carpass_ncar_input'] = props.itemData.ncar     //new
+      getBrokers(props.itemData.contact_uuid)              //new
+      // form['contact_name_input'] = state.initial_contact_name
+      // form['broker_name_input'] = state.initial_broker_name
+      // form['carpass_ncar_input'] = state.initial_ncar
     }
 
   } else {  // create
@@ -343,9 +347,9 @@ const clickDropdown = async (dropdownName, setValue, searchValue, data=null) => 
   //
   form[setValue] = searchValue
 
-  // additional actions for concrete dropdown
+  // additional actions for distinct dropdown
   if (dropdownName == 'testen1_contact_uuid') {
-    getBrokers(form['contact_uuid']);form['broker_name_input']=null;form['broker_uuid']=null
+    getBrokers(form['contact_uuid']); form['broker_name_input']=null; form['broker_uuid']=null
   }
 }
 
@@ -354,9 +358,9 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
   form[parentFormName] = null
   form[setValue] = null
 
-  // additional actions for concrete dropdown
+  // additional actions for distinct dropdown
   if (dropdownName == 'testen1_contact_uuid') {
-    getBrokers(null);form['broker_name_input']=null;form['broker_uuid']=null
+    getBrokers(null); form['broker_name_input']=null; form['broker_uuid']=null
   }
 }
 
@@ -562,6 +566,7 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
         </div>
       </div>
 
+
       <!-- HANDLING BLOCK -->
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">
         <div class="float-left space-x-5">
@@ -574,6 +579,7 @@ const clickDropdownErase = async (dropdownName, parentFormName, setValue, data=n
       </div>
       <div v-else class="mb-5"></div>
 
+      
       <!-- DOCUMENTS BLOCK -->
       <div class="border-t-2 border-slate-300 mx-6 pt-3 mb-4">
         <div class="space-x-5 overflow-auto">

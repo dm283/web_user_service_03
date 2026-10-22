@@ -273,7 +273,8 @@ else if (props.view_type == 'testen1') {
   state.query = query_testen1;
   state.listTableColumns = {
     'str_field':'str_field','int_field':'int_field','float_field':'float_field','dt_field':'dt_field',
-    'date_field':'date_field','time_field':'time_field','bool_field':'bool_field','contact_uuid':'contact_uuid'
+    'date_field':'date_field','time_field':'time_field','bool_field':'bool_field','contact':'contact','broker':'broker','ncar':'ncar',
+    'docs_exist':'doc'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
