@@ -2451,6 +2451,9 @@ def get_user_by_login_for_auth(db: Session, login: str):
             join(role_2, role_2.role_id==main_table.role_id, isouter=True).\
             order_by(main_table.created_datetime.desc()).first()
 
+    if not response:
+        return False
+
     contact_name=response[1].__dict__['name'] if response[1] else None
     role_name=response[2].__dict__['role_name'] if response[2] else None
 
