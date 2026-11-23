@@ -23,6 +23,7 @@ endpoint_allowed_roles_dict = {
     # user backend (auth)
 
     # delete items
+    'delete'+'testen1': ['admin', 'dispatcher'],
     'delete'+'shipment': ['admin', 'dispatcher'],
     'delete'+'carpasses': ['admin', 'dispatcher'],
     'delete'+'exitcarpasses': ['admin', 'dispatcher'],
@@ -38,6 +39,7 @@ endpoint_allowed_roles_dict = {
     'delete'+'related_docs_record': ['admin', 'dispatcher', 'client', 'broker'],
 
     # rollback items
+    'put'+'testen1_rollback': ['admin', 'dispatcher',],
     'put'+'carpasses_rollback': ['admin', 'dispatcher',],
     'put'+'exitcarpasses_rollback': ['',],  # operation is not using
     'put'+'entry_requests_rollback': ['admin', 'dispatcher', 'client', 'broker'],
@@ -48,6 +50,14 @@ endpoint_allowed_roles_dict = {
     'put'+'contacts_rollback': ['admin', 'dispatcher',],
     'put'+'users_rollback': ['admin',],
     'put'+'document_records_rollback': ['',],  # operation is not using
+
+    # testen1
+    'get'+'testen1': ['admin', 'dispatcher',],
+    'put'+'testen1_posting': ['admin', 'dispatcher',],
+    'post'+'testen1': ['admin', 'dispatcher',],
+    'put'+'testen1': ['admin', 'dispatcher',],
+    'get'+'testen1_by_uuid': ['admin', 'dispatcher',],
+    'get'+'log_records_testen1': ['admin', 'dispatcher',],
 
     # shipments
     'get'+'shipments': ['admin', 'dispatcher',],

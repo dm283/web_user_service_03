@@ -1,0 +1,43 @@
+{
+  "batch": {},
+
+  "testen1": {
+    "itemFields": ["str_field", "int_field", "float_field", "dt_field", "date_field", "time_field", "bool_field", "comment", 
+      "contact_uuid", "broker_uuid","carpass_uuid"],
+    "postingUrl": "testen1_posting",
+    "postPutUrl": "testen1",
+    "getObjUrl": "testen1_by_uuid",
+    "sectionName": "Тестовый раздел 1",
+    "docObjType": "Тестовая сущность 1",
+    "formFields": [
+      [
+      {"field_type": "dropdown", "input_type": "text", "field": "contact_name_input", "name":"testen1_contact_uuid", "label": "Клиент", 
+        "data_state": "contacts", "searchField1": "name", "searchField2": "inn", "searchValue": "uuid", 
+        "setValue": "contact_uuid", "isRequired": true
+      },
+      {"field_type": "dropdown", "input_type": "text", "field": "broker_name_input", "name":"testen1_broker_uuid", "label": "Брокер", 
+        "data_state": "brokers", "searchField1": "broker_name", "searchField2": "broker_inn", "searchValue": "broker_uuid",
+        "setValue": "broker_uuid", "isRequired": false
+      },
+      {"field_type": "dropdown", "input_type": "text", "field": "carpass_ncar_input", "name":"testen1_carpass_uuid", "label": "Номер машины", 
+        "data_state": "carpasses", "searchField1": "ncar", "searchField2": null, "searchValue": "uuid",
+        "setValue": "carpass_uuid", "isRequired": false
+      }
+      ],
+      [
+      {"field_label": "str_field", "field_type":"text", "form_field": "str_field", "field_required": false, "field_disabled": "isCard"},
+      {"field_label": "int_field", "field_type":"number", "form_field": "int_field", "field_required": false, "field_disabled": "isCard"},
+      {"field_label": "float_field", "field_type":"number", "float_step":"0.1", "form_field": "float_field", "field_required": false, "field_disabled": "isCard"}
+      ],
+      [
+      {"field_label": "dt_field", "field_type":"datetime-local", "form_field": "dt_field", "field_required": false, "field_disabled": "isCard"},
+      {"field_label": "date_field", "field_type":"date", "form_field": "date_field", "field_required": false, "field_disabled": "isCard"},
+      {"field_label": "time_field", "field_type":"time", "form_field": "time_field", "field_required": false, "field_disabled": "isCard"}
+      ],
+      [
+      {"field_label": "comment", "field_type":"text", "form_field": "comment", "field_required": false, "field_disabled": "isCard"},
+      {"field_label": "bool_field", "field_type": "checkbox", "form_field": "bool_field", "field_disabled": "isCard"}
+      ]
+    ]
+  }
+}

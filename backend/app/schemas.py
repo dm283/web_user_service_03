@@ -716,3 +716,45 @@ class ShipmentJoined(Shipment):
 class ShipmentSetStatus(BaseModel):
     status: str
     status_time: datetime
+
+
+#########
+class TestEntity1Create(BaseModel):
+    str_field: str | None = None
+    int_field: int | str | None = None
+    float_field: float | str | None = None
+    dt_field: datetime | str | None = None
+    date_field: date | str | None = None
+    time_field: time | str | None = None
+    comment: str | None = None
+    bool_field: bool = False
+    contact_uuid: str | None = None
+    broker_uuid: str | None = None
+    carpass_uuid: str | None = None
+
+class TestEntity1Validation(BaseModel):
+    str_field: str
+    int_field: int
+
+class TestEntity1Update(TestEntity1Create):
+    updated_datetime: datetime
+    
+class TestEntity1(TestEntity1Create):
+    id: int
+    uuid: str
+    created_datetime: datetime
+    updated_datetime: datetime | None
+    post_date: datetime | None
+    post_user_id: str | None
+    posted: bool
+    was_posted: bool
+
+    class Config:
+        from_attributes = True
+
+class TestEntity1Joined(TestEntity1):
+    contact: str | None = None
+    broker: str | None = None
+    ncar: str | None = None
+    docs_exist: int | None
+    

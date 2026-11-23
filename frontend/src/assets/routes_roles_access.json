@@ -24,5 +24,7 @@
   "log_records":                  ["admin"],
   "notifications":                ["admin"],
   "upload_lists_excel":           ["admin"],
-  "documents":                    ["admin", "dispatcher", "client", "broker"]
+  "documents":                    ["admin", "dispatcher", "client", "broker"],
+  "testen1":                      ["admin"],
+  "gruzovichok":                  ["admin", "dispatcher", "client", "broker"]
 }

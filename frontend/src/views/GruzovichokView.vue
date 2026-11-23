@@ -7,6 +7,6 @@
 
 <template>
   <Carpasses :view_type="'gruzovichok'" :list_title="'Грузовичок (пилот)'"
-    v-if="routesRolesAccess['carpasses'].includes(userInfo.role_name)"/>
+    v-if="routesRolesAccess['gruzovichok'].includes(userInfo.role_name)"/>
   <InitView v-else />
 </template>

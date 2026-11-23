@@ -56,6 +56,7 @@ def logging_action(obj_type, schema, action, item_from_db, user_uuid: str, db: S
         'Пользователь': 'user',
         'Таможенное оформление': 'dtreg',
         'Заявки размещения партий на склад': 'requests_batch_to_sklad',
+        'Тестовая сущность 1': 'testen1',
     }
 
     if obj_type == 'related_docs_record':
@@ -409,6 +410,43 @@ def get_dtregs(db: Session, skip: int = 0, limit: int = 100):
 
     return db_full_response
 
+
+# def get_testen1(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.TestEntity1).filter(models.TestEntity1.is_active==True).\
+#         order_by(models.TestEntity1.created_datetime.desc()).all()
+
+
+
+def get_testen1(db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.TestEntity1)
+    broker = aliased(models.Contact)
+    contact = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, broker, contact, carpass, related_docs).\
+        join(broker, broker.uuid == main_table.broker_uuid, isouter=True).\
+        join(contact, contact.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).all()
+
+    db_full_response = []
+    for row in response:
+        broker_name=row[1].__dict__['name'] if row[1] else None
+        broker_inn=row[1].__dict__['inn'] if row[1] else None
+        contact_name=row[2].__dict__['name'] if row[2] else None
+        contact_inn=row[2].__dict__['inn'] if row[2] else None
+        broker=f'{broker_name} ({broker_inn})' if row[1] else None
+        contact=f'{contact_name} ({contact_inn})' if row[2] else None
+        ncar=row[3].__dict__['ncar'] if row[3] else None
+        docs_exist=1 if row[4] else 0
+        db_full_response.append(schemas.TestEntity1Joined(**row[0].__dict__, contact=contact, broker=broker, 
+                                                    ncar=ncar, docs_exist=docs_exist))
+
+    return db_full_response
 
 
 # def get_shipments(db: Session, skip: int = 0, limit: int = 100):
@@ -862,6 +900,25 @@ def create_exitcarpass(db: Session, item: schemas.ExitcarpassCreate, user_uuid: 
     logging_action(obj_type='carpass_exit', schema=schemas.Exitcarpass, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
 
     return db_item
+
+
+def create_testen1(db: Session, item: schemas.TestEntity1Create, user_uuid: str):
+    #
+    created_datetime = datetime.datetime.now()
+    post_date = datetime.datetime.now()
+    uuid=str(uuid4())
+
+    db_item = models.TestEntity1(**item.model_dump(), uuid=uuid, created_datetime=created_datetime, post_date=post_date)
+    try:
+        db.add(db_item); db.commit(); db.refresh(db_item)
+    except Exception as err:
+        print(err)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    logging_action(obj_type='testen1', schema=schemas.TestEntity1, action='create', item_from_db=db_item, user_uuid=user_uuid, db=db)
+
+    created_item = get_testen_by_uuid_joined(uuid=uuid, db=db)
+    return created_item
 
 
 def create_shipment(db: Session, item: schemas.ShipmentCreate, user_uuid: str):
@@ -1809,6 +1866,29 @@ def posting_batch(db: Session, item_uuid: str, user_uuid: str):
     return item_from_db
 
 
+def posting_testen1(db: Session, item_uuid: str, user_uuid: str):
+    #
+    def foo_fields_validation(item_from_db):
+        # fields validation - check values are correct and not contradictory
+        validation_errs = []
+        ###
+        return validation_errs
+
+    def foo_check_conditions(item_from_db):
+        # check general conditions and data for posting posibility
+        pass 
+
+    item_from_db = common_posting_entity_item(db=db, item_uuid=item_uuid, 
+                               db_model=models.TestEntity1, 
+                               schema_obj=schemas.TestEntity1Validation,
+                               foo_fields_validation=foo_fields_validation,
+                               foo_check_conditions=foo_check_conditions)
+
+    logging_action(obj_type='testen1', schema=schemas.TestEntity1, action='posting', item_from_db=item_from_db, user_uuid=user_uuid, db=db)
+
+    return item_from_db
+
+
 def posting_dtreg(db: Session, item_uuid: str, user_uuid: str):
     #
     def foo_fields_validation(item_from_db):
@@ -2242,6 +2322,42 @@ def get_shipment_by_uuid(db: Session, uuid: str):
     return db.query(models.Shipment).filter(models.Shipment.uuid == uuid).first()
 
 
+def get_testen1_by_uuid(db: Session, uuid: str):
+    # get single testen1 from db
+    return db.query(models.TestEntity1).filter(models.TestEntity1.uuid == uuid).first()
+
+
+def get_testen_by_uuid_joined(uuid: str, db: Session, skip: int = 0, limit: int = 100):
+    #
+    main_table = aliased(models.TestEntity1)
+    contact = aliased(models.Contact)
+    broker = aliased(models.Contact)
+    carpass = aliased(models.Carpass)
+    related_docs = aliased(models.RelatedDocs)
+
+    response = db.query(main_table, contact, broker, carpass, related_docs).\
+        filter(main_table.uuid==uuid).\
+        join(contact, contact.uuid == main_table.broker_uuid, isouter=True).\
+        join(broker, broker.uuid == main_table.contact_uuid, isouter=True).\
+        join(carpass, carpass.uuid == main_table.carpass_uuid, isouter=True).\
+        join(related_docs, related_docs.obj_uuid == main_table.uuid, isouter=True).\
+        distinct(main_table.id).\
+        order_by(main_table.id.desc()).first()
+
+    broker_name=response[1].__dict__['name'] if response[1] else None
+    broker_inn=response[1].__dict__['inn'] if response[1] else None
+    contact_name=response[2].__dict__['name'] if response[2] else None
+    contact_inn=response[2].__dict__['inn'] if response[2] else None
+    broker=f'{broker_name} ({broker_inn})' if response[1] else None
+    contact=f'{contact_name} ({contact_inn})' if response[2] else None
+    ncar=response[3].__dict__['ncar'] if response[3] else None
+    docs_exist=1 if response[4] else 0
+    db_full_response = schemas.TestEntity1Joined(**response[0].__dict__, contact=contact, broker=broker, 
+                                                    ncar=ncar, docs_exist=docs_exist)
+
+    return db_full_response
+
+
 def get_batch_by_uuid(db: Session, uuid: str):
     # get single entry_request from db
     return db.query(models.Batch).filter(models.Batch.uuid == uuid).first()
@@ -2334,6 +2450,9 @@ def get_user_by_login_for_auth(db: Session, login: str):
             join(contact_1, contact_1.uuid==main_table.contact_uuid, isouter=True).\
             join(role_2, role_2.role_id==main_table.role_id, isouter=True).\
             order_by(main_table.created_datetime.desc()).first()
+
+    if not response:
+        return False
 
     contact_name=response[1].__dict__['name'] if response[1] else None
     role_name=response[2].__dict__['role_name'] if response[2] else None
