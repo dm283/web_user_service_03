@@ -18,7 +18,8 @@ from pydantic import BaseModel
 # from app import crud, models, schemas, views
 from app import crud, models, schemas
 from app.database import SessionLocal, engine
-from service_functions import *
+# from service_functions import *
+import service_functions
 from app.database import PATH_TZONE, PATH_TCELL, DEV
 from endpoint_allowed_roles_dict import endpoint_allowed_roles_dict
 
@@ -637,6 +638,39 @@ async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depe
     return crud.attach_doc_to_additional_entity(db=db, doc_id=doc_id, entity_uuid=entity_uuid)
     
 
+
+# print document
+@app.post('/print_document/{doc_type}/{doc_uuid}')
+def print_document(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
+                     doc_type: str, doc_uuid: str,  db: Session = Depends(get_db)):
+    # creates pdf document and prints it to particular printer
+    check_endpoint_role_access(url='print_document', type='post', current_role_name=current_user.role_name)
+    # create document - pdf file
+    if doc_type == 'Пропуска ТС на въезд':
+        carpass_from_db = crud.get_carpass_by_uuid(db=db, uuid=doc_uuid)
+        if carpass_from_db is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        if not os.path.exists('temp_files'): os.mkdir('temp_files')
+        filename = f'пропуск_{doc_uuid}.pdf'
+        filepath = os.path.join('temp_files', filename)  ######
+        try:
+            service_functions.create_document_carpass(carpass_from_db, filepath, filename)
+        except Exception as ex:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=ex)
+    # get printer_name from user card
+    user_from_db = crud.get_user_by_uuid(db=db, uuid=current_user.uuid)
+    if user_from_db is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    printer_name = user_from_db.printer_name
+    if not printer_name: raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не указан принтер в карточке пользователя")
+    # send doc to printer
+    res = service_functions.print_document(file_path=filepath, printer_name=printer_name)  # 'Microsoft Print to PDF'
+    if res['result'] == 'error':
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=res['detail'])
+    elif res['result'] == 'ok':
+        return res
+
+
+
+
 # download document for printing
 @app.get('/download_carpass/{section}/{item_sys_id}')
 def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
@@ -651,7 +685,7 @@ def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_activ
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
         filepath = f'saved_files/пропуск_{carpass_from_db.id_enter}.pdf'
         filename = f'пропуск_{carpass_from_db.id_enter}.pdf'
-        create_document_carpass(carpass_from_db, filepath, filename)
+        service_functions.create_document_carpass(carpass_from_db, filepath, filename)
 
     # create and download batch pdf file
     if section == 'Партии товаров':
@@ -664,7 +698,7 @@ def carpass_download(current_user: Annotated[UserAuth, Depends(get_current_activ
 
         filepath = f'saved_files/партия_{item_from_db.uuid}.pdf'
         filename = f'партия_{item_from_db.uuid}.pdf'
-        create_document_batch(item_from_db, carpass_from_db, filepath, filename)
+        service_functions.create_document_batch(item_from_db, carpass_from_db, filepath, filename)
         
 
     # elif section == 'Пропуска ТС на выезд':
@@ -702,7 +736,7 @@ def read_carpass(current_user: Annotated[UserAuth, Depends(get_current_active_us
     return db_carpass
 
 
-@app.get('/carpass_by_uuid/{uuid}', response_model=schemas.Carpass)
+@app.get('/carpass_by_uuid/{uuid}', response_model=schemas.CarpassJoined)
 def read_carpass_by_uuid(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                         uuid: str, db: Session = Depends(get_db)):
     check_endpoint_role_access(url='carpass_by_uuid', type='get', current_role_name=current_user.role_name)
@@ -865,6 +899,14 @@ def read_documents(current_user: Annotated[UserAuth, Depends(get_current_active_
     documents = crud.get_document_records_client(user_uuid=current_user.uuid, user_contact_uuid=current_user.contact_uuid, 
                                                  db=db, skip=skip, limit=limit)
     return documents
+
+
+@app.get("/available_printers/")
+def read_printers(current_user: Annotated[UserAuth, Depends(get_current_active_user)]):
+    #
+    check_endpoint_role_access(url='available_printers', type='get', current_role_name=current_user.role_name)
+    available_printers = service_functions.get_available_printers()
+    return available_printers
 
 
 @app.get("/log_records/", response_model=list[schemas.LogRecordJoined])

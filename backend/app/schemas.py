@@ -277,6 +277,7 @@ class UserBase(BaseModel):
     type: str
     role_id: int
     comment: str | None = None
+    printer_name: str | None = None
 
 class UserCreate(UserBase):
     password: str | None = None

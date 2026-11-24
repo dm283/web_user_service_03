@@ -319,7 +319,7 @@ else if (props.view_type == 'brokers') {
 else if (props.view_type == 'users') {
   state.query = query_users;
   state.listTableColumns = {
-    'login':'Логин','email':'email', 'contact_name':'Контрагент','type':'Тип контрагента','role_name':'Роль'
+    'login':'Логин','email':'email', 'contact_name':'Контрагент','type':'Тип контрагента','role_name':'Роль','printer_name':'Принтер'
   };
   state.additionalColumns = {  }; state.listItemFileds = {...state.listTableColumns, ...state.additionalColumns};
 }
@@ -437,6 +437,22 @@ async function downloadFile(document_id, section) {
   window.URL.revokeObjectURL(url);
 };
 
+
+async function printDocument(document_uuid, document_type) {
+  //
+  try {
+    const response = await axios.post(`http://${backendIpAddress}:${backendPort}/print_document/${document_type}/${document_uuid}`, 
+      '', {headers: authHeader()} );
+    toast.success('Документ отправлен на печать');
+  } catch (error) {
+    if (error == 'AxiosError: Network Error') { toast.error('Network Error'); }
+    else { console.error('ошибка печати =', error); toast.error(error.response.data.detail || 'ошибка печати'); }
+    // console.error('Error uploading file', error);
+  } finally {
+    // sendBtnDisabled.value = false;
+  }
+}
+
 async function openItemCard(obj) {
   // open object card (modal) from document cart
   if (obj.obj_type_name == 'Заявки на въезд ТС') { 
@@ -526,7 +542,8 @@ const rollbackItem = (item, section) => {
   selectedItem.value = item; itemName.value = section; showRollbackItem.value = true;
 };
 
-const printItem = (item, section) => { downloadFile(item.id, section); };
+const printItem = (item, section) => { printDocument(item.uuid, section); };
+// const printItem = (item, section) => { downloadFile(item.id, section); };
 
 const setStatusExit = (item) => { showCarExitPermit.value = true; selectedItem.value = item; };
 

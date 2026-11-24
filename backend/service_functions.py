@@ -6,6 +6,8 @@ from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle
 import qrcode
 import PIL
+import win32api
+import win32print
 
 
 def create_document_carpass(carpass, filepath, filename):
@@ -234,3 +236,22 @@ def create_document_batch(item, carpass_from_db, filepath, filename):
 
 
     pdf.save()
+
+
+
+def print_document(file_path: str, printer_name: str):
+    # send the file to the particular printer
+    try:
+        available_printers = [printer[2] for printer in win32print.EnumPrinters(2)]
+        if printer_name not in available_printers:
+            return {'result': 'error', 'detail': f'Принтер {printer_name} не найден'}
+        win32api.ShellExecute(0, "printto", file_path, f'"{printer_name}"', ".", 0)
+        return {'result': 'ok', 'detail': 'file sent to printer successfully'}
+    except Exception as ex:
+        return {'result': 'error', 'detail': ex}
+
+
+def get_available_printers():
+    # get system available printers
+    available_printers = [{'name': printer[2]} for printer in win32print.EnumPrinters(2)]
+    return available_printers

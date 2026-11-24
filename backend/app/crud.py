@@ -2307,9 +2307,26 @@ def get_entry_request_by_uuid(db: Session, uuid: str):
     return db.query(models.EntryRequest).filter(models.EntryRequest.uuid == uuid).first()
 
 
+# def get_carpass_by_uuid(db: Session, uuid: str):
+#     # get single entry_request from db
+#     return db.query(models.Carpass).filter(models.Carpass.uuid == uuid).first()
+
+
 def get_carpass_by_uuid(db: Session, uuid: str):
-    # get single entry_request from db
-    return db.query(models.Carpass).filter(models.Carpass.uuid == uuid).first()
+    #
+    main_table = aliased(models.Carpass)
+    contact_1 = aliased(models.Contact)
+
+    response = db.query(main_table, contact_1).\
+        filter(main_table.uuid == uuid).\
+        join(contact_1, contact_1.uuid == main_table.contact_uuid, isouter=True).\
+        first()
+
+    contact_name=response[1].__dict__['name'] if response[1] else None
+
+    db_full_response = schemas.CarpassJoined(**response[0].__dict__, contact_name=contact_name, place='-')
+    
+    return db_full_response
 
 
 def get_exitcarpass_by_uuid(db: Session, uuid: str):

@@ -102,6 +102,7 @@ class User(Base):
     login = Column(String, unique=True, index=True)
     email = Column(String)
     hashed_password = Column(String)
+    printer_name = Column(String)
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String, unique=True)
