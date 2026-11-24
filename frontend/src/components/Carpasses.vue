@@ -760,16 +760,17 @@ const clickNotificationRow = async (item) => {
   <!-- **********************   MODAL USER CARD   ************************** -->
   <div v-if="showCardUser" :class="[state.item_for_card ? modalStyleSecond : modalStyle]" >
   <!-- <div v-if="showCardContact" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center"> -->
-    <FormUser @close-modal="showCardUser=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" 
+    <FormUser @close-modal="showCardUser=false" @doc-created="getData" @reopen-card="reopenCard" @btn-delete="deleteItem" @btn-print="printItem" 
       :itemData="selectedItem" :isCard="true"/>
   </div>
   <!-- **********************   MODAL USER ADD   ************************** -->
   <div v-if="showAddUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showAddUser=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"/>
+    <FormUser @close-modal="showAddUser=false" @doc-created="getData" @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate"
+    @btn-print="printItem" />
   </div>
   <!-- **********************   MODAL USER EDIT  ************************** -->
   <div v-if="showUpdateUser" class="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-    <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" @reopen-card="reopenCard" 
+    <FormUser @close-modal="showUpdateUser=false" @doc-created="getData" @reopen-card="reopenCard" @btn-print="printItem" 
       @btn-delete="deleteItem" @open-edit-after-create="openEditAfterCreate" :itemData="selectedItem"/>
   </div>
 

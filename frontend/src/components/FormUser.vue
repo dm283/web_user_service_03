@@ -36,7 +36,7 @@ const itemFields = [
     'printer_name'
   ]
 
-const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard', 'notification'])  
+const emit = defineEmits(['docCreated', 'closeModal', 'openEditAfterCreate', 'btnDelete', 'reopenCard', 'notification', 'btnPrint'])  
 
 const props = defineProps({
   itemData: Object,  // card or edit - exists; create - empty
@@ -440,45 +440,13 @@ const refreshCard = async () => {
             :required="true" :disabled="true" />
         </div>
 
-
         <div class=formInputDiv>   <label class=formLabelStyle>email</label>
           <input type="email" v-model="form.email" :class="[errField['email']==1 ? formInputStyleErr : formInputStyle]" 
           :required="false" :disabled="isCard" />
         </div>
       </div>
 
-
       <div class="flex">
-        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Принтер</label>
-            <div :class=formInputStyle class="flex">
-              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.printer_name" 
-                @click="setFilter('null', 'available_printers', 'name'); setVars('printer_name', 'reserve_3')"
-                @keyup="setFilter('printer_name', 'available_printers', 'name')" :required="true"/>
-              <span @click="setFilter('null', 'available_printers', 'name'); setVars('printer_name', 'reserve_3');">
-                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
-              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['printer_name']=false; 
-                  form['reserve_3']=null;form['printer_name']=null">
-                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
-            </div>
-          <div v-if="showDropDownSelect['printer_name']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
-            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
-                @click="showDropDownSelect['printer_name']=false; form['reserve_3']=item.name;form['printer_name']=item.name;" >
-                {{ item.name }}
-            </div>
-          </div>
-        </div>
-        <div class=formInputDiv v-else>   <label class=formLabelStyle>Принтер</label>
-          <input type="text" v-model="form.printer_name" :class="[errField['printer_name']==1 ? formInputStyleErr : formInputStyle]"
-            :required="true" :disabled="isCard" />
-        </div>
-      </div>
-
-
-      <div class="flex">
-        <!-- <div class=formInputDiv>   <label class=formLabelStyle>Принтер</label>
-          <input type="text" v-model="form.printer_name" :class="[errField['printer_name']==1 ? formInputStyleErr : formInputStyle]"
-            :required="false" :disabled="isCard" />
-        </div> -->
         <div class=formInputDiv>   <label class=formLabelStyle>Комментарий</label>
           <input type="text" v-model="form.comment" :class="[errField['comment']==1 ? formInputStyleErr : formInputStyle]"
             :required="false" :disabled="isCard" />
@@ -498,6 +466,41 @@ const refreshCard = async () => {
           :required="true" :disabled="!isPwdChange" />
         </div>
       </div>
+
+      <div class="flex">
+        <div class="formInputDiv" v-if="(!props.isCard)">   <label class=formLabelStyle>Принтер</label>
+            <div :class=formInputStyle class="flex">
+              <input class="w-64 focus:outline-none cursor-pointer" type="text" placeholder="выберите из списка" v-model="form.printer_name" 
+                @click="setFilter('null', 'available_printers', 'name'); setVars('printer_name', 'reserve_3')"
+                @keyup="setFilter('printer_name', 'available_printers', 'name')" :required="false"/>
+              <span @click="setFilter('null', 'available_printers', 'name'); setVars('printer_name', 'reserve_3');">
+                <i class="pi pi-angle-down" style="font-size: 0.8rem"></i></span>
+              <span class="ml-1 text-red-400 active:text-black" @click="showDropDownSelect['printer_name']=false; 
+                  form['reserve_3']=null;form['printer_name']=null">
+                <i class="pi pi-times" style="font-size: 0.7rem"></i></span>
+            </div>
+          <div v-if="showDropDownSelect['printer_name']" class="bg-white border border-slate-400 rounded-md shadow-xl w-64 max-h-24 overflow-auto p-1 absolute z-10">
+            <div class="px-1.5 py-0.5 cursor-pointer hover:bg-blue-300" v-for="item in state.filteredList" 
+                @click="showDropDownSelect['printer_name']=false; form['reserve_3']=item.name;form['printer_name']=item.name;" >
+                {{ item.name }}
+            </div>
+          </div>
+        </div>
+        <div class=formInputDiv v-else>   <label class=formLabelStyle>Принтер</label>
+          <input type="text" v-model="form.printer_name" :class="[errField['printer_name']==1 ? formInputStyleErr : formInputStyle]"
+            :required="true" :disabled="isCard" />
+        </div>
+        <div class=formInputDiv>
+
+        <button v-if="itemData && itemData.printer_name" class="flex mt-4 p-1"
+          @click="emit('btnPrint', {'uuid': itemData.uuid}, 'Тест принтера')" type="button" title="печать тестовой страницы">
+            <div class="w-7 h-7 rounded-full pt-0.5 bg-blue-500 text-white"><i class="pi pi-print" style="font-size: 1rem"></i></div>
+            <div class="ml-2 text-slate-500">тест принтера</div>
+        </button>
+        </div>
+      </div>
+
+
 
       <!-- HANDLING BLOCK -->
       <div v-if="!isCard" class="mb-3 px-5 text-center overflow-auto">

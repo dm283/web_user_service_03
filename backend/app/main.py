@@ -14,6 +14,7 @@ from uuid import uuid4
 import jwt
 from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel
+from pathlib import Path
 
 # from app import crud, models, schemas, views
 from app import crud, models, schemas
@@ -22,6 +23,9 @@ from app.database import SessionLocal, engine
 import service_functions
 from app.database import PATH_TZONE, PATH_TCELL, DEV
 from endpoint_allowed_roles_dict import endpoint_allowed_roles_dict
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 if DEV == 'false':
@@ -640,11 +644,33 @@ async def attach_doc_to_additional_entity(current_user: Annotated[UserAuth, Depe
 
 
 # print document
+# при печати тестовой страницы в doc_uuid передаётся uuid пользователя
 @app.post('/print_document/{doc_type}/{doc_uuid}')
 def print_document(current_user: Annotated[UserAuth, Depends(get_current_active_user)],
                      doc_type: str, doc_uuid: str,  db: Session = Depends(get_db)):
     # creates pdf document and prints it to particular printer
     check_endpoint_role_access(url='print_document', type='post', current_role_name=current_user.role_name)
+
+    print(doc_type, doc_uuid)
+
+    # test printer - print test page
+    if doc_type == 'Тест принтера':
+        print('тест принтера')
+        filepath = str(ROOT_DIR / 'data/files/printer_test_page.pdf')
+        if not os.path.exists(filepath):
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Ошибка теста принтера: тестовая страница не существует')
+        user_uuid = doc_uuid
+    else:
+        user_uuid = current_user.uuid
+        
+    # get printer_name from user card
+    user_from_db = crud.get_user_by_uuid(db=db, uuid=user_uuid)
+    if user_from_db is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    printer_name = user_from_db.printer_name
+    if not printer_name: raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не указан принтер в карточке пользователя")    
+    
+
+
     # create document - pdf file
     if doc_type == 'Пропуска ТС на въезд':
         carpass_from_db = crud.get_carpass_by_uuid(db=db, uuid=doc_uuid)
@@ -656,11 +682,7 @@ def print_document(current_user: Annotated[UserAuth, Depends(get_current_active_
             service_functions.create_document_carpass(carpass_from_db, filepath, filename)
         except Exception as ex:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=ex)
-    # get printer_name from user card
-    user_from_db = crud.get_user_by_uuid(db=db, uuid=current_user.uuid)
-    if user_from_db is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    printer_name = user_from_db.printer_name
-    if not printer_name: raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не указан принтер в карточке пользователя")
+    
     # send doc to printer
     res = service_functions.print_document(file_path=filepath, printer_name=printer_name)  # 'Microsoft Print to PDF'
     if res['result'] == 'error':
