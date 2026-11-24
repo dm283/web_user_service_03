@@ -36,6 +36,7 @@ backend/logs/
 backend/config.ini
 backend/alembic.ini
 backend/saved_files
+backend/temp_files
 backend/uploaded_files
 backend/alembic
 
