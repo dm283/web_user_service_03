@@ -220,7 +220,7 @@ def create_document_batch(item, carpass_from_db, filepath, filename):
     pdf.setFont("Arial", 18); pdf.drawString(240, 655, f'Номер ТС: {item.ncar}')
     pdf.setFont("Arial", 18); pdf.drawString(240, 625, f'Дата въезда: {carpass_from_db.dateen}')
     pdf.setFont("Arial", 18); pdf.drawString(240, 595, f'Время въезда: {carpass_from_db.timeen}')
-    pdf.setFont("Arial", 18); pdf.drawString(240, 565, f'Стояночное место: {carpass_from_db.place_n}')
+    pdf.setFont("Arial", 18); pdf.drawString(240, 565, f'Стояночное место: {carpass_from_db.place}')
     pdf.setFont("Arial", 18); pdf.drawString(240, 535, f'Номер CMR: {item.tn_id}')
 
     pdf.setFont("Arial", 18); pdf.drawString(30, 455, f'Время и дата закрытия доставки: ???')

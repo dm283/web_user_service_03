@@ -669,17 +669,27 @@ def print_document(current_user: Annotated[UserAuth, Depends(get_current_active_
     printer_name = user_from_db.printer_name
     if not printer_name: raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не указан принтер в карточке пользователя")    
     
-
-
     # create document - pdf file
     if doc_type == 'Пропуска ТС на въезд':
         carpass_from_db = crud.get_carpass_by_uuid(db=db, uuid=doc_uuid)
-        if carpass_from_db is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        if carpass_from_db is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item [carpass] not found")
         if not os.path.exists('temp_files'): os.mkdir('temp_files')
         filename = f'пропуск_{doc_uuid}.pdf'
-        filepath = os.path.join('temp_files', filename)  ######
+        filepath = os.path.join('temp_files', filename)
         try:
             service_functions.create_document_carpass(carpass_from_db, filepath, filename)
+        except Exception as ex:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=ex)
+
+    if doc_type == 'Партии товаров':
+        item_from_db = crud.get_batch_by_uuid_joined(db=db, uuid=doc_uuid)
+        if item_from_db is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item [batch] not found")
+        carpass_from_db = crud.get_carpass_by_uuid(db=db, uuid=item_from_db.carpass_uuid)
+        if carpass_from_db is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item [carpass] not found")      
+        filename = f'партия_{doc_uuid}.pdf'
+        filepath = os.path.join('temp_files', filename)
+        try:
+            service_functions.create_document_batch(item_from_db, carpass_from_db, filepath, filename)
         except Exception as ex:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=ex)
     
